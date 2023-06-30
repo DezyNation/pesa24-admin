@@ -309,7 +309,7 @@ const FundRequests = () => {
         });
         return;
       }
-      window.open(`https://PESA24.online/${params.data.receipt}`, "_blank");
+      window.open(`https://pesa24.in/${params.data.receipt}`, "_blank");
     }
     return (
       <HStack height={"full"} w={"full"} gap={4}>
