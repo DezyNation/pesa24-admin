@@ -44,8 +44,8 @@ const ResetPassword = () => {
     BackendAxios.post("/api/user/new-password", {
       old_password: PasswordFormik.values.old_password,
       new_password: PasswordFormik.values.new_password,
-      new_password_confirmation:
-        PasswordFormik.values.new_password_confirmation,
+      new_password_confirmation: PasswordFormik.values.new_password_confirmation,
+      otp: PasswordFormik.values.otp,
     })
       .then((res) => {
         Toast({
