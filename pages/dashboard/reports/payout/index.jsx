@@ -338,7 +338,7 @@ const Index = () => {
     }
     return (
       <>
-        {params.data.status == "processing" ? (
+        {params.data?.status == "processing" || params.data?.status == "queued" ? (
           <Button size={"xs"} colorScheme="twitter" onClick={updateData}>
             UPDATE
           </Button>
