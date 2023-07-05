@@ -28,7 +28,7 @@ import axios from "axios";
 import Cookies from 'js-cookie'
 var bcrypt = require('bcryptjs')
 import { useRouter } from 'next/router'
-import BackendAxios from "@/lib/utils/axios";
+import BackendAxios, { FormAxios } from "@/lib/utils/axios";
 
 const Auth = () => {
   const [passwordVisible, setPasswordVisible] = useState(false)
@@ -161,6 +161,7 @@ const Auth = () => {
 
         localStorage.setItem("profilePic", `${process.env.NEXT_PUBLIC_BACKEND_URL}/storage/${res.data.profile_pic}`)
         BackendAxios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token.original.access_token}`
+        FormAxios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token.original.access_token}`
         Cookies.set('access-token', res.data.token.original.access_token)
         if (res.data.profile_complete == 0) localStorage.setItem("isProfileComplete", false)
         if (res.data.profile_complete == 1) localStorage.setItem("isProfileComplete", true)
