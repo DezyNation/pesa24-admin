@@ -325,7 +325,7 @@ const Sidebar = ({ userName, userImage }) => {
           w={"64"}
           boxShadow={"md"}
           h={"100vh"}
-          bgImage={'/sidebarBg.svg'}
+          bgImage={'/sidebarbg.svg'}
           bgSize={'cover'}
           bgRepeat={'no-repeat'}
           p={4} color={'#FFF'}
