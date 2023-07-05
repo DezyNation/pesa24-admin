@@ -40,6 +40,7 @@ import Layout from '../../layout';
 import { DownloadTableExcel } from 'react-export-table-to-excel';
 import { SiMicrosoftexcel } from 'react-icons/si';
 import { useFormik } from 'formik';
+import Cookies from 'js-cookie';
 
 const ExportPDF = () => {
     const doc = new jsPDF('landscape')
@@ -143,6 +144,10 @@ const Index = () => {
             setRowData(res.data.data)
             setPrintableRow(res.data.data)
         }).catch((err) => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             console.log(err)
             Toast({
                 status: 'error',

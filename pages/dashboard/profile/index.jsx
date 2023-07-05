@@ -6,6 +6,7 @@ import BackendAxios from "@/lib/utils/axios";
 import Layout from "../layout";
 import KycDocsCard from "@/HOC/KycDocsCard";
 import ProfileInfoCard from "@/HOC/ProfileInfoCard";
+import Cookies from "js-cookie";
 
 const Profile = () => {
   const Toast = useToast()
@@ -38,6 +39,10 @@ const Profile = () => {
       localStorage.setItem("state", res.data.data.state || "")
       localStorage.setItem("pincode", res.data.data.pincode || "")
     }).catch((err)=>{
+      if (err?.response?.status == 401) {
+        Cookies.remove("verified");
+        window.location.reload();
+      }
       Toast({
         status: "error",
         title: "Error Occured",

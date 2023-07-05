@@ -42,6 +42,7 @@ import Pdf from "react-to-pdf";
 import { SiMicrosoftexcel } from "react-icons/si";
 import { DownloadTableExcel } from "react-export-table-to-excel";
 import { Stack } from "@chakra-ui/react";
+import Cookies from "js-cookie";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -146,6 +147,10 @@ const UserLedger = () => {
         );
       })
       .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
         Toast({
           status: "error",
           description:

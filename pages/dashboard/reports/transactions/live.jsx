@@ -20,6 +20,7 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { BsChevronDoubleLeft, BsChevronDoubleRight, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { useFormik } from 'formik';
+import Cookies from 'js-cookie';
 
 const ExportPDF = () => {
     const doc = new jsPDF('landscape')
@@ -100,6 +101,10 @@ const Ledger = () => {
             })
             setRowData(res.data.slice(0, 20))
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             console.log(err)
         })
     }

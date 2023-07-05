@@ -20,6 +20,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import BackendAxios from '@/lib/utils/axios';
 import { BsPlus, BsTrash, BsUpload } from 'react-icons/bs';
 import fileDownload from 'js-file-download';
+import Cookies from 'js-cookie';
 
 const ActionsCellRenderer = (params) => {
     const Toast = useToast({
@@ -34,6 +35,10 @@ const ActionsCellRenderer = (params) => {
                 description: 'Account added!'
             })
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             console.log(err)
             Toast({
                 status: 'error',
@@ -71,6 +76,10 @@ const ActionsCellRenderer = (params) => {
                 description: 'Account updated!'
             })
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             console.log(err)
             Toast({
                 status: 'error',
@@ -93,6 +102,10 @@ const ActionsCellRenderer = (params) => {
                 description: 'Account reset successful!'
             })
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: 'Error while resetting!'

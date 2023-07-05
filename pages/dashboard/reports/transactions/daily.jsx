@@ -34,6 +34,7 @@ import { Tr } from "@chakra-ui/react";
 import { Th } from "@chakra-ui/react";
 import { Tbody } from "@chakra-ui/react";
 import { Td } from "@chakra-ui/react";
+import Cookies from "js-cookie";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -113,6 +114,10 @@ const Ledger = () => {
     BackendAxios.get(`/api/admin/overview?from=${Formik.values.from}&to=${Formik.values.to}`).then(res => {
       setOverviewData(res.data)
     }).catch(err => {
+      if (err?.response?.status == 401) {
+        Cookies.remove("verified");
+        window.location.reload();
+      }
       console.log(err)
     })
   }
@@ -163,6 +168,10 @@ const Ledger = () => {
         // setPrintableRow(res.data)
       })
       .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
         console.log(err);
       });
 

@@ -17,6 +17,7 @@ import {
 } from '@chakra-ui/react'
 import { Form, useFormik } from 'formik'
 import BackendAxios from '@/lib/utils/axios'
+import Cookies from 'js-cookie'
 
 const ManageOperators = () => {
     const Toast = useToast({
@@ -40,6 +41,10 @@ const ManageOperators = () => {
                 fetchOperators()
                 Formik.handleReset()
             }).catch(err => {
+                if (err?.response?.status == 401) {
+                  Cookies.remove("verified");
+                  window.location.reload();
+                }
                 Toast({
                     status: "error",
                     description: err.response.data.message || err.response.data || err.message
@@ -58,6 +63,10 @@ const ManageOperators = () => {
             })
             fetchOperators()
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: "error",
                 description: err.response.data.message || err.response.data || err.message
@@ -68,6 +77,10 @@ const ManageOperators = () => {
         BackendAxios.get("/api/admin/categories").then(res => {
             setCategories(res.data)
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: "error",
                 description: err.response.data.message || err.response.data || err.message
@@ -78,6 +91,10 @@ const ManageOperators = () => {
         BackendAxios.get("/api/admin/operators").then(res => {
             setOperators(res.data)
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: "error",
                 description: err.response.data.message || err.response.data || err.message

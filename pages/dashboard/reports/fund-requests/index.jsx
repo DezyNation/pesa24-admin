@@ -38,6 +38,7 @@ import { ModalBody } from "@chakra-ui/react";
 import { ModalFooter } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
 import { DownloadTableExcel } from "react-export-table-to-excel";
+import Cookies from "js-cookie";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -160,6 +161,10 @@ const FundRequests = () => {
         setPrintableRow(res.data.data);
       })
       .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
         console.log(err);
         Toast({
           status: "error",
@@ -221,6 +226,10 @@ const FundRequests = () => {
           fetchRequests();
         })
         .catch((err) => {
+          if (err?.response?.status == 401) {
+            Cookies.remove("verified");
+            window.location.reload();
+          }
           onToggle();
           console.log(err);
           Toast({

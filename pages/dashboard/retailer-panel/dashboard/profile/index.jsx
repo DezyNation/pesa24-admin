@@ -88,6 +88,10 @@ const Profile = () => {
         panCard: res.data.data.pan_photo,
       })
     }).catch((err) => {
+      if (err?.response?.status == 401) {
+        Cookies.remove("verified");
+        window.location.reload();
+      }
       Toast({
         status: "error",
         title: "Error Occured",

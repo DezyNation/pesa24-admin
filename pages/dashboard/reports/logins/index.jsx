@@ -11,6 +11,7 @@ import { AgGridReact } from 'ag-grid-react'
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import BackendAxios from '@/lib/utils/axios'
+import Cookies from 'js-cookie';
 
 const Index = () => {
     const [rowData, setRowData] = useState([
@@ -48,6 +49,10 @@ const Index = () => {
         BackendAxios.get('/api/admin/logins/200').then(res => {
             setRowData(res.data)
         }).catch(err => {
+          if (err?.response?.status == 401) {
+            Cookies.remove("verified");
+            window.location.reload();
+          }
             console.log(err)
         })
     }, [])

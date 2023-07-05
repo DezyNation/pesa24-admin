@@ -23,6 +23,7 @@ import { PinInput } from "@chakra-ui/react";
 import { PinInputField } from "@chakra-ui/react";
 import { HStack } from "@chakra-ui/react";
 import { ModalFooter } from "@chakra-ui/react";
+import Cookies from "js-cookie";
 
 const ResetPassword = () => {
   const Toast = useToast({
@@ -55,6 +56,10 @@ const ResetPassword = () => {
         });
       })
       .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
         Toast({
           status: "error",
           title: "Error Occured",

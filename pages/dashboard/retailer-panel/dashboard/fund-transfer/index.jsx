@@ -123,6 +123,10 @@ const FundTransfer = () => {
         TransferFormik.setFieldValue("beneficiaryId", res.data.data.id);
       })
       .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
         Toast({
           status: "error",
           description: "User not found!",

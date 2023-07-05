@@ -23,6 +23,7 @@ import Layout from '../../layout'
 import BackendAxios, { FormAxios } from '@/lib/utils/axios'
 import { states } from '@/lib/states'
 import { useRouter } from 'next/router'
+import Cookies from 'js-cookie'
 
 const Index = () => {
     const Router = useRouter()
@@ -70,6 +71,10 @@ const Index = () => {
                 })
                 console.log(res.data)
             }).catch((err) => {
+                if (err?.response?.status == 401) {
+                  Cookies.remove("verified");
+                  window.location.reload();
+                }
                 Toast({
                     status: 'error',
                     description: err.response.data.message || err.response.data || err.message
@@ -102,6 +107,10 @@ const Index = () => {
             Formik.setFieldValue("state", res.data.data.state)
             Formik.setFieldValue("pincode", res.data.data.pincode)
         }).catch((err) => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: err.response.data.message || err.response.data || err.message

@@ -33,6 +33,7 @@ import 'ag-grid-community/styles/ag-theme-alpine.css';
 import BackendAxios from '@/lib/utils/axios'
 import Layout from '../layout';
 import { useRouter } from 'next/router';
+import Cookies from 'js-cookie';
 
 const FundTransfer = () => {
     const { isOpen, onOpen, onClose } = useDisclosure()
@@ -70,6 +71,10 @@ const FundTransfer = () => {
                     })
                     onClose()
                 }).catch(err => {
+                    if (err?.response?.status == 401) {
+                      Cookies.remove("verified");
+                      window.location.reload();
+                    }
                     Toast({
                         status: 'error',
                         description: err.response.data.message || err.response.data || err.message
@@ -94,6 +99,10 @@ const FundTransfer = () => {
 
             })
         }).catch((err) => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: err.response.data.message || err.response.data || 'User not found!'

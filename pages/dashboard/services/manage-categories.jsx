@@ -15,6 +15,7 @@ import {
 } from '@chakra-ui/react'
 import { useFormik } from 'formik'
 import BackendAxios from '@/lib/utils/axios'
+import Cookies from 'js-cookie'
 
 const ManageCategories = () => {
     const Toast = useToast({
@@ -30,6 +31,10 @@ const ManageCategories = () => {
                 fetchCategories()
                 CategoryFormik.handleReset()
             }).catch(err => {
+                if (err?.response?.status == 401) {
+                  Cookies.remove("verified");
+                  window.location.reload();
+                }
                 Toast({
                     status: "error",
                     description: err.response.data.message || err.response.data || err.message
@@ -48,6 +53,10 @@ const ManageCategories = () => {
             })
             fetchCategories()
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: "error",
                 description: err.response.data.message || err.response.data || err.message
@@ -58,6 +67,10 @@ const ManageCategories = () => {
         BackendAxios.get("/api/admin/categories").then(res => {
             setCategories(res.data)
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: "error",
                 description: err.response.data.message || err.response.data || err.message

@@ -485,6 +485,10 @@ const Layout = (props) => {
         setWallet(res.data[0].wallet);
       })
       .catch((err) => {
+        if(err?.response?.status == 401){
+          Cookies.remove("verified")
+          window.location.reload()
+        }
         setWallet("0");
       });
 

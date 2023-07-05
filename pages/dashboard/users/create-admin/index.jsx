@@ -20,6 +20,7 @@ import {
 import BackendAxios from '@/lib/utils/axios'
 import { useFormik } from 'formik'
 import { BiCheck } from 'react-icons/bi'
+import Cookies from 'js-cookie'
 
 const CreateAdmin = () => {
   const Toast = useToast({
@@ -132,6 +133,10 @@ const CreateAdmin = () => {
         permissions: res.data.data.permissions.map(permission => { return permission.name })
       })
     }).catch((err) => {
+      if (err?.response?.status == 401) {
+        Cookies.remove("verified");
+        window.location.reload();
+      }
       Toast({
         status: 'error',
         description: err.message

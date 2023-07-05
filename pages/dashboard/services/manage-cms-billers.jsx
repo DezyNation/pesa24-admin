@@ -26,6 +26,7 @@ import {
 import Layout from '../layout'
 import { useFormik } from 'formik'
 import BackendAxios from '@/lib/utils/axios'
+import Cookies from 'js-cookie'
 
 const ManageCmsBillers = () => {
     const Toast = useToast({ position: 'top-right' })
@@ -42,6 +43,10 @@ const ManageCmsBillers = () => {
                     description: 'Biller added successfully'
                 })
             }).catch(err =>{
+                if (err?.response?.status == 401) {
+                  Cookies.remove("verified");
+                  window.location.reload();
+                }
                 Toast({
                     status: 'error',
                     title: 'Error while adding Biller',
@@ -56,6 +61,10 @@ const ManageCmsBillers = () => {
         BackendAxios.get('/api/cms-billers').then(res=>{
             setBillers(res.data)
         }).catch(err=>{
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 title: 'Error while fetching Billers',

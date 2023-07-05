@@ -41,6 +41,7 @@ import { Stack } from "@chakra-ui/react";
 import { FormControl } from "@chakra-ui/react";
 import { FormLabel } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
+import Cookies from "js-cookie";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -202,6 +203,10 @@ const Index = () => {
         fetchPendingTransactions()
       })
       .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
         console.log(err);
         Toast({
           status: "error",

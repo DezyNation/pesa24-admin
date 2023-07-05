@@ -11,6 +11,7 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import Layout from '../layout';
 import BackendAxios from '@/lib/utils/axios';
+import Cookies from 'js-cookie';
 
 const SupportTickets = () => {
     const Toast = useToast({ position: 'top-right' })
@@ -74,6 +75,10 @@ const SupportTickets = () => {
         BackendAxios.get(`/api/admin/tickets`).then(res => {
             setRowData(res.data)
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: err.response.data.message || err.response.data || err.message
@@ -107,6 +112,10 @@ const SupportTickets = () => {
                 })
             }
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: err.response.data.message || err.response.data || err.message

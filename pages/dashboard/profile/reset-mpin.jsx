@@ -23,6 +23,7 @@ import { ModalContent } from "@chakra-ui/react";
 import { ModalHeader } from "@chakra-ui/react";
 import { ModalBody } from "@chakra-ui/react";
 import { ModalFooter } from "@chakra-ui/react";
+import Cookies from "js-cookie";
 
 const ResetMpin = () => {
   const { isOpen, onToggle } = useDisclosure();
@@ -57,6 +58,10 @@ const ResetMpin = () => {
         });
       })
       .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
         onToggle();
         Toast({
           status: "error",

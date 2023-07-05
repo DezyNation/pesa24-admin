@@ -21,6 +21,7 @@ import BackendAxios from '@/lib/utils/axios'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import { useRouter } from 'next/router'
+import Cookies from 'js-cookie'
 
 const ExportPDF = () => {
     const doc = new jsPDF('landscape')
@@ -95,6 +96,10 @@ const FundRequests = () => {
             setRowData(res.data.data)
             setPrintableRow(res.data.data)
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             console.log(err)
             Toast({
                 status: 'error',

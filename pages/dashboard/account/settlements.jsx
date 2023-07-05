@@ -30,6 +30,7 @@ import BackendAxios from '@/lib/utils/axios'
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
 import { DownloadTableExcel } from 'react-export-table-to-excel';
+import Cookies from 'js-cookie'
 
 const ExportPDF = () => {
     const doc = new jsPDF('landscape')
@@ -94,6 +95,10 @@ const FundRequests = () => {
             setRowData(res.data)
             setPrintableRow(res.data)
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             console.log(err)
             Toast({
                 status: 'error',
