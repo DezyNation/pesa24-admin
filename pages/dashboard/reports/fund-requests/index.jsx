@@ -379,9 +379,6 @@ const FundRequests = () => {
         </Text>
 
         <Box py={6}>
-          <Text fontWeight={"medium"} pb={4}>
-            Search and manage fund requests
-          </Text>
 
           <Stack p={4} spacing={8} w={"full"} direction={["column", "row"]}>
             <FormControl w={["full", "xs"]}>
