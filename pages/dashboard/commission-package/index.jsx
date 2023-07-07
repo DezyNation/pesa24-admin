@@ -647,16 +647,16 @@ const CommissionSetup = () => {
                                     <Th>Total Users</Th>
                                     <Th>Default</Th>
                                     <Th>Status</Th>
-                                    <Th>AePS Cash Wihtdrawal</Th>
+                                    {/* <Th>AePS Cash Wihtdrawal</Th>
                                     <Th>AePS Aadhaar Pay</Th>
                                     <Th>AePS Mini Statement</Th>
-                                    <Th>BBPS</Th>
+                                    <Th>BBPS</Th> */}
                                     <Th>Payout</Th>
                                     <Th>DMT</Th>
-                                    <Th>Recharge</Th>
+                                    {/* <Th>Recharge</Th>
                                     <Th>LIC</Th>
                                     <Th>CMS</Th>
-                                    <Th>Fastag</Th>
+                                    <Th>Fastag</Th> */}
                                     <Th>Delete Package</Th>
                                 </Tr>
                             </Thead>
@@ -703,8 +703,8 @@ const CommissionSetup = () => {
                                                         onChange={e => updatePackageDetails({ status: e.target.checked }, item.id)}
                                                     ></Switch>
                                                 </Td>
-                                                <Td>
                                                     {/* AEPS Cash Wihtdrawal */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -712,9 +712,9 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
-                                                <Td>
+                                                </Td> */}
                                                     {/* AEPS Aadhaar Pay */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -722,9 +722,9 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
-                                                <Td>
+                                                </Td> */}
                                                     {/* AEPS Mini Statement */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -732,9 +732,9 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
-                                                <Td>
+                                                </Td> */}
                                                     {/* BBPS */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -742,9 +742,9 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
-                                                <Td>
+                                                </Td> */}
                                                     {/* Payout */}
+                                                <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -753,8 +753,8 @@ const CommissionSetup = () => {
                                                         Set Commission
                                                     </Button>
                                                 </Td>
-                                                <Td>
                                                     {/* DMT */}
+                                                <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -763,8 +763,8 @@ const CommissionSetup = () => {
                                                         Set Commission
                                                     </Button>
                                                 </Td>
-                                                <Td>
                                                     {/* Recharge */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -772,9 +772,9 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
-                                                <Td>
+                                                </Td> */}
                                                     {/* LIC */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -782,9 +782,9 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
-                                                <Td>
+                                                </Td> */}
                                                     {/* CMS */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -792,9 +792,9 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
-                                                <Td>
+                                                </Td> */}
                                                     {/* Fastag */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -802,7 +802,7 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
+                                                </Td> */}
                                                 <Td>
                                                     {/* Delete */}
                                                     <Button
