@@ -246,7 +246,7 @@ const FundRequests = () => {
       });
       return;
     }
-    if (selectedFundReq.action == "deleted") {
+    if (selectedFundReq.action == "delete") {
       BackendAxios.post("/api/admin/delete-fund", {
         fundId: selectedFundReq.id,
       })
