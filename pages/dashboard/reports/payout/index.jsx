@@ -187,7 +187,7 @@ const Index = () => {
   function fetchTransactions(pageLink) {
     BackendAxios.get(
       pageLink ? pageLink :
-        `/api/admin/payouts?from=${Formik.values.from}&to=${Formik.values.to}&search=${Formik.values.query}&page=1`
+        `/api/admin/payouts?from=${Formik.values.from}&to=${Formik.values.to ? new Date(new Date(Formik.values.to).setHours(23,59,59,999)).toISOString() : new Date().toISOString()}&search=${Formik.values.query}&page=1`
     )
       .then((res) => {
         setPagination({
@@ -330,7 +330,7 @@ const Index = () => {
             status: 'success',
             description: `Payout ${params.data.payout_id} updated!`
           })
-          let pageUrl = `/api/admin/payouts?from=${Formik.values.from}&to=${Formik.values.to}&page=${pagination.current_page}`
+          let pageUrl = `/api/admin/payouts?from=${Formik.values.from}&to=${Formik.values.to ? new Date(new Date(Formik.values.to).setHours(23,59,59,999)).toISOString() : new Date().toISOString()}&page=${pagination.current_page}`
           fetchTransactions(pageUrl);
         })
         .catch((err) => {
