@@ -39,6 +39,8 @@ import { ModalFooter } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
 import { DownloadTableExcel } from "react-export-table-to-excel";
 import Cookies from "js-cookie";
+import { FormControl } from "@chakra-ui/react";
+import { FormLabel } from "@chakra-ui/react";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -146,8 +148,19 @@ const FundRequests = () => {
     prev_page_url: "",
   });
 
+  const Formik = useFormik({
+    initialValues: {
+      from: "",
+      to: "",
+      query: "",
+    },
+  });
+
   function fetchRequests(pageLink) {
-    BackendAxios.get(pageLink || "/api/admin/fetch-fund/all")
+    BackendAxios.get(
+      pageLink ||
+        `/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}`
+    )
       .then((res) => {
         setPagination({
           current_page: res.data.current_page,
@@ -338,7 +351,8 @@ const FundRequests = () => {
     return (
       <>
         <Text>
-          ({params.data.name}) {params.data.user_id} - {params.data.phone_number}
+          ({params.data.name}) {params.data.user_id} -{" "}
+          {params.data.phone_number}
         </Text>
       </>
     );
@@ -368,6 +382,33 @@ const FundRequests = () => {
           <Text fontWeight={"medium"} pb={4}>
             Search and manage fund requests
           </Text>
+
+          <Stack p={4} spacing={8} w={"full"} direction={["column", "row"]}>
+            <FormControl w={["full", "xs"]}>
+              <FormLabel>From Date</FormLabel>
+              <Input
+                name="from"
+                onChange={Formik.handleChange}
+                type="date"
+                bg={"white"}
+              />
+            </FormControl>
+            <FormControl w={["full", "xs"]}>
+              <FormLabel>To Date</FormLabel>
+              <Input
+                name="to"
+                onChange={Formik.handleChange}
+                type="date"
+                bg={"white"}
+              />
+            </FormControl>
+          </Stack>
+          <HStack mb={4} justifyContent={"flex-end"}>
+            <Button onClick={() => fetchRequests()} colorScheme={"twitter"}>
+              Search
+            </Button>
+          </HStack>
+
           <HStack spacing={4} my={4}>
             <DownloadTableExcel
               filename="FundRequests"
