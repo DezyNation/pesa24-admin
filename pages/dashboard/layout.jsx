@@ -56,25 +56,25 @@ const menuOptions = [
       {
         id: "basic-view-profile",
         title: "view profile",
-        link: "/dashboard/profile?pageid=profile",
+        link: "/dashboard/profile?pageid=basic-view-profile&parent=profile",
         status: true,
       },
       {
         id: "basic-edit-profile",
         title: "edit profile",
-        link: "/dashboard/profile/edit?pageid=profile",
+        link: "/dashboard/profile/edit?pageid=basic-edit-profile&parent=profile",
         status: true,
       },
       {
         id: "basic-reset-mpin",
         title: "reset mpin",
-        link: "/dashboard/profile/reset-mpin?pageid=profile",
+        link: "/dashboard/profile/reset-mpin?pageid=basic-reset-mpin&parent=profile",
         status: true,
       },
       {
         id: "basic-reset-password",
         title: "reset password",
-        link: "/dashboard/profile/reset-password?pageid=profile",
+        link: "/dashboard/profile/reset-password?pageid=basic-reset-password&parent=profile",
         status: true,
       },
     ],
@@ -102,37 +102,37 @@ const menuOptions = [
       {
         id: "user-create",
         title: "create user",
-        link: "/dashboard/users/create-user?pageid=users",
+        link: "/dashboard/users/create-user?pageid=user-create&parent=users",
         status: true,
       },
       {
         id: "user-view",
         title: "users list",
-        link: "/dashboard/users/users-list?pageid=users",
+        link: "/dashboard/users/users-list?pageid=user-view&parent=users",
         status: true,
       },
       {
         id: "user-edit",
         title: "manage user",
-        link: "/dashboard/users/manage-user?pageid=users",
+        link: "/dashboard/users/manage-user?pageid=user-edit&parent=users",
         status: true,
       },
       {
         id: "manage-role-parent",
         title: "manage role & parent",
-        link: "/dashboard/users/manage-user/edit-role-parent?pageid=users",
+        link: "/dashboard/users/manage-user/edit-role-parent?pageid=manage-role-parent&parent=users",
         status: true,
       },
       {
         id: "manage-admin",
         title: "manage admin",
-        link: "/dashboard/users/create-admin?pageid=users",
+        link: "/dashboard/users/create-admin?pageid=manage-admin&parent=users",
         status: true,
       },
       {
-        id: "user-view",
+        id: "view-retailer-panel",
         title: "retailer panel",
-        link: "/dashboard/retailer-panel?pageid=users",
+        link: "/dashboard/retailer-panel?pageid=user-view&parent=users",
         status: true,
       },
     ],
@@ -184,41 +184,26 @@ const menuOptions = [
       {
         id: "fund-transfer-view",
         title: "fund transfer",
-        link: "/dashboard/account/fund-transfer?pageid=account",
+        link: "/dashboard/account/fund-transfer?pageid=fund-transfer-view&parent=account",
         status: true,
       },
       {
         id: "fund-request-view",
         title: "fund request",
-        link: "/dashboard/account/fund-request?pageid=account",
+        link: "/dashboard/account/fund-request?pageid=fund-request-view&parent=account",
         status: true,
       },
       {
         id: "add-admin-funds",
         title: "add money",
-        link: "/dashboard/account/add-money?pageid=account",
+        link: "/dashboard/account/add-money?pageid=add-admin-funds&parent=account",
         status: true,
       },
-      // {
-      //   title: "wallet balance",
-      //   link: "/dashboard/account/wallet-balance?pageid=account",
-      //   status: false,
-      // },
-      // {
-      //   title: "wallet transactions",
-      //   link: "/dashboard/account/wallet-transactions?pageid=account",
-      //   status: false,
-      // },
-      // {
-      //   title: "add bank",
-      //   link: "/dashboard/account/add-bank?pageid=account",
-      //   status: false,
-      // },
       {
         // id: "settlement-requests-view",
         id: "settlement-account",
         title: "settlement requests",
-        link: "/dashboard/account/settlements?pageid=account",
+        link: "/dashboard/account/settlements?pageid=settlement-account&parent=account",
         status: true,
       },
     ],
@@ -237,18 +222,18 @@ const menuOptions = [
       {
         id: "manage-banks",
         title: "manage banks",
-        link: "/dashboard/controls/manage-banks?pageid=controls",
+        link: "/dashboard/controls/manage-banks?pageid=manage-banks&parent=controls",
         status: true,
       },
       {
         id: "preferences",
         title: "preferences",
-        link: "/dashboard/controls/preferences?pageid=controls",
+        link: "/dashboard/controls/preferences?pageid=preferences&parent=controls",
         status: true,
       },
       // {
       //   title: "manage notifications",
-      //   link: "/dashboard/controls/notifications?pageid=controls",
+      //   link: "/dashboard/controls/notifications?pageid=controls&parent=controls",
       //   status: false,
       // },
     ],
@@ -282,25 +267,25 @@ const menuOptions = [
       {
         id: "report-aeps",
         title: "aeps",
-        link: "/dashboard/reports/aeps?pageid=reports",
+        link: "/dashboard/reports/aeps?pageid=report-aeps&parent=reports",
         status: false,
       },
       {
         id: "report-bbps",
         title: "bbps",
-        link: "/dashboard/reports/bbps?pageid=reports",
+        link: "/dashboard/reports/bbps?pageid=report-bbps&parent=reports",
         status: false,
       },
       {
         id: "report-dmt",
         title: "dmt",
-        link: "/dashboard/reports/dmt?pageid=reports",
+        link: "/dashboard/reports/dmt?pageid=report-dmt&parent=reports",
         status: false,
       },
       {
         id: "report-recharge",
         title: "recharge",
-        link: "/dashboard/reports/recharge?pageid=reports",
+        link: "/dashboard/reports/recharge?pageid=report-recharge&parent=reports",
         status: false,
       },
       // {
@@ -312,13 +297,13 @@ const menuOptions = [
       {
         id: "report-payout",
         title: "payout",
-        link: "/dashboard/reports/payout?pageid=reports",
+        link: "/dashboard/reports/payout?pageid=report-payout&parent=reports",
         status: true,
       },
       {
         id: "report-cms",
         title: "cms",
-        link: "/dashboard/reports/cms?pageid=reports",
+        link: "/dashboard/reports/cms?pageid=report-cms&parent=reports",
         status: false,
       },
       // {
@@ -334,13 +319,13 @@ const menuOptions = [
       {
         id: "report-fund-request",
         title: "fund request",
-        link: "/dashboard/reports/fund-requests?pageid=reports",
+        link: "/dashboard/reports/fund-requests?pageid=report-fund-request&parent=reports",
         status: true,
       },
       {
         id: "report-fund-transfer",
         title: "fund transfer",
-        link: "/dashboard/reports/fund-transfers?pageid=reports",
+        link: "/dashboard/reports/fund-transfers?pageid=report-fund-transfer&parent=reports",
         status: true,
       },
       // {
@@ -369,31 +354,31 @@ const menuOptions = [
       {
         id: "transaction-ledger",
         title: "transaction ledger",
-        link: "/dashboard/reports/transactions?pageid=reports",
+        link: "/dashboard/reports/transactions?pageid=transaction-ledger&parent=reports",
         status: true,
       },
       {
         id: "daily-sales",
         title: "daily sales",
-        link: "/dashboard/reports/transactions/daily?pageid=reports",
+        link: "/dashboard/reports/transactions/daily?pageid=daily-sales&parent=reports",
         status: true,
       },
       {
         id: "live-sales",
         title: "live sales",
-        link: "/dashboard/reports/transactions/live?pageid=reports",
+        link: "/dashboard/reports/transactions/live?pageid=live-sales&parent=reports",
         status: true,
       },
       {
         id: "user-ledger",
         title: "user ledger",
-        link: "/dashboard/reports/transactions/user-ledger?pageid=reports",
+        link: "/dashboard/reports/transactions/user-ledger?pageid=user-ledger&parent=reports",
         status: true,
       },
       {
         id: "login-reports",
         title: "login report",
-        link: "/dashboard/reports/logins?pageid=reports",
+        link: "/dashboard/reports/logins?pageid=login-reports&parent=reports",
         status: true,
       },
     ],
@@ -402,7 +387,7 @@ const menuOptions = [
     type: "link",
     id: "support-tickets-view",
     name: "support tickets",
-    link: "/dashboard/support-tickets?pageid=support",
+    link: "/dashboard/support-tickets?pageid=support-tickets-view",
     icon: <IoMdHelpBuoy />,
   },
 ];
@@ -485,9 +470,9 @@ const Layout = (props) => {
         setWallet(res.data[0].wallet);
       })
       .catch((err) => {
-        if(err?.response?.status == 401){
-          Cookies.remove("verified")
-          window.location.reload()
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
         }
         setWallet("0");
       });
@@ -631,17 +616,14 @@ const Layout = (props) => {
 
                 if (item.type == "accordion")
                   return (
-                    <Accordion w={"full"} mb={2} allowToggle>
+                    <Accordion
+                      w={"full"}
+                      mb={2}
+                      defaultIndex={Router.asPath.includes(`parent=${item.id}`) ? [0] : null}
+                      allowToggle
+                    >
                       <AccordionItem border={"none"}>
-                        <AccordionButton
-                          id={item.id}
-                          bg={
-                            Router.asPath.includes(`pageid=${item.id}`)
-                              ? "twitter.600"
-                              : "none"
-                          }
-                          rounded={8}
-                        >
+                        <AccordionButton id={item.id} rounded={8}>
                           <HStack
                             spacing={3}
                             textAlign="left"
@@ -659,7 +641,7 @@ const Layout = (props) => {
                           </HStack>
                           <AccordionIcon />
                         </AccordionButton>
-                        <AccordionPanel pb={4}>
+                        <AccordionPanel pb={4} gap={0}>
                           {item.children.map((child, key) => {
                             // if (child.status && myPermissions.includes(child.id)) {
                             if (child.status) {
@@ -672,7 +654,9 @@ const Layout = (props) => {
                                   <Text
                                     fontSize={"md"}
                                     textTransform={"capitalize"}
-                                    p={2}
+                                    p={2} rounded={8}
+                                    _hover={{bgColor: 'blackAlpha.200'}}
+                                    bgColor={Router.asPath.includes(`pageid=${child.id}`) ? 'twitter.500' : 'transparent'}
                                   >
                                     {child.title}
                                   </Text>
