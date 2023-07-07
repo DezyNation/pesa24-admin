@@ -113,6 +113,12 @@ const Index = () => {
       width: 150,
     },
     {
+      headerName: "Narration",
+      field: "metadata",
+      cellRenderer: "narrationCellRenderer",
+      width: 200
+    },
+    {
       headerName: "Additional Info",
       field: "metadata",
       hide: true,
@@ -273,6 +279,17 @@ const Index = () => {
     );
   };
 
+  const narrationCellRenderer = (params) => {
+    const receipt = JSON.parse(params?.data?.metadata || {});
+    return (
+      <>
+          <Text fontWeight={"bold"}>
+            {receipt?.remarks}
+          </Text>
+      </>
+    );
+  };
+
   return (
     <>
       <DashboardWrapper pageTitle={"Transaction Ledger"}>
@@ -383,6 +400,7 @@ const Index = () => {
                 creditCellRenderer: creditCellRenderer,
                 debitCellRenderer: debitCellRenderer,
                 statusCellRenderer: statusCellRenderer,
+                narrationCellRenderer: narrationCellRenderer,
               }}
               onFilterChanged={(params) => {
                 setPrintableRow(
