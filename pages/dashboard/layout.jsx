@@ -733,7 +733,7 @@ const Layout = (props) => {
               justifyContent={["space-between"]}
               className="hide-print"
             >
-              <Stack direction={["column", "row"]} spacing={2}>
+              {/* <Stack direction={["column", "row"]} spacing={2}>
                 <Text fontSize={"xs"}>AePS</Text>
                 <Switch
                   id={"aepsStatus"}
@@ -772,7 +772,7 @@ const Layout = (props) => {
                     updateGlobal({ recharge_status: e.target.checked })
                   }
                 />
-              </Stack>
+              </Stack> */}
               <Show above="md">
                 <HStack
                   p={2}
