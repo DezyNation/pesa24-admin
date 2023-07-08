@@ -63,9 +63,9 @@ const FundRequests = () => {
       cellRenderer: "userCellRenderer",
     },
     {
-      headerName: "Phone",
-      field: "phone_number",
-      width: 120,
+      headerName: "Admin",
+      field: "admin_name",
+      cellRenderer: "adminCellRenderer",
     },
     {
       headerName: "Amount",
@@ -268,7 +268,7 @@ const FundRequests = () => {
     return (
       <>
         <Text>
-          {params.data.name} ({params.data.user_id})
+          {params.data.name} ({params.data.user_id}) - {params.data.phone_number}
         </Text>
       </>
     );
@@ -278,7 +278,7 @@ const FundRequests = () => {
     return (
       <>
         <Text>
-          {params.data.admin_name} ({params.data.admin_id})
+          {params.data.admin_name} ({params.data.admin_id}) - {params.data.admin_phone}
         </Text>
       </>
     );
@@ -518,17 +518,12 @@ const FundRequests = () => {
                   return (
                     <tr key={key}>
                       <td>{key + 1}</td>
-                      <td>{data.status}</td>
                       <td>{data.created_at}</td>
-                      <td>{data.transaction_id}</td>
+                      <td>{data.id}</td>
+                      <td>{data.name} ({data.user_id}) - {data.phone_number}</td>
+                      <td>{data.admin_name} ({data.admin_id}) - {data.admin_number}</td>
                       <td>{data.amount}</td>
-                      <td>{data.bank_name}</td>
                       <td>{data.transaction_type}</td>
-                      <td>{data.name}</td>
-                      <td>{data.beneficiary_id}</td>
-                      <td>{data.phone_number}</td>
-                      <td>{data.updated_at}</td>
-                      <td>{data.user_id}</td>
                       <td>{data.remarks}</td>
                     </tr>
                   );

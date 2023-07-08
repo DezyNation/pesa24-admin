@@ -199,13 +199,12 @@ const menuOptions = [
         link: "/dashboard/account/add-money?pageid=add-admin-funds&parent=account",
         status: true,
       },
-      {
-        // id: "settlement-requests-view",
-        id: "settlement-account",
-        title: "settlement requests",
-        link: "/dashboard/account/settlements?pageid=settlement-account&parent=account",
-        status: true,
-      },
+      // {
+      //   id: "settlement-account",
+      //   title: "settlement requests",
+      //   link: "/dashboard/account/settlements?pageid=settlement-account&parent=account",
+      //   status: true,
+      // },
     ],
   },
   {
@@ -600,7 +599,7 @@ const Layout = (props) => {
                         _hover={{ bg: "rgba(0,0,0,.6)" }}
                         bg={
                           Router.asPath.includes(`pageid=${item.id}`)
-                            ? "twitter.600"
+                            ? "yellow.500"
                             : "none"
                         }
                         rounded={8}
@@ -656,7 +655,7 @@ const Layout = (props) => {
                                     textTransform={"capitalize"}
                                     p={2} rounded={8}
                                     _hover={{bgColor: 'blackAlpha.200'}}
-                                    bgColor={Router.asPath.includes(`pageid=${child.id}`) ? 'twitter.500' : 'transparent'}
+                                    bgColor={Router.asPath.includes(`pageid=${child.id}`) ? 'yellow.500' : 'transparent'}
                                   >
                                     {child.title}
                                   </Text>
@@ -785,7 +784,7 @@ const Layout = (props) => {
               </Show>
             </HStack>
           </Stack>
-          <Box p={4} minH={"full"} bg={"azure"} w={"full"}>
+          <Box p={4} w={"full"}>
             {props.children}
           </Box>
         </Box>

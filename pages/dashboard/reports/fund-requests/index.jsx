@@ -103,10 +103,9 @@ const FundRequests = () => {
       cellRenderer: "userCellRenderer",
     },
     // {
-    //   headerName: "User Phone",
-    //   field: "phone_number",
+    //   headerName: "Updated By",
+    //   field: "admin_name",
     //   width: 120,
-    //   hide: true,
     // },
     {
       headerName: "Updated By",
@@ -351,8 +350,7 @@ const FundRequests = () => {
     return (
       <>
         <Text>
-          ({params.data.name}) {params.data.user_id} -{" "}
-          {params.data.phone_number}
+          {params.data.name} ({params.data.user_id}) - {params.data.phone_number}
         </Text>
       </>
     );
@@ -579,14 +577,15 @@ const FundRequests = () => {
                   return (
                     <tr key={key}>
                       <td>{key + 1}</td>
+                      <td>{data.id}</td>
                       <td>{data.status}</td>
                       <td>{data.created_at}</td>
                       <td>{data.transaction_id}</td>
                       <td>{data.amount}</td>
                       <td>{data.bank_name}</td>
                       <td>{data.transaction_type}</td>
-                      <td>{data.name}</td>
-                      <td>{data.admin_name}</td>
+                      <td>{data.name} ({data.user_id}) - {data.phone_number}</td>
+                      <td>{data.admin_name} - ({data.admin_id})</td>
                       <td>{data.remarks}</td>
                       <td>{data.admin_remarks}</td>
                       <td>{data.updated_at}</td>

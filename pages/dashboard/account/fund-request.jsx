@@ -369,10 +369,7 @@ const FundRequests = () => {
         </Text>
 
         <Box py={6}>
-          <Text fontWeight={"medium"} pb={4}>
-            Search and manage fund requests
-          </Text>
-          <HStack spacing={4} my={4}>
+          {/* <HStack spacing={4} my={4}>
             <DownloadTableExcel
               filename="FundRequests"
               sheet="sheet1"
@@ -402,7 +399,7 @@ const FundRequests = () => {
             >
               Print
             </Button>
-          </HStack>
+          </HStack> */}
 
           <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
             <Button

@@ -4,6 +4,10 @@
     font-family: 'Poppins', sans-serif;
 }
 
+body{
+    overflow-y: hidden;
+}
+
 td {
     vertical-align: top;
 }
