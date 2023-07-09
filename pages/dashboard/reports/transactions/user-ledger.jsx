@@ -117,6 +117,7 @@ const UserLedger = () => {
       pinned: "right",
       cellRenderer: "receiptCellRenderer",
       width: 80,
+      hide: true,
     },
   ]);
 
@@ -129,6 +130,7 @@ const UserLedger = () => {
     next_page_url: "",
     prev_page_url: "",
   });
+  const [pages, setPages] = useState([]);
 
   const Router = useRouter();
   const { user_id } = Router.query;
@@ -172,6 +174,7 @@ const UserLedger = () => {
           next_page_url: res.data.next_page_url,
           prev_page_url: res.data.prev_page_url,
         });
+        setPages(res.data?.links);
         setRowData(res.data.data);
         setPrintableRow(res.data.data);
       })
@@ -182,7 +185,7 @@ const UserLedger = () => {
 
   useEffect(() => {
     if (Router.isReady && user_id) {
-      BackendAxios.get(`/api/admin/transactions-user/${user_id}?page=1`)
+      BackendAxios.get(`/api/admin/transactions-user/${user_id}?from=${from}&to=${to}&page=1`)
         .then((res) => {
           setPagination({
             current_page: res.data.current_page,
@@ -192,6 +195,7 @@ const UserLedger = () => {
             next_page_url: res.data.next_page_url,
             prev_page_url: res.data.prev_page_url,
           });
+          setPages(res.data?.links);
           setRowData(res.data.data);
           setPrintableRow(res.data.data);
           setUserId(user_id);
@@ -348,6 +352,7 @@ const UserLedger = () => {
               Export PDF
             </Button>
           </HStack>
+
           <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
             <Button
               colorScheme={"twitter"}
@@ -358,32 +363,24 @@ const UserLedger = () => {
             >
               <BsChevronDoubleLeft />
             </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchLedger(pagination.prev_page_url)}
-            >
-              <BsChevronLeft />
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"solid"}
-            >
-              {pagination.current_page}
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchLedger(pagination.next_page_url)}
-            >
-              <BsChevronRight />
-            </Button>
+            {pages.map((item, key) => (
+              <Button
+                key={key}
+                colorScheme={"twitter"}
+                fontSize={12}
+                size={"xs"}
+                variant={item?.active ? "solid" : "outline"}
+                onClick={() => fetchLedger(item?.url)}
+              >
+                {item?.label == "&laquo; Previous" ? (
+                  <BsChevronLeft />
+                ) : item?.label == "Next &raquo;" ? (
+                  <BsChevronRight />
+                ) : (
+                  item?.label
+                )}
+              </Button>
+            ))}
             <Button
               colorScheme={"twitter"}
               fontSize={12}
@@ -424,6 +421,7 @@ const UserLedger = () => {
               }}
             ></AgGridReact>
           </Box>
+
           <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
             <Button
               colorScheme={"twitter"}
@@ -434,32 +432,24 @@ const UserLedger = () => {
             >
               <BsChevronDoubleLeft />
             </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchLedger(pagination.prev_page_url)}
-            >
-              <BsChevronLeft />
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"solid"}
-            >
-              {pagination.current_page}
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchLedger(pagination.next_page_url)}
-            >
-              <BsChevronRight />
-            </Button>
+            {pages.map((item, key) => (
+              <Button
+                key={key}
+                colorScheme={"twitter"}
+                fontSize={12}
+                size={"xs"}
+                variant={item?.active ? "solid" : "outline"}
+                onClick={() => fetchLedger(item?.url)}
+              >
+                {item?.label == "&laquo; Previous" ? (
+                  <BsChevronLeft />
+                ) : item?.label == "Next &raquo;" ? (
+                  <BsChevronRight />
+                ) : (
+                  item?.label
+                )}
+              </Button>
+            ))}
             <Button
               colorScheme={"twitter"}
               fontSize={12}
@@ -478,7 +468,10 @@ const UserLedger = () => {
                   <th>#</th>
                   {columnDefs
                     .filter((column) => {
-                      if (column.field != "receipt" && column.field != "metadata") {
+                      if (
+                        column.field != "receipt" &&
+                        column.field != "metadata"
+                      ) {
                         return column;
                       }
                     })

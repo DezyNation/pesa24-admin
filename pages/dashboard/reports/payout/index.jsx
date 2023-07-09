@@ -160,16 +160,17 @@ const Index = () => {
       width: 80,
     },
   ]);
+  const [pages, setPages] = useState([]);
 
   const Formik = useFormik({
     initialValues: {
       from: "",
       to: "",
-      query: ""
+      query: "",
     },
   });
 
-  function fetchPendingTransactions(){
+  function fetchPendingTransactions() {
     BackendAxios.get(`/api/admin/payouts/processing`)
       .then((res) => {
         setPendingRowData(res.data);
@@ -186,8 +187,15 @@ const Index = () => {
 
   function fetchTransactions(pageLink) {
     BackendAxios.get(
-      pageLink ? pageLink :
-        `/api/admin/payouts?from=${Formik.values.from}&to=${Formik.values.to ? new Date(new Date(Formik.values.to).setHours(23,59,59,999)).toISOString() : new Date().toISOString()}&search=${Formik.values.query}&page=1`
+      pageLink
+        ? pageLink
+        : `/api/admin/payouts?from=${Formik.values.from}&to=${
+            Formik.values.to
+              ? new Date(
+                  new Date(Formik.values.to).setHours(23, 59, 59, 999)
+                ).toISOString()
+              : new Date().toISOString()
+          }&search=${Formik.values.query}&page=1`
     )
       .then((res) => {
         setPagination({
@@ -198,9 +206,10 @@ const Index = () => {
           next_page_url: res.data.next_page_url,
           prev_page_url: res.data.prev_page_url,
         });
+        setPages(res.data?.links);
         setRowData(res.data.data);
         setPrintableRow(res.data.data);
-        fetchPendingTransactions()
+        fetchPendingTransactions();
       })
       .catch((err) => {
         if (err?.response?.status == 401) {
@@ -308,7 +317,11 @@ const Index = () => {
             {params.data.status}
           </Text>
         ) : params.data.status == "processing" ? (
-          <Text color={"orange"} fontWeight={"bold"} textTransform={"uppercase"}>
+          <Text
+            color={"orange"}
+            fontWeight={"bold"}
+            textTransform={"uppercase"}
+          >
             {params.data.status}
           </Text>
         ) : (
@@ -327,10 +340,10 @@ const Index = () => {
       })
         .then(() => {
           Toast({
-            status: 'success',
-            description: `Payout ${params.data.payout_id} updated!`
-          })
-          let pageUrl = `/api/admin/payouts?from=${Formik.values.from}&to=${Formik.values.to}&page=${pagination.current_page}`
+            status: "success",
+            description: `Payout ${params.data.payout_id} updated!`,
+          });
+          let pageUrl = `/api/admin/payouts?from=${Formik.values.from}&to=${Formik.values.to}&page=${pagination.current_page}`;
           fetchTransactions(pageUrl);
         })
         .catch((err) => {
@@ -343,7 +356,8 @@ const Index = () => {
     }
     return (
       <>
-        {params.data?.status == "processing" || params.data?.status == "queued" ? (
+        {params.data?.status == "processing" ||
+        params.data?.status == "queued" ? (
           <Button size={"xs"} colorScheme="twitter" onClick={updateData}>
             UPDATE
           </Button>
@@ -398,11 +412,7 @@ const Index = () => {
           </FormControl>
           <FormControl w={["full", "xs"]}>
             <FormLabel>Ref ID or Acc No.</FormLabel>
-            <Input
-              name="query"
-              onChange={Formik.handleChange}
-              bg={"white"}
-            />
+            <Input name="query" onChange={Formik.handleChange} bg={"white"} />
           </FormControl>
         </Stack>
         <HStack mb={4} justifyContent={"flex-end"}>
@@ -414,46 +424,40 @@ const Index = () => {
         {/* Pending Payouts */}
         <Text pb={4}>Pending Payouts</Text>
         <Box
-            rounded={16}
-            overflow={"hidden"}
-            className="ag-theme-alpine ag-theme-pesa24-blue"
-            w={"full"}
-            h={["sm", "md"]}
-          >
-            <AgGridReact
-              columnDefs={columnDefs}
-              rowData={pendingRowData}
-              defaultColDef={{
-                filter: true,
-                floatingFilter: true,
-                resizable: true,
-                sortable: true,
-              }}
-              components={{
-                receiptCellRenderer: receiptCellRenderer,
-                creditCellRenderer: creditCellRenderer,
-                debitCellRenderer: debitCellRenderer,
-                userCellRenderer: userCellRenderer,
-                statusCellRenderer: statusCellRenderer,
-                actionCellRenderer: actionCellRenderer,
-              }}
-              onFilterChanged={(params) => {
-                setPrintableRow(
-                  params.api.getRenderedNodes().map((item) => {
-                    return item.data;
-                  })
-                );
-              }}
-            ></AgGridReact>
-          </Box>
-
-        <HStack
-          spacing={2}
-          py={4}
-          mt={24}
-          bg={"white"}
-          justifyContent={"center"}
+          rounded={16}
+          overflow={"hidden"}
+          className="ag-theme-alpine ag-theme-pesa24-blue"
+          w={"full"}
+          h={["sm", "md"]}
         >
+          <AgGridReact
+            columnDefs={columnDefs}
+            rowData={pendingRowData}
+            defaultColDef={{
+              filter: true,
+              floatingFilter: true,
+              resizable: true,
+              sortable: true,
+            }}
+            components={{
+              receiptCellRenderer: receiptCellRenderer,
+              creditCellRenderer: creditCellRenderer,
+              debitCellRenderer: debitCellRenderer,
+              userCellRenderer: userCellRenderer,
+              statusCellRenderer: statusCellRenderer,
+              actionCellRenderer: actionCellRenderer,
+            }}
+            onFilterChanged={(params) => {
+              setPrintableRow(
+                params.api.getRenderedNodes().map((item) => {
+                  return item.data;
+                })
+              );
+            }}
+          ></AgGridReact>
+        </Box>
+
+        <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
           <Button
             colorScheme={"twitter"}
             fontSize={12}
@@ -463,32 +467,24 @@ const Index = () => {
           >
             <BsChevronDoubleLeft />
           </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchTransactions(pagination.prev_page_url)}
-          >
-            <BsChevronLeft />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"solid"}
-          >
-            {pagination.current_page}
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchTransactions(pagination.next_page_url)}
-          >
-            <BsChevronRight />
-          </Button>
+          {pages.map((item, key) => (
+            <Button
+              key={key}
+              colorScheme={"twitter"}
+              fontSize={12}
+              size={"xs"}
+              variant={item?.active ? "solid" : "outline"}
+              onClick={() => fetchTransactions(item?.url)}
+            >
+              {item?.label == "&laquo; Previous" ? (
+                <BsChevronLeft />
+              ) : item?.label == "Next &raquo;" ? (
+                <BsChevronRight />
+              ) : (
+                item?.label
+              )}
+            </Button>
+          ))}
           <Button
             colorScheme={"twitter"}
             fontSize={12}
@@ -499,39 +495,39 @@ const Index = () => {
             <BsChevronDoubleRight />
           </Button>
         </HStack>
-          <Box
-            rounded={16}
-            overflow={"hidden"}
-            className="ag-theme-alpine ag-theme-pesa24-blue"
-            w={"full"}
-            h={["sm", "xl"]}
-          >
-            <AgGridReact
-              columnDefs={columnDefs}
-              rowData={rowData}
-              defaultColDef={{
-                filter: true,
-                floatingFilter: true,
-                resizable: true,
-                sortable: true,
-              }}
-              components={{
-                receiptCellRenderer: receiptCellRenderer,
-                creditCellRenderer: creditCellRenderer,
-                debitCellRenderer: debitCellRenderer,
-                userCellRenderer: userCellRenderer,
-                statusCellRenderer: statusCellRenderer,
-                actionCellRenderer: actionCellRenderer,
-              }}
-              onFilterChanged={(params) => {
-                setPrintableRow(
-                  params.api.getRenderedNodes().map((item) => {
-                    return item.data;
-                  })
-                );
-              }}
-            ></AgGridReact>
-          </Box>
+        <Box
+          rounded={16}
+          overflow={"hidden"}
+          className="ag-theme-alpine ag-theme-pesa24-blue"
+          w={"full"}
+          h={["sm", "xl"]}
+        >
+          <AgGridReact
+            columnDefs={columnDefs}
+            rowData={rowData}
+            defaultColDef={{
+              filter: true,
+              floatingFilter: true,
+              resizable: true,
+              sortable: true,
+            }}
+            components={{
+              receiptCellRenderer: receiptCellRenderer,
+              creditCellRenderer: creditCellRenderer,
+              debitCellRenderer: debitCellRenderer,
+              userCellRenderer: userCellRenderer,
+              statusCellRenderer: statusCellRenderer,
+              actionCellRenderer: actionCellRenderer,
+            }}
+            onFilterChanged={(params) => {
+              setPrintableRow(
+                params.api.getRenderedNodes().map((item) => {
+                  return item.data;
+                })
+              );
+            }}
+          ></AgGridReact>
+        </Box>
       </Layout>
 
       {/* Receipt */}

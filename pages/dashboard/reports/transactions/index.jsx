@@ -249,6 +249,7 @@ const Ledger = () => {
             Search
           </Button>
         </HStack>
+
         <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
           <Button
             colorScheme={"twitter"}
@@ -287,6 +288,7 @@ const Ledger = () => {
             <BsChevronDoubleRight />
           </Button>
         </HStack>
+
         <Box
           rounded={16}
           overflow={"hidden"}
@@ -316,6 +318,7 @@ const Ledger = () => {
             }}
           ></AgGridReact>
         </Box>
+        
         <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
           <Button
             colorScheme={"twitter"}
@@ -326,32 +329,24 @@ const Ledger = () => {
           >
             <BsChevronDoubleLeft />
           </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.prev_page_url)}
-          >
-            <BsChevronLeft />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"solid"}
-          >
-            {pagination.current_page}
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.next_page_url)}
-          >
-            <BsChevronRight />
-          </Button>
+          {pages.map((item, key) => (
+            <Button
+              key={key}
+              colorScheme={"twitter"}
+              fontSize={12}
+              size={"xs"}
+              variant={item?.active ? "solid" : "outline"}
+              onClick={() => fetchLedger(item?.url)}
+            >
+              {item?.label == "&laquo; Previous" ? (
+                <BsChevronLeft />
+              ) : item?.label == "Next &raquo;" ? (
+                <BsChevronRight />
+              ) : (
+                item?.label
+              )}
+            </Button>
+          ))}
           <Button
             colorScheme={"twitter"}
             fontSize={12}

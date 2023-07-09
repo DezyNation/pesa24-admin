@@ -146,6 +146,7 @@ const FundRequests = () => {
     next_page_url: "",
     prev_page_url: "",
   });
+  const [pages, setPages] = useState([]);
 
   const Formik = useFormik({
     initialValues: {
@@ -169,6 +170,7 @@ const FundRequests = () => {
           next_page_url: res.data.next_page_url,
           prev_page_url: res.data.prev_page_url,
         });
+        setPages(res.data?.links);
         setRowData(res.data.data);
         setPrintableRow(res.data.data);
       })
@@ -350,7 +352,8 @@ const FundRequests = () => {
     return (
       <>
         <Text>
-          {params.data.name} ({params.data.user_id}) - {params.data.phone_number}
+          {params.data.name} ({params.data.user_id}) -{" "}
+          {params.data.phone_number}
         </Text>
       </>
     );
@@ -377,7 +380,6 @@ const FundRequests = () => {
         </Text>
 
         <Box py={6}>
-
           <Stack p={4} spacing={8} w={"full"} direction={["column", "row"]}>
             <FormControl w={["full", "xs"]}>
               <FormLabel>From Date</FormLabel>
@@ -436,7 +438,6 @@ const FundRequests = () => {
               Print
             </Button>
           </HStack>
-
           <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
             <Button
               colorScheme={"twitter"}
@@ -447,32 +448,24 @@ const FundRequests = () => {
             >
               <BsChevronDoubleLeft />
             </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchRequests(pagination.prev_page_url)}
-            >
-              <BsChevronLeft />
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"solid"}
-            >
-              {pagination.current_page}
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchRequests(pagination.next_page_url)}
-            >
-              <BsChevronRight />
-            </Button>
+            {pages.map((item, key) => (
+              <Button
+                key={key}
+                colorScheme={"twitter"}
+                fontSize={12}
+                size={"xs"}
+                variant={item?.active ? "solid" : "outline"}
+                onClick={() => fetchRequests(item?.url)}
+              >
+                {item?.label == "&laquo; Previous" ? (
+                  <BsChevronLeft />
+                ) : item?.label == "Next &raquo;" ? (
+                  <BsChevronRight />
+                ) : (
+                  item?.label
+                )}
+              </Button>
+            ))}
             <Button
               colorScheme={"twitter"}
               fontSize={12}
@@ -523,32 +516,24 @@ const FundRequests = () => {
             >
               <BsChevronDoubleLeft />
             </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchRequests(pagination.prev_page_url)}
-            >
-              <BsChevronLeft />
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"solid"}
-            >
-              {pagination.current_page}
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchRequests(pagination.next_page_url)}
-            >
-              <BsChevronRight />
-            </Button>
+            {pages.map((item, key) => (
+              <Button
+                key={key}
+                colorScheme={"twitter"}
+                fontSize={12}
+                size={"xs"}
+                variant={item?.active ? "solid" : "outline"}
+                onClick={() => fetchRequests(item?.url)}
+              >
+                {item?.label == "&laquo; Previous" ? (
+                  <BsChevronLeft />
+                ) : item?.label == "Next &raquo;" ? (
+                  <BsChevronRight />
+                ) : (
+                  item?.label
+                )}
+              </Button>
+            ))}
             <Button
               colorScheme={"twitter"}
               fontSize={12}
@@ -584,8 +569,12 @@ const FundRequests = () => {
                       <td>{data.amount}</td>
                       <td>{data.bank_name}</td>
                       <td>{data.transaction_type}</td>
-                      <td>{data.name} ({data.user_id}) - {data.phone_number}</td>
-                      <td>{data.admin_name} - ({data.admin_id})</td>
+                      <td>
+                        {data.name} ({data.user_id}) - {data.phone_number}
+                      </td>
+                      <td>
+                        {data.admin_name} - ({data.admin_id})
+                      </td>
                       <td>{data.remarks}</td>
                       <td>{data.admin_remarks}</td>
                       <td>{data.updated_at}</td>

@@ -95,6 +95,7 @@ const FundRequests = () => {
     next_page_url: "",
     prev_page_url: "",
   });
+  const [pages, setPages] = useState([]);
 
   const Formik = useFormik({
     initialValues: {
@@ -107,13 +108,7 @@ const FundRequests = () => {
   function fetchRequests(pageLink) {
     BackendAxios.get(
       pageLink ||
-        `/api/admin/fetch-admin-funds?from=${Formik.values.from}&to=${
-          Formik.values.to
-            ? new Date(
-                new Date(Formik.values.to).setHours(23, 59, 59, 999)
-              ).toISOString()
-            : new Date().toISOString()
-        }`
+        `/api/admin/fetch-admin-funds?from=${Formik.values.from}&to=${Formik.values.to}`
     )
       .then((res) => {
         setPagination({
@@ -124,6 +119,7 @@ const FundRequests = () => {
           next_page_url: res.data.next_page_url,
           prev_page_url: res.data.prev_page_url,
         });
+        setPages(res.data?.links);
         setRowData(res.data.data);
         setPrintableRow(res.data.data);
       })
@@ -324,7 +320,7 @@ const FundRequests = () => {
     );
   };
 
-  const tableRef = useRef(null)
+  const tableRef = useRef(null);
 
   return (
     <>
@@ -403,32 +399,24 @@ const FundRequests = () => {
             >
               <BsChevronDoubleLeft />
             </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchRequests(pagination.prev_page_url)}
-            >
-              <BsChevronLeft />
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"solid"}
-            >
-              {pagination.current_page}
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchRequests(pagination.next_page_url)}
-            >
-              <BsChevronRight />
-            </Button>
+            {pages.map((item, key) => (
+              <Button
+                key={key}
+                colorScheme={"twitter"}
+                fontSize={12}
+                size={"xs"}
+                variant={item?.active ? "solid" : "outline"}
+                onClick={() => fetchRequests(item?.url)}
+              >
+                {item?.label == "&laquo; Previous" ? (
+                  <BsChevronLeft />
+                ) : item?.label == "Next &raquo;" ? (
+                  <BsChevronRight />
+                ) : (
+                  item?.label
+                )}
+              </Button>
+            ))}
             <Button
               colorScheme={"twitter"}
               fontSize={12}
@@ -479,32 +467,24 @@ const FundRequests = () => {
             >
               <BsChevronDoubleLeft />
             </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchRequests(pagination.prev_page_url)}
-            >
-              <BsChevronLeft />
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"solid"}
-            >
-              {pagination.current_page}
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchRequests(pagination.next_page_url)}
-            >
-              <BsChevronRight />
-            </Button>
+            {pages.map((item, key) => (
+              <Button
+                key={key}
+                colorScheme={"twitter"}
+                fontSize={12}
+                size={"xs"}
+                variant={item?.active ? "solid" : "outline"}
+                onClick={() => fetchRequests(item?.url)}
+              >
+                {item?.label == "&laquo; Previous" ? (
+                  <BsChevronLeft />
+                ) : item?.label == "Next &raquo;" ? (
+                  <BsChevronRight />
+                ) : (
+                  item?.label
+                )}
+              </Button>
+            ))}
             <Button
               colorScheme={"twitter"}
               fontSize={12}

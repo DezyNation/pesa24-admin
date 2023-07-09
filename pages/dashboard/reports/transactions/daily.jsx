@@ -123,7 +123,7 @@ const Ledger = () => {
   }
 
   function fetchLedger(pageLink) {
-    BackendAxios.post(pageLink || `/api/admin/transactions-period?page=1`, {
+    BackendAxios.post(pageLink || `/api/admin/transactions-period?from=${Formik.values.from}&to=${Formik.values.to}&page=1`, {
       from: Formik.values.from,
       to: Formik.values.to,
     })
@@ -251,52 +251,6 @@ const Ledger = () => {
             Export PDF
           </Button>
         </HStack>
-        <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.first_page_url)}
-          >
-            <BsChevronDoubleLeft />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.prev_page_url)}
-          >
-            <BsChevronLeft />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"solid"}
-          >
-            {pagination.current_page}
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.next_page_url)}
-          >
-            <BsChevronRight />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.last_page_url)}
-          >
-            <BsChevronDoubleRight />
-          </Button>
-        </HStack>
 
         {/* <Box
                     rounded={16} overflow={'hidden'}
@@ -402,53 +356,6 @@ const Ledger = () => {
             </Tbody>
           </Table>
         </TableContainer>
-
-        <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.first_page_url)}
-          >
-            <BsChevronDoubleLeft />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.prev_page_url)}
-          >
-            <BsChevronLeft />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"solid"}
-          >
-            {pagination.current_page}
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.next_page_url)}
-          >
-            <BsChevronRight />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger()}
-          >
-            <BsChevronDoubleRight />
-          </Button>
-        </HStack>
 
         {/* <VisuallyHidden>
                     <table id='printable-table' ref={tableRef}>
