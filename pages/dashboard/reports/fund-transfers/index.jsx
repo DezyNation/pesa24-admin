@@ -33,6 +33,8 @@ import Cookies from "js-cookie";
 import { FormControl } from "@chakra-ui/react";
 import { FormLabel } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
+import { DownloadTableExcel } from "react-export-table-to-excel";
+import { useRef } from "react";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -103,7 +105,16 @@ const FundRequests = () => {
   });
 
   function fetchRequests(pageLink) {
-    BackendAxios.get(pageLink || `/api/admin/fetch-admin-funds?from=${Formik.values.from}&to=${Formik.values.to ? new Date(new Date(Formik.values.to).setHours(23,59,59,999)).toISOString() : new Date().toISOString()}`)
+    BackendAxios.get(
+      pageLink ||
+        `/api/admin/fetch-admin-funds?from=${Formik.values.from}&to=${
+          Formik.values.to
+            ? new Date(
+                new Date(Formik.values.to).setHours(23, 59, 59, 999)
+              ).toISOString()
+            : new Date().toISOString()
+        }`
+    )
       .then((res) => {
         setPagination({
           current_page: res.data.current_page,
@@ -268,7 +279,8 @@ const FundRequests = () => {
     return (
       <>
         <Text>
-          {params.data.name} ({params.data.user_id}) - {params.data.phone_number}
+          {params.data.name} ({params.data.user_id}) -{" "}
+          {params.data.phone_number}
         </Text>
       </>
     );
@@ -278,7 +290,8 @@ const FundRequests = () => {
     return (
       <>
         <Text>
-          {params.data.admin_name} ({params.data.admin_id}) - {params.data.admin_phone}
+          {params.data.admin_name} ({params.data.admin_id}) -{" "}
+          {params.data.admin_phone}
         </Text>
       </>
     );
@@ -311,6 +324,8 @@ const FundRequests = () => {
     );
   };
 
+  const tableRef = useRef(null)
+
   return (
     <>
       <Layout pageTitle={"Fund Transfers"}>
@@ -320,20 +335,20 @@ const FundRequests = () => {
 
         <Box py={6}>
           <HStack spacing={4} my={4}>
-            <Button
-              size={["xs", "sm"]}
-              colorScheme={"twitter"}
-              leftIcon={<FaFileCsv />}
+            <DownloadTableExcel
+              filename="AdminToRetailerFundTransfers"
+              sheet="fundTransfers"
+              currentTableRef={tableRef.current}
             >
-              CSV
-            </Button>
-            <Button
-              size={["xs", "sm"]}
-              colorScheme={"whatsapp"}
-              leftIcon={<SiMicrosoftexcel />}
-            >
-              Excel
-            </Button>
+              <Button
+                size={["xs", "sm"]}
+                colorScheme={"whatsapp"}
+                leftIcon={<SiMicrosoftexcel />}
+              >
+                Excel
+              </Button>
+            </DownloadTableExcel>
+
             <Button
               size={["xs", "sm"]}
               colorScheme={"red"}
@@ -502,7 +517,7 @@ const FundRequests = () => {
           </HStack>
 
           <VisuallyHidden>
-            <table id="printable-table">
+            <table id="printable-table" ref={tableRef}>
               <thead>
                 <tr>
                   <th>#</th>
@@ -520,8 +535,13 @@ const FundRequests = () => {
                       <td>{key + 1}</td>
                       <td>{data.created_at}</td>
                       <td>{data.id}</td>
-                      <td>{data.name} ({data.user_id}) - {data.phone_number}</td>
-                      <td>{data.admin_name} ({data.admin_id}) - {data.admin_number}</td>
+                      <td>
+                        {data.name} ({data.user_id}) - {data.phone_number}
+                      </td>
+                      <td>
+                        {data.admin_name} ({data.admin_id}) -{" "}
+                        {data.admin_number}
+                      </td>
                       <td>{data.amount}</td>
                       <td>{data.transaction_type}</td>
                       <td>{data.remarks}</td>
