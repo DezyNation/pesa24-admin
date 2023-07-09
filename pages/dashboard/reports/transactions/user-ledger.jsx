@@ -478,7 +478,7 @@ const UserLedger = () => {
                   <th>#</th>
                   {columnDefs
                     .filter((column) => {
-                      if (column.headerName != "Description") {
+                      if (column.field != "receipt" && column.field != "metadata") {
                         return column;
                       }
                     })
@@ -494,13 +494,13 @@ const UserLedger = () => {
                       <td>{key + 1}</td>
                       <td>{data.transaction_id}</td>
                       <td>{data.trigered_by}</td>
-                      <td>{data.name}</td>
                       <td>{data.service_type}</td>
                       <td>{data.credit_amount}</td>
                       <td>{data.debit_amount}</td>
                       <td>{data.opening_balance}</td>
                       <td>{data.closing_balance}</td>
                       <td>{data.created_at}</td>
+                      <td>{data.status}</td>
                     </tr>
                   );
                 })}
