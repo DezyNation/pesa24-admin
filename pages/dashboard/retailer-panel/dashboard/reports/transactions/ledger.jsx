@@ -416,7 +416,7 @@ const Index = () => {
                 debitCellRenderer: debitCellRenderer,
                 statusCellRenderer: statusCellRenderer,
                 narrationCellRenderer: narrationCellRenderer,
-                eventCellRenderer: eventCellRenderer
+                // eventCellRenderer: eventCellRenderer
               }}
               onFilterChanged={(params) => {
                 setPrintableRow(
