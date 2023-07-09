@@ -116,7 +116,7 @@ const Ledger = () => {
   function fetchLedger(pageLink) {
     BackendAxios.get(
       pageLink ||
-        `/api/admin/transactions?from=${Formik.values.from}&to=${Formik.values.to ? new Date(new Date(Formik.values.to).setHours(23,59,59,999)).toISOString() : new Date().toISOString()}&search=${Formik.values.query}&page=1`
+        `/api/admin/transactions?from=${Formik.values.from}&to=${Formik.values.to}&search=${Formik.values.query}&page=1`
     )
       .then((res) => {
         setPagination({
