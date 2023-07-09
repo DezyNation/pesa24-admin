@@ -167,6 +167,8 @@ const Index = () => {
       from: "",
       to: "",
       query: "",
+      userQuery: "",
+      userId: "",
     },
   });
 
@@ -186,16 +188,34 @@ const Index = () => {
   }
 
   function fetchTransactions(pageLink) {
+    if (!Formik.values.userQuery) {
+      Formik.setFieldValue("userId", "");
+    }
+    if (Formik.values.userQuery) {
+      BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
+        .then((res) => {
+          Formik.setFieldValue("userId", res.data.data.id);
+        })
+        .catch((err) => {
+          if (err?.response?.status == 401) {
+            Cookies.remove("verified");
+            window.location.reload();
+          }
+          Toast({
+            status: "error",
+            title: "Error while fetching user info",
+            description:
+              err?.response?.data?.message ||
+              err?.response?.data ||
+              err?.message ||
+              "User not found!",
+          });
+        });
+    }
     BackendAxios.get(
       pageLink
         ? pageLink
-        : `/api/admin/payouts?from=${Formik.values.from}&to=${
-            Formik.values.to
-              ? new Date(
-                  new Date(Formik.values.to).setHours(23, 59, 59, 999)
-                ).toISOString()
-              : new Date().toISOString()
-          }&search=${Formik.values.query}&page=1`
+        : `/api/admin/payouts?from=${Formik.values.from}&to=${Formik.values.to}&search=${Formik.values.query}&userId=${Formik.values.userId}&page=1`
     )
       .then((res) => {
         setPagination({
@@ -414,6 +434,10 @@ const Index = () => {
             <FormLabel>Ref ID or Acc No.</FormLabel>
             <Input name="query" onChange={Formik.handleChange} bg={"white"} />
           </FormControl>
+          <FormControl w={["full", "xs"]}>
+            <FormLabel>User ID or Phone</FormLabel>
+            <Input name="userQuery" onChange={Formik.handleChange} bg={"white"} />
+          </FormControl>
         </Stack>
         <HStack mb={4} justifyContent={"flex-end"}>
           <Button onClick={() => fetchTransactions()} colorScheme={"twitter"}>
@@ -456,6 +480,7 @@ const Index = () => {
             }}
           ></AgGridReact>
         </Box>
+        <br /><br /><br />
 
         <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
           <Button

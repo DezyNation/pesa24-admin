@@ -102,13 +102,39 @@ const FundRequests = () => {
       from: "",
       to: "",
       query: "",
+      userQuery: "",
+      userId: "",
     },
   });
 
   function fetchRequests(pageLink) {
+    if (!Formik.values.userQuery) {
+      Formik.setFieldValue("userId", "");
+    }
+    if (Formik.values.userQuery) {
+      BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
+        .then((res) => {
+          Formik.setFieldValue("userId", res.data.data.id);
+        })
+        .catch((err) => {
+          if (err?.response?.status == 401) {
+            Cookies.remove("verified");
+            window.location.reload();
+          }
+          Toast({
+            status: "error",
+            title: "Error while fetching user info",
+            description:
+              err?.response?.data?.message ||
+              err?.response?.data ||
+              err?.message ||
+              "User not found!",
+          });
+        });
+    }
     BackendAxios.get(
       pageLink ||
-        `/api/admin/fetch-admin-funds?from=${Formik.values.from}&to=${Formik.values.to}`
+        `/api/admin/fetch-admin-funds/${Formik.values.userId}?from=${Formik.values.from}&to=${Formik.values.to}`
     )
       .then((res) => {
         setPagination({
@@ -379,6 +405,14 @@ const FundRequests = () => {
                 name="to"
                 onChange={Formik.handleChange}
                 type="date"
+                bg={"white"}
+              />
+            </FormControl>
+            <FormControl w={["full", "xs"]}>
+              <FormLabel>User ID or Phone</FormLabel>
+              <Input
+                name="userQuery"
+                onChange={Formik.handleChange}
                 bg={"white"}
               />
             </FormControl>

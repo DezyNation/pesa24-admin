@@ -35,6 +35,7 @@ import { FormLabel } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
 import { DownloadTableExcel } from "react-export-table-to-excel";
 import { useRef } from "react";
+import { Select } from "@chakra-ui/react";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -60,23 +61,18 @@ const FundRequests = () => {
       width: 80,
     },
     {
-      headerName: "Beneficiary",
-      field: "user_id",
-      cellRenderer: "userCellRenderer",
+      headerName: "Sender",
+      field: "sender_id",
+      cellRenderer: "adminCellRenderer",
     },
     {
-      headerName: "Admin",
-      field: "admin_name",
-      cellRenderer: "adminCellRenderer",
+      headerName: "Beneficiary",
+      field: "reciever_id",
+      cellRenderer: "userCellRenderer",
     },
     {
       headerName: "Amount",
       field: "amount",
-      width: 100,
-    },
-    {
-      headerName: "Type",
-      field: "transaction_type",
       width: 100,
     },
     {
@@ -101,19 +97,40 @@ const FundRequests = () => {
       from: "",
       to: "",
       query: "",
+      userQuery: "",
+      userId: "",
+      userType: "sender",
     },
   });
 
   function fetchRequests(pageLink) {
+    if (!Formik.values.userQuery) {
+      Formik.setFieldValue("userId", "");
+    }
+    if (Formik.values.userQuery) {
+      BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
+        .then((res) => {
+          Formik.setFieldValue("userId", res.data.data.id);
+        })
+        .catch((err) => {
+          if (err?.response?.status == 401) {
+            Cookies.remove("verified");
+            window.location.reload();
+          }
+          Toast({
+            status: "error",
+            title: "Error while fetching user info",
+            description:
+              err?.response?.data?.message ||
+              err?.response?.data ||
+              err?.message ||
+              "User not found!",
+          });
+        });
+    }
     BackendAxios.get(
       pageLink ||
-        `/api/admin/fetch-admin-funds?from=${Formik.values.from}&to=${
-          Formik.values.to
-            ? new Date(
-                new Date(Formik.values.to).setHours(23, 59, 59, 999)
-              ).toISOString()
-            : new Date().toISOString()
-        }`
+        `/api/admin/wallet-transfers/${Formik.values.userId}?from=${Formik.values.from}&to=${Formik.values.to}&userType=${Formik.values.userType}`
     )
       .then((res) => {
         setPagination({
@@ -279,8 +296,8 @@ const FundRequests = () => {
     return (
       <>
         <Text>
-          {params.data.name} ({params.data.user_id}) -{" "}
-          {params.data.phone_number}
+          {params.data.reciever_name} ({params.data.reciever_id}) -{" "}
+          {params.data.reciever_phone}
         </Text>
       </>
     );
@@ -290,8 +307,8 @@ const FundRequests = () => {
     return (
       <>
         <Text>
-          {params.data.admin_name} ({params.data.admin_id}) -{" "}
-          {params.data.admin_phone}
+          {params.data.sender_name} ({params.data.sender_id}) -{" "}
+          {params.data.sender_phone}
         </Text>
       </>
     );
@@ -324,7 +341,7 @@ const FundRequests = () => {
     );
   };
 
-  const tableRef = useRef(null)
+  const tableRef = useRef(null);
 
   return (
     <>
@@ -385,6 +402,21 @@ const FundRequests = () => {
                 type="date"
                 bg={"white"}
               />
+            </FormControl>
+            <FormControl w={["full", "xs"]}>
+              <FormLabel>User ID or Phone</FormLabel>
+              <Input
+                name="userQuery"
+                onChange={Formik.handleChange}
+                bg={"white"}
+              />
+            </FormControl>
+            <FormControl w={["full", "xs"]}>
+              <FormLabel>Search as</FormLabel>
+              <Select name="userType" onChange={Formik.handleChange}>
+                <option value="sender">Sender</option>
+                <option value="reciever">Reciever</option>
+              </Select>
             </FormControl>
           </Stack>
           <HStack mb={4} justifyContent={"flex-end"}>
@@ -543,7 +575,6 @@ const FundRequests = () => {
                         {data.admin_number}
                       </td>
                       <td>{data.amount}</td>
-                      <td>{data.transaction_type}</td>
                       <td>{data.remarks}</td>
                     </tr>
                   );

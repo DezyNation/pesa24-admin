@@ -327,11 +327,12 @@ const menuOptions = [
         link: "/dashboard/reports/fund-transfers?pageid=report-fund-transfer&parent=reports",
         status: true,
       },
-      // {
-      //   title: "wallet transfer",
-      //   link: "/dashboard",
-      //   status: false,
-      // },
+      {
+        id: "wallet-transfers-view",
+        title: "wallet transfer",
+        link: "/dashboard/reports/wallet-transfers?pageid=wallet-transfers-view&parent=reports",
+        status: true,
+      },
       {
         title: "report-lic",
         title: "lic report",
@@ -618,7 +619,9 @@ const Layout = (props) => {
                     <Accordion
                       w={"full"}
                       mb={2}
-                      defaultIndex={Router.asPath.includes(`parent=${item.id}`) ? [0] : null}
+                      defaultIndex={
+                        Router.asPath.includes(`parent=${item.id}`) ? [0] : null
+                      }
                       allowToggle
                     >
                       <AccordionItem border={"none"}>
@@ -653,9 +656,16 @@ const Layout = (props) => {
                                   <Text
                                     fontSize={"md"}
                                     textTransform={"capitalize"}
-                                    p={2} rounded={8}
-                                    _hover={{bgColor: 'blackAlpha.200'}}
-                                    bgColor={Router.asPath.includes(`pageid=${child.id}`) ? 'yellow.500' : 'transparent'}
+                                    p={2}
+                                    rounded={8}
+                                    _hover={{ bgColor: "blackAlpha.200" }}
+                                    bgColor={
+                                      Router.asPath.includes(
+                                        `pageid=${child.id}`
+                                      )
+                                        ? "yellow.500"
+                                        : "transparent"
+                                    }
                                   >
                                     {child.title}
                                   </Text>

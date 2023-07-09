@@ -12,7 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { useFormik } from "formik";
 import { SiMicrosoftexcel } from "react-icons/si";
-import { FaBan, FaFileCsv, FaFilePdf, FaPrint } from "react-icons/fa";
+import { FaFileCsv, FaFilePdf, FaPrint } from "react-icons/fa";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -23,57 +23,51 @@ import {
   BsChevronLeft,
   BsChevronRight,
   BsEye,
-  BsTrash2Fill,
   BsX,
 } from "react-icons/bs";
 import BackendAxios from "@/lib/utils/axios";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import { useDisclosure } from "@chakra-ui/react";
-import { Modal } from "@chakra-ui/react";
-import { ModalOverlay } from "@chakra-ui/react";
-import { ModalContent } from "@chakra-ui/react";
-import { ModalHeader } from "@chakra-ui/react";
-import { ModalBody } from "@chakra-ui/react";
-import { ModalFooter } from "@chakra-ui/react";
-import { Input } from "@chakra-ui/react";
-import { DownloadTableExcel } from "react-export-table-to-excel";
+import { useRouter } from "next/router";
 import Cookies from "js-cookie";
 import { FormControl } from "@chakra-ui/react";
 import { FormLabel } from "@chakra-ui/react";
+import { Input } from "@chakra-ui/react";
+import { DownloadTableExcel } from "react-export-table-to-excel";
+import { useRef } from "react";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
-
   doc.autoTable({ html: "#printable-table" });
   doc.output("dataurlnewwindow");
 };
 
 const FundRequests = () => {
+  const router = useRouter();
   const Toast = useToast({
     position: "top-right",
   });
   const [rowData, setRowData] = useState([]);
+
   const [columnDefs, setColumnDefs] = useState([
     {
-      field: "id",
-      headerName: "Req ID",
-      width: 100,
-    },
-    {
-      field: "status",
-      headerName: "Status",
-      cellRenderer: "statusCellRenderer",
-    },
-    {
-      headerName: "Request Timestamp",
+      headerName: "Datetime",
       field: "created_at",
-      width: 160,
     },
     {
       headerName: "Trnxn ID",
-      field: "transaction_id",
-      width: 160,
+      field: "id",
+      width: 80,
+    },
+    {
+      headerName: "Admin",
+      field: "admin_name",
+      cellRenderer: "adminCellRenderer",
+    },
+    {
+      headerName: "Beneficiary",
+      field: "user_id",
+      cellRenderer: "userCellRenderer",
     },
     {
       headerName: "Amount",
@@ -81,61 +75,16 @@ const FundRequests = () => {
       width: 100,
     },
     {
-      headerName: "Requested Bank",
-      field: "bank_name",
-    },
-    {
-      headerName: "Trnxn Type",
+      headerName: "Type",
       field: "transaction_type",
       width: 100,
-      hide: true,
-    },
-    {
-      headerName: "Receipt",
-      field: "receipt",
-      cellRenderer: "receiptCellRenderer",
-      pinned: "right",
-      width: 80,
-    },
-    {
-      headerName: "User Name",
-      field: "name",
-      cellRenderer: "userCellRenderer",
-    },
-    // {
-    //   headerName: "Updated By",
-    //   field: "admin_name",
-    //   width: 120,
-    // },
-    {
-      headerName: "Updated By",
-      field: "admin_name",
-      cellRenderer: "adminCellRenderer",
     },
     {
       headerName: "Remarks",
       field: "remarks",
-      width: 100,
+      width: 300,
     },
-    {
-      headerName: "Admin Remarks",
-      field: "admin_remarks",
-      editable: true,
-      singleClickEdit: true,
-      cellEditor: "agTextCellEditor",
-      width: 100,
-    },
-    { headerName: "Update Timestamp", field: "updated_at" },
   ]);
-
-  const { onToggle, isOpen } = useDisclosure();
-  const [selectedFundReq, setSelectedFundReq] = useState({
-    id: "",
-    beneficiaryId: "",
-    amount: "",
-    action: "",
-  });
-  const [remarks, setRemarks] = useState("");
 
   const [printableRow, setPrintableRow] = useState(rowData);
   const [pagination, setPagination] = useState({
@@ -153,8 +102,8 @@ const FundRequests = () => {
       from: "",
       to: "",
       query: "",
-      userQuery:"",
-      userId: ""
+      userQuery: "",
+      userId: "",
     },
   });
 
@@ -185,7 +134,7 @@ const FundRequests = () => {
     }
     BackendAxios.get(
       pageLink ||
-        `/api/admin/fetch-fund/all/${Formik.values.userId}?from=${Formik.values.from}&to=${Formik.values.to}`
+        `/api/admin/fetch-admin-funds/${Formik.values.userId}?from=${Formik.values.from}&to=${Formik.values.to}`
     )
       .then((res) => {
         setPagination({
@@ -219,111 +168,95 @@ const FundRequests = () => {
     fetchRequests();
   }, []);
 
-  function updateFundRequest() {
-    console.log(selectedFundReq);
-    console.log(remarks);
-    if (selectedFundReq.action == "approved") {
-      BackendAxios.post(`/api/admin/update-fund-requests`, {
-        id: selectedFundReq.id,
-        beneficiaryId: selectedFundReq.beneficiaryId,
-        status: selectedFundReq.action,
-        approved: 1,
-        amount: selectedFundReq.amount,
-      })
-        .then((res) => {
-          Toast({
-            status: "success",
-            description: "Status Updated",
-          });
-          onToggle();
-          fetchRequests();
-        })
-        .catch((err) => {
-          Toast({
-            status: "error",
-            description:
-              err.response.data.message || err.response.data || err.message,
-          });
-          onToggle();
-        });
-      return;
-    }
-    if (selectedFundReq.action == "declined" && remarks) {
-      BackendAxios.post(`/api/admin/update-fund-requests`, {
-        beneficiaryId: selectedFundReq.beneficiaryId,
-        id: selectedFundReq.id,
-        status: selectedFundReq.action,
-        amount: 0,
-        declined: 1,
-        remarks: remarks,
-      })
-        .then((res) => {
-          onToggle();
-          Toast({
-            status: "success",
-            description: "Status Updated",
-          });
-          fetchRequests();
-        })
-        .catch((err) => {
-          if (err?.response?.status == 401) {
-            Cookies.remove("verified");
-            window.location.reload();
-          }
-          onToggle();
-          console.log(err);
-          Toast({
-            status: "error",
-            description:
-              err.response.data.message || err.response.data || err.message,
-          });
-        });
-      return;
-    }
-    if (selectedFundReq.action == "declined" && !remarks) {
-      Toast({
-        description: "Please add remarks also",
-      });
-      return;
-    }
-    if (selectedFundReq.action == "deleted") {
-      BackendAxios.post("/api/admin/delete-fund", {
-        fundId: selectedFundReq.id,
-      })
-        .then((res) => {
-          onToggle();
-          Toast({
-            status: "success",
-            description: "Request Deleted",
-          });
-          fetchRequests();
-        })
-        .catch((err) => {
-          onToggle();
-          console.log(err);
-          Toast({
-            status: "error",
-            description:
-              err.response.data.message || err.response.data || err.message,
-          });
-        });
-      return;
-    }
-  }
-
   const statusCellRenderer = (params) => {
-    function handleClick() {
-      setSelectedFundReq({
-        id: params.data.id,
-        beneficiaryId: params.data.user_id,
-        amount: params.data.amount,
-      });
-      onToggle();
+    function updateFundRequest(updateTo) {
+      console.log(params);
+      if (updateTo == "approved") {
+        BackendAxios.post(`/api/admin/update-fund-requests`, {
+          id: params.data.id,
+          beneficiaryId: params.data.user_id,
+          status: updateTo,
+          amount: params.data.amount,
+        })
+          .then((res) => {
+            Toast({
+              status: "success",
+              description: "Status Updated",
+            });
+            fetchRequests();
+          })
+          .catch((err) => {
+            Toast({
+              status: "error",
+              description:
+                err.response.data.message || err.response.data || err.message,
+            });
+          });
+      }
+      if (updateTo == "declined" && params.data.admin_remarks) {
+        BackendAxios.post(`/api/admin/update-fund-requests`, {
+          beneficiaryId: params.data.user_id,
+          id: params.data.id,
+          status: updateTo,
+          amount: 0,
+          remarks: params.data.admin_remarks,
+        })
+          .then((res) => {
+            Toast({
+              status: "success",
+              description: "Status Updated",
+            });
+            fetchRequests();
+          })
+          .catch((err) => {
+            console.log(err);
+            Toast({
+              status: "error",
+              description:
+                err.response.data.message || err.response.data || err.message,
+            });
+          });
+      }
+      if (updateTo == "declined" && !params.data.admin_remarks) {
+        Toast({
+          description: "Please add remarks also",
+        });
+      }
+      if (updateTo == "deleted") {
+        BackendAxios.post("/api/admin/delete-fund", {
+          fundId: params.data.id,
+        })
+          .then((res) => {
+            Toast({
+              status: "success",
+              description: "Request Deleted",
+            });
+            fetchRequests();
+          })
+          .catch((err) => {
+            console.log(err);
+            Toast({
+              status: "error",
+              description:
+                err.response.data.message || err.response.data || err.message,
+            });
+          });
+      }
     }
 
     return (
       <>
-        <HStack alignItems={"center"} justifyContent={"center"}>
+        <HStack h={"full"}>
+          {params.data.status == "pending" && (
+            <Button
+              size={"xs"}
+              leftIcon={<BsCheck />}
+              colorScheme="whatsapp"
+              onClick={() => updateFundRequest("approved")}
+            >
+              Approve
+            </Button>
+          )}
           {params.data.status != "pending" && (
             <Button
               size={"xs"}
@@ -339,38 +272,28 @@ const FundRequests = () => {
               {params.data.status}
             </Button>
           )}
-
           {params.data.status == "pending" && (
-            <Button size={"xs"} colorScheme="twitter" onClick={handleClick}>
-              Actions
+            <Button
+              size={"xs"}
+              leftIcon={<BsX />}
+              colorScheme="orange"
+              onClick={() => updateFundRequest("declined")}
+            >
+              Reject
+            </Button>
+          )}
+          {params.data.status == "pending" && (
+            <Button
+              size={"xs"}
+              leftIcon={<BsX />}
+              colorScheme="red"
+              onClick={() => updateFundRequest("deleted")}
+            >
+              Delete
             </Button>
           )}
         </HStack>
       </>
-    );
-  };
-
-  const receiptCellRenderer = (params) => {
-    function showReceipt() {
-      if (!params.data.receipt) {
-        Toast({
-          description: "No Receipt Available",
-        });
-        return;
-      }
-      window.open(`https://janpay.online/${params.data.receipt}`, "_blank");
-    }
-    return (
-      <HStack height={"full"} w={"full"} gap={4}>
-        <Button
-          rounded={"full"}
-          colorScheme="twitter"
-          size={"xs"}
-          onClick={() => showReceipt()}
-        >
-          <BsEye />
-        </Button>
-      </HStack>
     );
   };
 
@@ -388,24 +311,84 @@ const FundRequests = () => {
   const adminCellRenderer = (params) => {
     return (
       <>
-        {params.data?.approved || params.data?.declined ? (
-          <Text>
-            {params.data.admin_name} ({params.data.admin_id})
-          </Text>
-        ) : null}
+        <Text>
+          {params.data.admin_name} ({params.data.admin_id}) -{" "}
+          {params.data.admin_phone}
+        </Text>
       </>
     );
   };
 
-  const tableRef = React.useRef(null);
+  const receiptCellRenderer = (params) => {
+    function showReceipt() {
+      if (!params.data.receipt) {
+        Toast({
+          description: "No Receipt Available",
+        });
+        return;
+      }
+      window.open(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/storage/receipts/${params.data.receipt}`,
+        "_blank"
+      );
+    }
+    return (
+      <HStack height={"full"} w={"full"} gap={4}>
+        <Button
+          rounded={"full"}
+          colorScheme="twitter"
+          size={"xs"}
+          onClick={() => showReceipt()}
+        >
+          <BsEye />
+        </Button>
+      </HStack>
+    );
+  };
+
+  const tableRef = useRef(null);
+
   return (
     <>
-      <Layout pageTitle={"Fund Request"}>
+      <Layout pageTitle={"Fund Transfers"}>
         <Text fontWeight={"semibold"} fontSize={"lg"}>
-          Fund Requests From Your Members
+          Fund Transfers
         </Text>
 
         <Box py={6}>
+          <HStack spacing={4} my={4}>
+            <DownloadTableExcel
+              filename="AdminToRetailerFundTransfers"
+              sheet="fundTransfers"
+              currentTableRef={tableRef.current}
+            >
+              <Button
+                size={["xs", "sm"]}
+                colorScheme={"whatsapp"}
+                leftIcon={<SiMicrosoftexcel />}
+              >
+                Excel
+              </Button>
+            </DownloadTableExcel>
+
+            <Button
+              size={["xs", "sm"]}
+              colorScheme={"red"}
+              leftIcon={<FaFilePdf />}
+              onClick={ExportPDF}
+            >
+              PDF
+            </Button>
+            <Button
+              size={["xs", "sm"]}
+              colorScheme={"facebook"}
+              leftIcon={<FaPrint />}
+              onClick={ExportPDF}
+            >
+              Print
+            </Button>
+          </HStack>
+          <br />
           <Stack p={4} spacing={8} w={"full"} direction={["column", "row"]}>
             <FormControl w={["full", "xs"]}>
               <FormLabel>From Date</FormLabel>
@@ -440,38 +423,6 @@ const FundRequests = () => {
             </Button>
           </HStack>
 
-          <HStack spacing={4} my={4}>
-            <DownloadTableExcel
-              filename="FundRequests"
-              sheet="sheet1"
-              currentTableRef={tableRef.current}
-            >
-              <Button
-                size={["xs", "sm"]}
-                colorScheme={"whatsapp"}
-                leftIcon={<SiMicrosoftexcel />}
-              >
-                Excel
-              </Button>
-            </DownloadTableExcel>
-
-            <Button
-              size={["xs", "sm"]}
-              colorScheme={"red"}
-              leftIcon={<FaFilePdf />}
-              onClick={ExportPDF}
-            >
-              PDF
-            </Button>
-            <Button
-              size={["xs", "sm"]}
-              colorScheme={"facebook"}
-              leftIcon={<FaPrint />}
-              onClick={ExportPDF}
-            >
-              Print
-            </Button>
-          </HStack>
           <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
             <Button
               colorScheme={"twitter"}
@@ -535,8 +486,8 @@ const FundRequests = () => {
               components={{
                 statusCellRenderer: statusCellRenderer,
                 userCellRenderer: userCellRenderer,
-                receiptCellRenderer: receiptCellRenderer,
                 adminCellRenderer: adminCellRenderer,
+                receiptCellRenderer: receiptCellRenderer,
               }}
             ></AgGridReact>
           </Box>
@@ -596,22 +547,18 @@ const FundRequests = () => {
                   return (
                     <tr key={key}>
                       <td>{key + 1}</td>
-                      <td>{data.id}</td>
-                      <td>{data.status}</td>
                       <td>{data.created_at}</td>
-                      <td>{data.transaction_id}</td>
-                      <td>{data.amount}</td>
-                      <td>{data.bank_name}</td>
-                      <td>{data.transaction_type}</td>
+                      <td>{data.id}</td>
                       <td>
                         {data.name} ({data.user_id}) - {data.phone_number}
                       </td>
                       <td>
-                        {data.admin_name} - ({data.admin_id})
+                        {data.admin_name} ({data.admin_id}) -{" "}
+                        {data.admin_number}
                       </td>
+                      <td>{data.amount}</td>
+                      <td>{data.transaction_type}</td>
                       <td>{data.remarks}</td>
-                      <td>{data.admin_remarks}</td>
-                      <td>{data.updated_at}</td>
                     </tr>
                   );
                 })}
@@ -620,62 +567,6 @@ const FundRequests = () => {
           </VisuallyHidden>
         </Box>
       </Layout>
-
-      <Modal isOpen={isOpen} onClose={onToggle} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Update Fund Request</ModalHeader>
-          <ModalBody>
-            <HStack w={"full"} gap={4} py={4}>
-              <Button
-                colorScheme="whatsapp"
-                leftIcon={<BsCheck />}
-                variant={
-                  selectedFundReq.action == "approved" ? "solid" : "outline"
-                }
-                onClick={() =>
-                  setSelectedFundReq({ ...selectedFundReq, action: "approved" })
-                }
-              >
-                Approve
-              </Button>
-              <Button
-                colorScheme="orange"
-                leftIcon={<FaBan />}
-                variant={
-                  selectedFundReq.action == "declined" ? "solid" : "outline"
-                }
-                onClick={() =>
-                  setSelectedFundReq({ ...selectedFundReq, action: "declined" })
-                }
-              >
-                Decline
-              </Button>
-              <Button
-                colorScheme="orange"
-                leftIcon={<BsX />}
-                variant={
-                  selectedFundReq.action == "delete" ? "solid" : "outline"
-                }
-                onClick={() =>
-                  setSelectedFundReq({ ...selectedFundReq, action: "delete" })
-                }
-              >
-                Delete
-              </Button>
-            </HStack>
-            <Text>Remarks</Text>
-            <Input onChange={(e) => setRemarks(e.target.value)} />
-          </ModalBody>
-          <ModalFooter>
-            <HStack justifyContent={"flex-end"}>
-              <Button colorScheme="twitter" onClick={updateFundRequest}>
-                Confirm
-              </Button>
-            </HStack>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
     </>
   );
 };

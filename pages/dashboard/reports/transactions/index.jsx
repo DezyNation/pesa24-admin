@@ -21,6 +21,7 @@ import { FormControl } from "@chakra-ui/react";
 import { FormLabel } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
 import Cookies from "js-cookie";
+import { useToast } from "@chakra-ui/react";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -30,6 +31,7 @@ const ExportPDF = () => {
 };
 
 const Ledger = () => {
+  const Toast = useToast({ position: "top-right" });
   const [rowData, setRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([
     {
@@ -111,13 +113,39 @@ const Ledger = () => {
       from: "",
       to: "",
       query: "",
+      userQuery: "",
+      userId: "",
     },
   });
 
-  function fetchLedger(pageLink) {
+  async function fetchLedger(pageLink) {
+    if (!Formik.values.userQuery) {
+      Formik.setFieldValue("userId", "");
+    }
+    if (Formik.values.userQuery) {
+      BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
+        .then((res) => {
+          Formik.setFieldValue("userId", res.data.data.id);
+        })
+        .catch((err) => {
+          if (err?.response?.status == 401) {
+            Cookies.remove("verified");
+            window.location.reload();
+          }
+          Toast({
+            status: "error",
+            title: "Error while fetching user info",
+            description:
+              err?.response?.data?.message ||
+              err?.response?.data ||
+              err?.message ||
+              "User not found!",
+          });
+        });
+    }
     BackendAxios.get(
       pageLink ||
-        `/api/admin/transactions?from=${Formik.values.from}&to=${Formik.values.to}&search=${Formik.values.query}&page=1`
+        `/api/admin/transactions/${Formik.values.userId}?from=${Formik.values.from}&to=${Formik.values.to}&search=${Formik.values.query}&page=1`
     )
       .then((res) => {
         setPagination({
@@ -241,7 +269,21 @@ const Ledger = () => {
           </FormControl>
           <FormControl w={["full", "xs"]}>
             <FormLabel>Trnxn ID or Acc No.</FormLabel>
-            <Input name="query" onChange={Formik.handleChange} bg={"white"} />
+            <Input
+              placeholder="Type here"
+              name="query"
+              onChange={Formik.handleChange}
+              bg={"white"}
+            />
+          </FormControl>
+          <FormControl w={["full", "xs"]}>
+            <FormLabel>User ID or Phone</FormLabel>
+            <Input
+              placeholder="User ID or Phone"
+              name="userQuery"
+              onChange={Formik.handleChange}
+              bg={"white"}
+            />
           </FormControl>
         </Stack>
         <HStack mb={4} justifyContent={"flex-end"}>
@@ -318,7 +360,7 @@ const Ledger = () => {
             }}
           ></AgGridReact>
         </Box>
-        
+
         <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
           <Button
             colorScheme={"twitter"}
