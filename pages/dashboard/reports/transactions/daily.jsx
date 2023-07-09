@@ -111,7 +111,7 @@ const Ledger = () => {
   }
 
   function fetchSum(){
-    BackendAxios.get(`/api/admin/overview?from=${Formik.values.from}&to=${Formik.values.to ? new Date(new Date(Formik.values.to).setHours(23,59,59,999)).toISOString() : new Date().toISOString()}`).then(res => {
+    BackendAxios.get(`/api/admin/overview?from=${Formik.values.from}&to=${Formik.values.to}`).then(res => {
       setOverviewData(res.data)
     }).catch(err => {
       if (err?.response?.status == 401) {
