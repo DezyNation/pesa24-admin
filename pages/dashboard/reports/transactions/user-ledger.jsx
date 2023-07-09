@@ -494,6 +494,7 @@ const UserLedger = () => {
                       <td>{key + 1}</td>
                       <td>{data.transaction_id}</td>
                       <td>{data.trigered_by}</td>
+                      <td>{data.description}</td>
                       <td>{data.service_type}</td>
                       <td>{data.credit_amount}</td>
                       <td>{data.debit_amount}</td>
