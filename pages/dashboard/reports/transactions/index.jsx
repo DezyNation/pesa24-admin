@@ -58,10 +58,10 @@ const Ledger = () => {
       width: 120,
     },
     {
-        headerName: "Narration",
-        field: "metadata",
-        width: 200,
-        cellRenderer: "narrationCellRenderer"
+      headerName: "Narration",
+      field: "metadata",
+      width: 200,
+      cellRenderer: "narrationCellRenderer",
     },
     {
       headerName: "Credit",
@@ -96,6 +96,7 @@ const Ledger = () => {
       width: 150,
     },
   ]);
+  const [pages, setPages] = useState([]);
   const [printableRow, setPrintableRow] = useState(rowData);
   const [pagination, setPagination] = useState({
     current_page: "1",
@@ -127,6 +128,7 @@ const Ledger = () => {
           next_page_url: res.data.next_page_url,
           prev_page_url: res.data.prev_page_url,
         });
+        setPages(res.data.links);
         setRowData(res.data.data);
         setPrintableRow(res.data.data);
       })
@@ -257,32 +259,24 @@ const Ledger = () => {
           >
             <BsChevronDoubleLeft />
           </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.prev_page_url)}
-          >
-            <BsChevronLeft />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"solid"}
-          >
-            {pagination.current_page}
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.next_page_url)}
-          >
-            <BsChevronRight />
-          </Button>
+          {pages.map((item, key) => (
+            <Button
+              key={key}
+              colorScheme={"twitter"}
+              fontSize={12}
+              size={"xs"}
+              variant={item?.active ? "solid" : "outline"}
+              onClick={() => fetchLedger(item?.url)}
+            >
+              {item?.label == "&laquo; Previous" ? (
+                <BsChevronLeft />
+              ) : item?.label == "Next &raquo;" ? (
+                <BsChevronRight />
+              ) : (
+                item?.label
+              )}
+            </Button>
+          ))}
           <Button
             colorScheme={"twitter"}
             fontSize={12}

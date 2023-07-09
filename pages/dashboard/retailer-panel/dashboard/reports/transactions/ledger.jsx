@@ -92,6 +92,12 @@ const Index = () => {
       width: 150,
     },
     {
+      headerName: "Event",
+      field: "metadata",
+      cellRenderer: 'eventCellRenderer',
+      width: 100,
+    },
+    {
       headerName: "Trnxn Type",
       field: "service_type",
       width: 100,
@@ -290,6 +296,15 @@ const Index = () => {
     );
   };
 
+  const eventCellRenderer = (params) => {
+    const receipt = JSON.parse(params?.data?.metadata || {});
+    return (
+      <>
+        <Text fontWeight={"bold"} textTransform={'uppercase'}>{receipt?.event}</Text>
+      </>
+    );
+  };
+
   return (
     <>
       <DashboardWrapper pageTitle={"Transaction Ledger"}>
@@ -401,6 +416,7 @@ const Index = () => {
                 debitCellRenderer: debitCellRenderer,
                 statusCellRenderer: statusCellRenderer,
                 narrationCellRenderer: narrationCellRenderer,
+                eventCellRenderer: eventCellRenderer
               }}
               onFilterChanged={(params) => {
                 setPrintableRow(
