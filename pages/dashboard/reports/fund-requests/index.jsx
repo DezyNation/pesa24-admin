@@ -215,7 +215,7 @@ const FundRequests = () => {
         });
         return
     }
-    await BackendAxios.get(`/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${Formik.values.userId}&pageSize=`).then(response => {
+    BackendAxios.get(`/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${Formik.values.userId}&pageSize=`).then(response => {
       setPrintableRow(response.data);
       BackendAxios.get(
         pageLink ||

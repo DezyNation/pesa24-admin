@@ -147,7 +147,7 @@ const FundRequests = () => {
   });
 
   function fetchRequests(pageLink) {
-    BackendAxios.get(pageLink || "/api/admin/fetch-fund/pending")
+    BackendAxios.get(pageLink || "/api/admin/fetch-fund/pending?pageSize=200")
       .then((res) => {
         setPagination({
           current_page: res.data.current_page,
