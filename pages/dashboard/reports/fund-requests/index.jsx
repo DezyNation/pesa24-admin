@@ -167,9 +167,12 @@ const FundRequests = () => {
         .then((result) => {
           BackendAxios.get(
             pageLink ||
-              `/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${result.data.data.id}`
+              `/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${result.data.data.id}&pageSize=200`
           )
-            .then((res) => {
+            .then(async (res) => {
+              await BackendAxios.get(`/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${result.data.data.id}&pageSize=`).then(response => {
+                setPrintableRow(response.data);
+              })
               setPagination({
                 current_page: res.data.current_page,
                 total_pages: parseInt(res.data.last_page),
@@ -180,7 +183,6 @@ const FundRequests = () => {
               });
               setPages(res.data?.links);
               setRowData(res.data.data);
-              setPrintableRow(res.data.data);
             })
             .catch((err) => {
               if (err?.response?.status == 401) {
@@ -213,36 +215,44 @@ const FundRequests = () => {
         });
         return
     }
-    BackendAxios.get(
-      pageLink ||
-        `/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${Formik.values.userId}`
-    )
-      .then((res) => {
-        setPagination({
-          current_page: res.data.current_page,
-          total_pages: parseInt(res.data.last_page),
-          first_page_url: res.data.first_page_url,
-          last_page_url: res.data.last_page_url,
-          next_page_url: res.data.next_page_url,
-          prev_page_url: res.data.prev_page_url,
+    await BackendAxios.get(`/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${Formik.values.userId}&pageSize=`).then(response => {
+      setPrintableRow(response.data);
+      BackendAxios.get(
+        pageLink ||
+          `/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${Formik.values.userId}&pageSize=200`
+      )
+        .then((res) => {
+          setPagination({
+            current_page: res.data.current_page,
+            total_pages: parseInt(res.data.last_page),
+            first_page_url: res.data.first_page_url,
+            last_page_url: res.data.last_page_url,
+            next_page_url: res.data.next_page_url,
+            prev_page_url: res.data.prev_page_url,
+          });
+          setPages(res.data?.links);
+          setRowData(res.data.data);
+        })
+        .catch((err) => {
+          if (err?.response?.status == 401) {
+            Cookies.remove("verified");
+            window.location.reload();
+          }
+          console.log(err);
+          Toast({
+            status: "error",
+            title: "Error Occured",
+            description:
+              err.response.data.message || err.response.data || err.message,
+          });
         });
-        setPages(res.data?.links);
-        setRowData(res.data.data);
-        setPrintableRow(res.data.data);
-      })
-      .catch((err) => {
-        if (err?.response?.status == 401) {
-          Cookies.remove("verified");
-          window.location.reload();
-        }
-        console.log(err);
-        Toast({
-          status: "error",
-          title: "Error Occured",
-          description:
-            err.response.data.message || err.response.data || err.message,
-        });
-      });
+    }).catch(err =>{
+      if (err?.response?.status == 401) {
+        Cookies.remove("verified");
+        window.location.reload();
+      }
+      console.log(err);
+    })
   }
 
   useEffect(() => {
