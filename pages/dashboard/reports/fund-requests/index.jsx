@@ -169,8 +169,8 @@ const FundRequests = () => {
             pageLink ||
               `/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${result.data.data.id}&pageSize=200`
           )
-            .then(async (res) => {
-              await BackendAxios.get(`/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${result.data.data.id}&pageSize=`).then(response => {
+            .then((res) => {
+              BackendAxios.get(`/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${result.data.data.id}&pageSize=`).then(response => {
                 setPrintableRow(response.data);
               })
               setPagination({
@@ -215,9 +215,9 @@ const FundRequests = () => {
         });
         return
     }
-    BackendAxios.get(`/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${Formik.values.userId}&pageSize=`).then(response => {
+    await BackendAxios.get(`/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${Formik.values.userId}&pageSize=`).then(async response => {
       setPrintableRow(response.data);
-      BackendAxios.get(
+      await BackendAxios.get(
         pageLink ||
           `/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${Formik.values.userId}&pageSize=200`
       )
