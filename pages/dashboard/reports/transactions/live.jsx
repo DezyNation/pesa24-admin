@@ -89,7 +89,7 @@ const Ledger = () => {
     function fetchLedger(pageLink) {
         BackendAxios.post(pageLink || `/api/admin/transactions-period?page=1`, {
             from: Formik.values.from,
-            to: Formik.values.to
+            to: Formik.values.to+'T'+'23:59'
         }).then((res) => {
             setPagination({
                 current_page: res.data.current_page,

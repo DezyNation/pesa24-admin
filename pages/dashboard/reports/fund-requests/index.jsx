@@ -41,6 +41,7 @@ import { DownloadTableExcel } from "react-export-table-to-excel";
 import Cookies from "js-cookie";
 import { FormControl } from "@chakra-ui/react";
 import { FormLabel } from "@chakra-ui/react";
+import { Select } from "@chakra-ui/react";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -153,8 +154,9 @@ const FundRequests = () => {
       from: "",
       to: "",
       query: "",
-      userQuery:"",
-      userId: ""
+      userQuery: "",
+      userId: "",
+      status: "",
     },
   });
 
@@ -167,12 +169,26 @@ const FundRequests = () => {
         .then((result) => {
           BackendAxios.get(
             pageLink ||
-              `/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${result.data.data.id}&pageSize=200`
+              `/api/admin/fetch-fund/all?from=${
+                Formik.values.from + (Formik.values.from && ("T" + "00:00"))
+              }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${
+                result.data.data.id
+              }&status=${
+                Formik.values.status != "all" ? Formik.values.status : ""
+              }&pageSize=200`
           )
             .then((res) => {
-              BackendAxios.get(`/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${result.data.data.id}&pageSize=`).then(response => {
+              BackendAxios.get(
+                `/api/admin/fetch-fund/all?from=${
+                  Formik.values.from + (Formik.values.from && ("T" + "00:00"))
+                }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${
+                  result.data.data.id
+                }&status=${
+                  Formik.values.status != "all" ? Formik.values.status : ""
+                }&pageSize=`
+              ).then((response) => {
                 setPrintableRow(response.data);
-              })
+              });
               setPagination({
                 current_page: res.data.current_page,
                 total_pages: parseInt(res.data.last_page),
@@ -213,46 +229,62 @@ const FundRequests = () => {
               "User not found!",
           });
         });
-        return
+      return;
     }
-    await BackendAxios.get(`/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${Formik.values.userId}&pageSize=`).then(async response => {
-      setPrintableRow(response.data);
-      await BackendAxios.get(
-        pageLink ||
-          `/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${Formik.values.userId}&pageSize=200`
-      )
-        .then((res) => {
-          setPagination({
-            current_page: res.data.current_page,
-            total_pages: parseInt(res.data.last_page),
-            first_page_url: res.data.first_page_url,
-            last_page_url: res.data.last_page_url,
-            next_page_url: res.data.next_page_url,
-            prev_page_url: res.data.prev_page_url,
+    await BackendAxios.get(
+      `/api/admin/fetch-fund/all?from=${
+        Formik.values.from + (Formik.values.from && ("T" + "00:00"))
+      }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${
+        Formik.values.userId
+      }&status=${
+        Formik.values.status != "all" ? Formik.values.status : ""
+      }&pageSize=`
+    )
+      .then(async (response) => {
+        setPrintableRow(response.data);
+        await BackendAxios.get(
+          pageLink ||
+            `/api/admin/fetch-fund/all?from=${
+              Formik.values.from + (Formik.values.from && ("T" + "00:00"))
+            }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${
+              Formik.values.userId
+            }&status=${
+              Formik.values.status != "all" ? Formik.values.status : ""
+            }&pageSize=200`
+        )
+          .then((res) => {
+            setPagination({
+              current_page: res.data.current_page,
+              total_pages: parseInt(res.data.last_page),
+              first_page_url: res.data.first_page_url,
+              last_page_url: res.data.last_page_url,
+              next_page_url: res.data.next_page_url,
+              prev_page_url: res.data.prev_page_url,
+            });
+            setPages(res.data?.links);
+            setRowData(res.data.data);
+          })
+          .catch((err) => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
+            console.log(err);
+            Toast({
+              status: "error",
+              title: "Error Occured",
+              description:
+                err.response.data.message || err.response.data || err.message,
+            });
           });
-          setPages(res.data?.links);
-          setRowData(res.data.data);
-        })
-        .catch((err) => {
-          if (err?.response?.status == 401) {
-            Cookies.remove("verified");
-            window.location.reload();
-          }
-          console.log(err);
-          Toast({
-            status: "error",
-            title: "Error Occured",
-            description:
-              err.response.data.message || err.response.data || err.message,
-          });
-        });
-    }).catch(err =>{
-      if (err?.response?.status == 401) {
-        Cookies.remove("verified");
-        window.location.reload();
-      }
-      console.log(err);
-    })
+      })
+      .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
+        console.log(err);
+      });
   }
 
   useEffect(() => {
@@ -452,7 +484,7 @@ const FundRequests = () => {
               <Input
                 name="from"
                 onChange={Formik.handleChange}
-                type="datetime-local"
+                type="date"
                 bg={"white"}
               />
             </FormControl>
@@ -461,7 +493,7 @@ const FundRequests = () => {
               <Input
                 name="to"
                 onChange={Formik.handleChange}
-                type="datetime-local"
+                type="date"
                 bg={"white"}
               />
             </FormControl>
@@ -472,6 +504,14 @@ const FundRequests = () => {
                 onChange={Formik.handleChange}
                 bg={"white"}
               />
+            </FormControl>
+            <FormControl w={["full", "xs"]}>
+              <FormLabel>Status</FormLabel>
+              <Select name="status" onChange={Formik.handleChange} bg={"white"}>
+                <option value="all">All</option>
+                <option value="approved">Approved</option>
+                <option value="declined">Declined</option>
+              </Select>
             </FormControl>
           </Stack>
           <HStack mb={4} justifyContent={"flex-end"}>

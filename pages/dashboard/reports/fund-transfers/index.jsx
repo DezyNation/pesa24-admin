@@ -117,7 +117,7 @@ const FundRequests = () => {
           Formik.setFieldValue("userId", result.data.data.id);
           BackendAxios.get(
             pageLink ||
-              `/api/admin/fetch-admin-funds?from=${Formik.values.from}&to=${Formik.values.to}&userId=${result.data?.data?.id}`
+              `/api/admin/fetch-admin-funds?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+'T'+'23:59'}&userId=${result.data?.data?.id}`
           )
             .then((res) => {
               setPagination({
@@ -165,7 +165,7 @@ const FundRequests = () => {
     }
     BackendAxios.get(
       pageLink ||
-        `/api/admin/fetch-admin-funds?from=${Formik.values.from}&to=${Formik.values.to}&userId=${Formik.values.userId}`
+        `/api/admin/fetch-admin-funds?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+'T'+'23:59'}&userId=${Formik.values.userId}`
     )
       .then((res) => {
         setPagination({
@@ -426,7 +426,7 @@ const FundRequests = () => {
               <Input
                 name="from"
                 onChange={Formik.handleChange}
-                type="datetime-local"
+                type="date"
                 bg={"white"}
               />
             </FormControl>
@@ -435,7 +435,7 @@ const FundRequests = () => {
               <Input
                 name="to"
                 onChange={Formik.handleChange}
-                type="datetime-local"
+                type="date"
                 bg={"white"}
               />
             </FormControl>

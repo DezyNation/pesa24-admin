@@ -42,6 +42,7 @@ import { FormControl } from "@chakra-ui/react";
 import { FormLabel } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
 import Cookies from "js-cookie";
+import { Select } from "@chakra-ui/react";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -112,31 +113,6 @@ const Index = () => {
       width: 100,
     },
     {
-      headerName: "Credit",
-      field: "credit_amount",
-      cellRenderer: "creditCellRenderer",
-      width: 100,
-      hide: true,
-    },
-    {
-      headerName: "Opening Balance",
-      field: "opening_balance",
-      width: 100,
-      hide: true,
-    },
-    {
-      headerName: "Closing Balance",
-      field: "closing_balance",
-      width: 100,
-      hide: true,
-    },
-    {
-      headerName: "Trnxn Type",
-      field: "service_type",
-      width: 120,
-      hide: true,
-    },
-    {
       headerName: "Trnxn Status",
       field: "status",
       cellRenderer: "statusCellRenderer",
@@ -169,6 +145,7 @@ const Index = () => {
       query: "",
       userQuery: "",
       userId: "",
+      status: "all",
     },
   });
 
@@ -198,7 +175,11 @@ const Index = () => {
           BackendAxios.get(
             pageLink
               ? pageLink
-              : `/api/admin/payouts?from=${Formik.values.from}&to=${Formik.values.to}&search=${Formik.values.query}&userId=${result.data.data.id}&page=1`
+              : `/api/admin/payouts/${Formik.values.status}?from=${
+                  Formik.values.from + (Formik.values.from && "T" + "00:00")
+                }&to=${Formik.values.to + "T" + "23:59"}&search=${
+                  Formik.values.query
+                }&userId=${result.data.data.id}&status=${Formik.values.status}&page=1`
           )
             .then((res) => {
               setPagination({
@@ -249,7 +230,11 @@ const Index = () => {
     BackendAxios.get(
       pageLink
         ? pageLink
-        : `/api/admin/payouts?from=${Formik.values.from}&to=${Formik.values.to}&search=${Formik.values.query}&userId=${Formik.values.userId}&page=1`
+        : `/api/admin/payouts/${Formik.values.status}?from=${
+            Formik.values.from + (Formik.values.from && "T" + "00:00")
+          }&to=${
+            Formik.values.to + (Formik.values.to && "T" + "23:59")
+          }&search=${Formik.values.query}&userId=${Formik.values.userId}&status=${Formik.values.status}&page=1`
     )
       .then((res) => {
         setPagination({
@@ -397,7 +382,11 @@ const Index = () => {
             status: "success",
             description: `Payout ${params.data.payout_id} updated!`,
           });
-          let pageUrl = `/api/admin/payouts?from=${Formik.values.from}&to=${Formik.values.to}&page=${pagination.current_page}`;
+          let pageUrl = `/api/admin/payouts?from=${
+            Formik.values.from + (Formik.values.from && "T" + "00:00")
+          }&to=${Formik.values.to + "T" + "23:59"}&userId=${
+            Formik.values.userId
+          }&status=${Formik.values.status}&page=${pagination.current_page}`;
           fetchTransactions(pageUrl);
         })
         .catch((err) => {
@@ -451,7 +440,7 @@ const Index = () => {
             <Input
               name="from"
               onChange={Formik.handleChange}
-              type="datetime-local"
+              type="date"
               bg={"white"}
             />
           </FormControl>
@@ -460,10 +449,12 @@ const Index = () => {
             <Input
               name="to"
               onChange={Formik.handleChange}
-              type="datetime-local"
+              type="date"
               bg={"white"}
             />
           </FormControl>
+        </Stack>
+        <Stack p={4} spacing={8} w={"full"} direction={["column", "row"]}>
           <FormControl w={["full", "xs"]}>
             <FormLabel>Ref ID or Acc No.</FormLabel>
             <Input name="query" onChange={Formik.handleChange} bg={"white"} />
@@ -475,6 +466,16 @@ const Index = () => {
               onChange={Formik.handleChange}
               bg={"white"}
             />
+          </FormControl>
+          <FormControl w={["full", "xs"]}>
+            <FormLabel>Status</FormLabel>
+            <Select name="status" onChange={Formik.handleChange} bg={"white"}>
+              <option value="all">All</option>
+              <option value="processed">Processed</option>
+              <option value="failed">Failed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="reversed">Reversed</option>
+            </Select>
           </FormControl>
         </Stack>
         <HStack mb={4} justifyContent={"flex-end"}>
@@ -708,7 +709,7 @@ const Index = () => {
                 .filter((column) => {
                   if (
                     column.field != "metadata" &&
-                    column.field != "name" &&
+                    column.field != "action" &&
                     column.field != "receipt"
                   ) {
                     return column;
@@ -724,17 +725,17 @@ const Index = () => {
               return (
                 <tr key={key}>
                   <td>{key + 1}</td>
-                  <td>{data.transaction_id}</td>
-                  <td>
-                    ({data.trigered_by}) {data.name}
-                  </td>
-                  <td>{data.debit_amount}</td>
-                  <td>{data.credit_amount}</td>
-                  <td>{data.opening_balance}</td>
-                  <td>{data.closing_balance}</td>
-                  <td>{data.service_type}</td>
-                  <td>{data.status ? "SUCCESS" : "FAILED"}</td>
                   <td>{data.created_at}</td>
+                  <td>
+                    ({data.user_id}) {data.name}
+                  </td>
+                  <td>{data.reference_id}</td>
+                  <td>{data.payout_id}</td>
+                  <td>{data.utr}</td>
+                  <td>{data.amount}</td>
+                  <td>{data.beneficiary_name}</td>
+                  <td>{data.account_number}</td>
+                  <td>{data.status}</td>
                   <td>{data.updated_at}</td>
                 </tr>
               );

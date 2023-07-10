@@ -111,7 +111,7 @@ const Ledger = () => {
   }
 
   function fetchSum(){
-    BackendAxios.get(`/api/admin/overview?from=${Formik.values.from}&to=${Formik.values.to}`).then(res => {
+    BackendAxios.get(`/api/admin/overview?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+'T'+'23:59'}`).then(res => {
       setOverviewData(res.data)
     }).catch(err => {
       if (err?.response?.status == 401) {
@@ -123,9 +123,9 @@ const Ledger = () => {
   }
 
   function fetchLedger(pageLink) {
-    BackendAxios.post(pageLink || `/api/admin/transactions-period?from=${Formik.values.from}&to=${Formik.values.to}&page=1`, {
+    BackendAxios.post(pageLink || `/api/admin/transactions-period?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+'T'+'23:59'}&page=1`, {
       from: Formik.values.from,
-      to: Formik.values.to,
+      to: Formik.values.to+'T'+'23:59',
     })
       .then((res) => {
         setPagination({
@@ -226,7 +226,7 @@ const Ledger = () => {
             <Input
               name="from"
               onChange={Formik.handleChange}
-              type="datetime-local"
+              type="date"
               bg={"white"}
             />
           </FormControl>
@@ -235,7 +235,7 @@ const Ledger = () => {
             <Input
               name="to"
               onChange={Formik.handleChange}
-              type="datetime-local"
+              type="date"
               bg={"white"}
             />
           </FormControl>

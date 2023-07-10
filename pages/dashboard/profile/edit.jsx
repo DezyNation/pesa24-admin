@@ -400,7 +400,7 @@ const EditProfile = () => {
                 <Input
                   placeholder="dd/mm/yyyy"
                   _placeholder={{ color: "gray.500" }}
-                  type="datetime-local"
+                  type="date"
                   max={`${date.getFullYear() - 18}-${(date.getMonth() + 1).toLocaleString('en-US', {
                     minimumIntegerDigits: 2
                   })}-${date.getDate().toLocaleString('en-US', {

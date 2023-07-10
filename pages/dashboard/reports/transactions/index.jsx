@@ -128,7 +128,7 @@ const Ledger = () => {
           Formik.setFieldValue("userId", result.data.data.id);
           BackendAxios.get(
             pageLink ||
-              `/api/admin/transactions?from=${Formik.values.from}&to=${Formik.values.to}&search=${Formik.values.query}&userId=${result.data.data.id}&page=1`
+              `/api/admin/transactions?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+'T'+'23:59'}&search=${Formik.values.query}&userId=${result.data.data.id}&page=1`
           )
             .then((res) => {
               setPagination({
@@ -170,7 +170,7 @@ const Ledger = () => {
     }
     BackendAxios.get(
       pageLink ||
-        `/api/admin/transactions?from=${Formik.values.from}&to=${Formik.values.to}&search=${Formik.values.query}&userId=${Formik.values.userId}&page=1`
+        `/api/admin/transactions?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+'T'+'23:59'}&search=${Formik.values.query}&userId=${Formik.values.userId}&page=1`
     )
       .then((res) => {
         setPagination({
@@ -279,7 +279,7 @@ const Ledger = () => {
             <Input
               name="from"
               onChange={Formik.handleChange}
-              type="datetime-local"
+              type="date"
               bg={"white"}
             />
           </FormControl>
@@ -288,7 +288,7 @@ const Ledger = () => {
             <Input
               name="to"
               onChange={Formik.handleChange}
-              type="datetime-local"
+              type="date"
               bg={"white"}
             />
           </FormControl>

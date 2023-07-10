@@ -133,7 +133,7 @@ const Index = () => {
     })
 
     function fetchTransactions(pageLink) {
-        BackendAxios.get(pageLink || `/api/admin/transactions-type/${transactionKeyword}?from=${Formik.values.from}&to=${Formik.values.to ? new Date(new Date(Formik.values.to).setHours(23,59,59,999)).toISOString() : new Date().toISOString()}&page=1`).then((res) => {
+        BackendAxios.get(pageLink || `/api/admin/transactions-type/${transactionKeyword}?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+'T'+'23:59' ? new Date(new Date(Formik.values.to+'T'+'23:59').setHours(23,59,59,999)).toISOString() : new Date().toISOString()}&page=1`).then((res) => {
             setPagination({
                 current_page: res.data.current_page,
                 total_pages: parseInt(res.data.last_page),
