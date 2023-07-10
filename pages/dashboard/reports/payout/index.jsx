@@ -193,8 +193,41 @@ const Index = () => {
     }
     if (Formik.values.userQuery) {
       await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
-        .then((res) => {
-          Formik.setFieldValue("userId", res.data.data.id);
+        .then((result) => {
+          Formik.setFieldValue("userId", result.data.data.id);
+          BackendAxios.get(
+            pageLink
+              ? pageLink
+              : `/api/admin/payouts?from=${Formik.values.from}&to=${Formik.values.to}&search=${Formik.values.query}&userId=${result.data.data.id}&page=1`
+          )
+            .then((res) => {
+              setPagination({
+                current_page: res.data.current_page,
+                total_pages: parseInt(res.data.last_page),
+                first_page_url: res.data.first_page_url,
+                last_page_url: res.data.last_page_url,
+                next_page_url: res.data.next_page_url,
+                prev_page_url: res.data.prev_page_url,
+              });
+              setPages(res.data?.links);
+              setRowData(res.data.data);
+              setPrintableRow(res.data.data);
+              fetchPendingTransactions();
+            })
+            .catch((err) => {
+              if (err?.response?.status == 401) {
+                Cookies.remove("verified");
+                window.location.reload();
+              }
+              console.log(err);
+              Toast({
+                status: "error",
+                description:
+                  err?.response?.data?.message ||
+                  err?.response?.data ||
+                  err?.message,
+              });
+            });
         })
         .catch((err) => {
           if (err?.response?.status == 401) {
@@ -211,6 +244,7 @@ const Index = () => {
               "User not found!",
           });
         });
+      return;
     }
     BackendAxios.get(
       pageLink
@@ -436,7 +470,11 @@ const Index = () => {
           </FormControl>
           <FormControl w={["full", "xs"]}>
             <FormLabel>User ID or Phone</FormLabel>
-            <Input name="userQuery" onChange={Formik.handleChange} bg={"white"} />
+            <Input
+              name="userQuery"
+              onChange={Formik.handleChange}
+              bg={"white"}
+            />
           </FormControl>
         </Stack>
         <HStack mb={4} justifyContent={"flex-end"}>
@@ -480,7 +518,9 @@ const Index = () => {
             }}
           ></AgGridReact>
         </Box>
-        <br /><br /><br />
+        <br />
+        <br />
+        <br />
 
         <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
           <Button

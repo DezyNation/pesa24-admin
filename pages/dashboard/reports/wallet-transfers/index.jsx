@@ -109,8 +109,37 @@ const FundRequests = () => {
     }
     if (Formik.values.userQuery) {
       await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
-        .then((res) => {
-          Formik.setFieldValue("userId", res.data.data.id);
+        .then((result) => {
+          Formik.setFieldValue("userId", result.data.data.id);
+          BackendAxios.get(
+            pageLink ||
+              `/api/admin/wallet-transfers?from=${Formik.values.from}&to=${Formik.values.to}&userId=${result.data.data.id}&userType=${Formik.values.userType}`
+          )
+            .then((res) => {
+              setPagination({
+                current_page: res.data.current_page,
+                total_pages: parseInt(res.data.last_page),
+                first_page_url: res.data.first_page_url,
+                last_page_url: res.data.last_page_url,
+                next_page_url: res.data.next_page_url,
+                prev_page_url: res.data.prev_page_url,
+              });
+              setRowData(res.data.data);
+              setPrintableRow(res.data.data);
+            })
+            .catch((err) => {
+              if (err?.response?.status == 401) {
+                Cookies.remove("verified");
+                window.location.reload();
+              }
+              console.log(err);
+              Toast({
+                status: "error",
+                title: "Error Occured",
+                description:
+                  err.response.data.message || err.response.data || err.message,
+              });
+            });
         })
         .catch((err) => {
           if (err?.response?.status == 401) {
@@ -127,6 +156,7 @@ const FundRequests = () => {
               "User not found!",
           });
         });
+        return
     }
     BackendAxios.get(
       pageLink ||

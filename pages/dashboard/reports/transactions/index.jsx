@@ -124,8 +124,32 @@ const Ledger = () => {
     }
     if (Formik.values.userQuery) {
       await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
-        .then((res) => {
-          Formik.setFieldValue("userId", res.data.data.id);
+        .then((result) => {
+          Formik.setFieldValue("userId", result.data.data.id);
+          BackendAxios.get(
+            pageLink ||
+              `/api/admin/transactions?from=${Formik.values.from}&to=${Formik.values.to}&search=${Formik.values.query}&userId=${result.data.data.id}&page=1`
+          )
+            .then((res) => {
+              setPagination({
+                current_page: res.data.current_page,
+                total_pages: parseInt(res.data.last_page),
+                first_page_url: res.data.first_page_url,
+                last_page_url: res.data.last_page_url,
+                next_page_url: res.data.next_page_url,
+                prev_page_url: res.data.prev_page_url,
+              });
+              setPages(res.data.links);
+              setRowData(res.data.data);
+              setPrintableRow(res.data.data);
+            })
+            .catch((err) => {
+              if (err?.response?.status == 401) {
+                Cookies.remove("verified");
+                window.location.reload();
+              }
+              console.log(err);
+            });
         })
         .catch((err) => {
           if (err?.response?.status == 401) {
@@ -142,6 +166,7 @@ const Ledger = () => {
               "User not found!",
           });
         });
+        return
     }
     BackendAxios.get(
       pageLink ||
