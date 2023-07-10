@@ -85,7 +85,7 @@ const Ledger = () => {
     },
   ]);
   const [printableRow, setPrintableRow] = useState(rowData);
-  const [overviewData, setOverviewData] = useState([])
+  const [overviewData, setOverviewData] = useState([]);
   const [pagination, setPagination] = useState({
     current_page: "1",
     total_pages: "1",
@@ -110,23 +110,35 @@ const Ledger = () => {
     return accumulator + a;
   }
 
-  function fetchSum(){
-    BackendAxios.get(`/api/admin/overview?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+'T'+'23:59'}`).then(res => {
-      setOverviewData(res.data)
-    }).catch(err => {
-      if (err?.response?.status == 401) {
-        Cookies.remove("verified");
-        window.location.reload();
-      }
-      console.log(err)
-    })
+  function fetchSum() {
+    BackendAxios.get(
+      `/api/admin/overview?from=${
+        Formik.values.from + (Formik.values.from && "T" + "00:00")
+      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}`
+    )
+      .then((res) => {
+        setOverviewData(res.data);
+      })
+      .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
+        console.log(err);
+      });
   }
 
   function fetchLedger(pageLink) {
-    BackendAxios.post(pageLink || `/api/admin/transactions-period?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+'T'+'23:59'}&page=1`, {
-      from: Formik.values.from,
-      to: Formik.values.to+'T'+'23:59',
-    })
+    BackendAxios.post(
+      pageLink ||
+        `/api/admin/transactions-period?from=${
+          Formik.values.from + (Formik.values.from && "T" + "00:00")
+        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&page=1`,
+      {
+        from: Formik.values.from,
+        to: Formik.values.to + "T" + "23:59",
+      }
+    )
       .then((res) => {
         setPagination({
           current_page: res.data.current_page,
@@ -175,7 +187,7 @@ const Ledger = () => {
         console.log(err);
       });
 
-    fetchSum()
+    fetchSum();
   }
 
   useEffect(() => {
@@ -343,13 +355,27 @@ const Ledger = () => {
                   </Text>
                 </Td>
                 <Td>
-                  <Text textAlign={"left"} fontWeight={"semibold"} fontSize={"lg"}>
-                    {Number(overviewData[0]?.payout?.debit - overviewData[0]?.payout?.credit) || 0}
+                  <Text
+                    textAlign={"left"}
+                    fontWeight={"semibold"}
+                    fontSize={"lg"}
+                  >
+                    {Number(
+                      overviewData[0]?.payout?.debit -
+                        overviewData[0]?.payout?.credit
+                    ) || 0}
                   </Text>
                 </Td>
                 <Td>
-                  <Text textAlign={"left"} fontWeight={"semibold"} fontSize={"lg"}>
-                    {Number(overviewData[4]?.["payout-commission"]?.debit - overviewData[4]?.["payout-commission"]?.credit) || 0}
+                  <Text
+                    textAlign={"left"}
+                    fontWeight={"semibold"}
+                    fontSize={"lg"}
+                  >
+                    {Number(
+                      overviewData[4]?.["payout-commission"]?.debit -
+                        overviewData[4]?.["payout-commission"]?.credit
+                    ) || 0}
                   </Text>
                 </Td>
               </Tr>
