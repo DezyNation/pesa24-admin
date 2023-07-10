@@ -315,7 +315,7 @@ const UserLedger = () => {
               <Input
                 name={"from"}
                 onChange={(e) => setFrom(e.target.value)}
-                type="date"
+                type="datetime-local"
               />
             </FormControl>
 
@@ -324,7 +324,7 @@ const UserLedger = () => {
               <Input
                 name={"to"}
                 onChange={(e) => setTo(e.target.value)}
-                type="date"
+                type="datetime-local"
               />
             </FormControl>
           </Stack>

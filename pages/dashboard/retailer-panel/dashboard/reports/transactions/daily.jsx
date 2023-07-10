@@ -302,7 +302,7 @@ const Index = () => {
           <FormControl w={["full", "xs"]}>
             <FormLabel>From</FormLabel>
             <Input
-              type="date"
+              type="datetime-local"
               bgColor={"#FFF"}
               name="from"
               onChange={(e) => setFrom(e.target.value)}
@@ -311,7 +311,7 @@ const Index = () => {
           <FormControl w={["full", "xs"]}>
             <FormLabel>To</FormLabel>
             <Input
-              type="date"
+              type="datetime-local"
               bgColor={"#FFF"}
               name="to"
               onChange={(e) => setTo(e.target.value)}

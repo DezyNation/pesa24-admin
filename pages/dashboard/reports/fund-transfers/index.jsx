@@ -426,7 +426,7 @@ const FundRequests = () => {
               <Input
                 name="from"
                 onChange={Formik.handleChange}
-                type="date"
+                type="datetime-local"
                 bg={"white"}
               />
             </FormControl>
@@ -435,7 +435,7 @@ const FundRequests = () => {
               <Input
                 name="to"
                 onChange={Formik.handleChange}
-                type="date"
+                type="datetime-local"
                 bg={"white"}
               />
             </FormControl>

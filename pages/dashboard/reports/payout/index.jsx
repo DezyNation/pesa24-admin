@@ -451,7 +451,7 @@ const Index = () => {
             <Input
               name="from"
               onChange={Formik.handleChange}
-              type="date"
+              type="datetime-local"
               bg={"white"}
             />
           </FormControl>
@@ -460,7 +460,7 @@ const Index = () => {
             <Input
               name="to"
               onChange={Formik.handleChange}
-              type="date"
+              type="datetime-local"
               bg={"white"}
             />
           </FormControl>
