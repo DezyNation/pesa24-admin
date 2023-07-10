@@ -123,7 +123,7 @@ const Ledger = () => {
       Formik.setFieldValue("userId", "");
     }
     if (Formik.values.userQuery) {
-      BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
+      await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
         .then((res) => {
           Formik.setFieldValue("userId", res.data.data.id);
         })
@@ -145,7 +145,7 @@ const Ledger = () => {
     }
     BackendAxios.get(
       pageLink ||
-        `/api/admin/transactions/${Formik.values.userId}?from=${Formik.values.from}&to=${Formik.values.to}&search=${Formik.values.query}&page=1`
+        `/api/admin/transactions?from=${Formik.values.from}&to=${Formik.values.to}&search=${Formik.values.query}&userId=${Formik.values.userId}&page=1`
     )
       .then((res) => {
         setPagination({

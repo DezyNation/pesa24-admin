@@ -187,12 +187,12 @@ const Index = () => {
       });
   }
 
-  function fetchTransactions(pageLink) {
+  async function fetchTransactions(pageLink) {
     if (!Formik.values.userQuery) {
       Formik.setFieldValue("userId", "");
     }
     if (Formik.values.userQuery) {
-      BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
+      await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
         .then((res) => {
           Formik.setFieldValue("userId", res.data.data.id);
         })

@@ -158,12 +158,12 @@ const FundRequests = () => {
     },
   });
 
-  function fetchRequests(pageLink) {
+  async function fetchRequests(pageLink) {
     if (!Formik.values.userQuery) {
       Formik.setFieldValue("userId", "");
     }
     if (Formik.values.userQuery) {
-      BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
+      await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
         .then((res) => {
           Formik.setFieldValue("userId", res.data.data.id);
         })
@@ -185,7 +185,7 @@ const FundRequests = () => {
     }
     BackendAxios.get(
       pageLink ||
-        `/api/admin/fetch-fund/all/${Formik.values.userId}?from=${Formik.values.from}&to=${Formik.values.to}`
+        `/api/admin/fetch-fund/all?from=${Formik.values.from}&to=${Formik.values.to}&userId=${Formik.values.userId}`
     )
       .then((res) => {
         setPagination({

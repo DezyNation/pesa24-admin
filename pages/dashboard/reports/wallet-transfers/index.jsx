@@ -103,12 +103,12 @@ const FundRequests = () => {
     },
   });
 
-  function fetchRequests(pageLink) {
+  async function fetchRequests(pageLink) {
     if (!Formik.values.userQuery) {
       Formik.setFieldValue("userId", "");
     }
     if (Formik.values.userQuery) {
-      BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
+      await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
         .then((res) => {
           Formik.setFieldValue("userId", res.data.data.id);
         })
@@ -130,7 +130,7 @@ const FundRequests = () => {
     }
     BackendAxios.get(
       pageLink ||
-        `/api/admin/wallet-transfers/${Formik.values.userId}?from=${Formik.values.from}&to=${Formik.values.to}&userType=${Formik.values.userType}`
+        `/api/admin/wallet-transfers?from=${Formik.values.from}&to=${Formik.values.to}&userId=${Formik.values.userId}&userType=${Formik.values.userType}`
     )
       .then((res) => {
         setPagination({
