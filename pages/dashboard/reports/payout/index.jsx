@@ -176,8 +176,8 @@ const Index = () => {
             pageLink
               ? pageLink
               : `/api/admin/payouts/${Formik.values.status}?from=${
-                  Formik.values.from + (Formik.values.from && "T" + "00:00")
-                }&to=${Formik.values.to + "T" + "23:59"}&search=${
+                  Formik.values.from + (Formik.values.from && ("T" + "00:00"))
+                }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&search=${
                   Formik.values.query
                 }&userId=${result.data.data.id}&status=${Formik.values.status != "all" ? Formik.values.status : ""}&page=1`
           )
@@ -231,9 +231,9 @@ const Index = () => {
       pageLink
         ? pageLink
         : `/api/admin/payouts/${Formik.values.status}?from=${
-            Formik.values.from + (Formik.values.from && "T" + "00:00")
+            Formik.values.from + (Formik.values.from && ("T" + "00:00"))
           }&to=${
-            Formik.values.to + (Formik.values.to && "T" + "23:59")
+            Formik.values.to + (Formik.values.to && ("T" + "23:59"))
           }&search=${Formik.values.query}&userId=${Formik.values.userId}&status=${Formik.values.status}&page=1`
     )
       .then((res) => {
