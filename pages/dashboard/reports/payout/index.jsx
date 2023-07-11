@@ -384,7 +384,7 @@ const Index = () => {
           });
           let pageUrl = `/api/admin/payouts?from=${
             Formik.values.from + (Formik.values.from && "T" + "00:00")
-          }&to=${Formik.values.to + "T" + "23:59"}&userId=${
+          }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${
             Formik.values.userId
           }&status=${Formik.values.status}&page=${pagination.current_page}`;
           fetchTransactions(pageUrl);
