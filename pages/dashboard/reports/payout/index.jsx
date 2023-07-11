@@ -382,7 +382,7 @@ const Index = () => {
             status: "success",
             description: `Payout ${params.data.payout_id} updated!`,
           });
-          let pageUrl = `/api/admin/payouts?from=${
+          let pageUrl = `/api/admin/payouts/${Formik.values.status}?from=${
             Formik.values.from + (Formik.values.from && "T" + "00:00")
           }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${
             Formik.values.userId
