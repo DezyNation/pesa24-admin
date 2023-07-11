@@ -67,6 +67,10 @@ const FundRequests = () => {
       cellRenderer: "statusCellRenderer",
     },
     {
+      headerName: "Transfer Date",
+      field: "transaction_date",
+    },
+    {
       headerName: "Request Timestamp",
       field: "created_at",
       width: 160,
@@ -691,6 +695,7 @@ const FundRequests = () => {
                       <td>{key + 1}</td>
                       <td>{data.id}</td>
                       <td>{data.status}</td>
+                      <td>{data.transaction_date}</td>
                       <td>{data.created_at}</td>
                       <td>{data.transaction_id}</td>
                       <td>{data.amount}</td>
