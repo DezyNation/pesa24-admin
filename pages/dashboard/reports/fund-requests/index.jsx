@@ -157,6 +157,7 @@ const FundRequests = () => {
       userQuery: "",
       userId: "",
       status: "",
+      search: ""
     },
   });
 
@@ -173,7 +174,7 @@ const FundRequests = () => {
                 Formik.values.from + (Formik.values.from && ("T" + "00:00"))
               }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${
                 result.data.data.id
-              }&status=${
+              }&search=${Formik.values.search}&status=${
                 Formik.values.status != "all" ? Formik.values.status : ""
               }&pageSize=200`
           )
@@ -183,7 +184,7 @@ const FundRequests = () => {
                   Formik.values.from + (Formik.values.from && ("T" + "00:00"))
                 }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${
                   result.data.data.id
-                }&status=${
+                }&search=${Formik.values.search}&status=${
                   Formik.values.status != "all" ? Formik.values.status : ""
                 }&pageSize=`
               ).then((response) => {
@@ -236,7 +237,7 @@ const FundRequests = () => {
         Formik.values.from + (Formik.values.from && ("T" + "00:00"))
       }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${
         Formik.values.userId
-      }&status=${
+      }&search=${Formik.values.search}&status=${
         Formik.values.status != "all" ? Formik.values.status : ""
       }&pageSize=`
     )
@@ -248,7 +249,7 @@ const FundRequests = () => {
               Formik.values.from + (Formik.values.from && ("T" + "00:00"))
             }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${
               Formik.values.userId
-            }&status=${
+            }&search=${Formik.values.search}&status=${
               Formik.values.status != "all" ? Formik.values.status : ""
             }&pageSize=200`
         )
@@ -505,6 +506,18 @@ const FundRequests = () => {
                 bg={"white"}
               />
             </FormControl>
+            
+          </Stack>
+          <Stack p={4} spacing={8} w={"full"} direction={["column", "row"]}>
+            <FormControl w={["full", "xs"]}>
+              <FormLabel>Trnxn ID</FormLabel>
+              <Input
+                name="search"
+                onChange={Formik.handleChange}
+                bg={"white"}
+              />
+            </FormControl>
+          
             <FormControl w={["full", "xs"]}>
               <FormLabel>Status</FormLabel>
               <Select name="status" onChange={Formik.handleChange} bg={"white"}>
