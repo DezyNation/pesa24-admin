@@ -181,7 +181,7 @@ const FundRequests = () => {
               }&userId=${result.data.data.id}&search=${
                 Formik.values.search
               }&status=${
-                Formik.values.status != "all" ? Formik.values.status : ""
+                Formik.values.status
               }&pageSize=200`
           )
             .then((res) => {
@@ -193,7 +193,7 @@ const FundRequests = () => {
                 }&userId=${result.data.data.id}&search=${
                   Formik.values.search
                 }&status=${
-                  Formik.values.status != "all" ? Formik.values.status : ""
+                  Formik.values.status
                 }&pageSize=`
               ).then((response) => {
                 setPrintableRow(response.data);
@@ -246,7 +246,7 @@ const FundRequests = () => {
       }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&userId=${
         Formik.values.userId
       }&search=${Formik.values.search}&status=${
-        Formik.values.status != "all" ? Formik.values.status : ""
+        Formik.values.status
       }&pageSize=`
     )
       .then(async (response) => {
@@ -260,7 +260,7 @@ const FundRequests = () => {
             }&userId=${Formik.values.userId}&search=${
               Formik.values.search
             }&status=${
-              Formik.values.status != "all" ? Formik.values.status : ""
+              Formik.values.status
             }&pageSize=200`
         )
           .then((res) => {
