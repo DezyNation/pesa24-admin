@@ -206,9 +206,11 @@ const Ledger = () => {
       setRearrangedRows(prevRows => {
         const newRows = [...prevRows];
         for (let i = 0; i < newRows.length - 1; i += 2) {
-          const temp = newRows[i];
-          newRows[i] = newRows[i + 1];
-          newRows[i + 1] = temp;
+          if(Number(newRows[i]?.debit_amount) > 0){
+            const temp = newRows[i];
+            newRows[i] = newRows[i + 1];
+            newRows[i + 1] = temp;
+          }
         }
         return newRows;
       })
