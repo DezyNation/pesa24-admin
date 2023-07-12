@@ -101,7 +101,7 @@ const Ledger = () => {
     },
     onSubmit: (values) => {
       fetchLedger(
-        `/api/admin/transactions-period?from=${values.from}&to=${values.to}&page=1`
+        `/api/admin/transactions-period?from=${values.from + (values.from && ("T" + "00:00"))}&to=${values.to + (values.to && ("T" + "23:59"))}&page=1`
       );
     },
   });
