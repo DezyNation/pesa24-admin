@@ -114,8 +114,8 @@ const FundRequests = () => {
           BackendAxios.get(
             pageLink ||
               `/api/admin/wallet-transfers?from=${
-                Formik.values.from + (Formik.values.from && "T" + "00:00")
-              }&to=${Formik.values.to + "T" + "23:59"}&userId=${
+                Formik.values.from + (Formik.values.from && ("T" + "00:00"))
+              }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${
                 result.data.data.id
               }&userType=${Formik.values.userType}`
           )
