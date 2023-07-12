@@ -41,6 +41,7 @@ import "jspdf-autotable";
 import { toBlob } from "html-to-image";
 import { useFormik } from "formik";
 import Cookies from "js-cookie";
+import { DownloadTableExcel } from "react-export-table-to-excel";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -159,7 +160,11 @@ const Index = () => {
   function fetchTransactions(pageLink) {
     BackendAxios.get(
       pageLink ||
-        `/api/admin/user-reports/${transactionKeyword}/${Cookies.get("viewUserId")}?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+'T'+'23:59' ? new Date(new Date(Formik.values.to+'T'+'23:59').setHours(23,59,59,999)).toISOString() : new Date().toISOString()}&page=1`
+        `/api/admin/user-reports/${transactionKeyword}/${Cookies.get(
+          "viewUserId"
+        )}?from=${
+          Formik.values.from + (Formik.values.from && "T" + "00:00")
+        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&page=1`
     )
       .then((res) => {
         setPagination({
@@ -274,6 +279,7 @@ const Index = () => {
     );
   };
 
+  const tableRef = React.useRef(null)
   return (
     <>
       <DashboardWrapper pageTitle={"Payout Reports"}>
@@ -281,6 +287,19 @@ const Index = () => {
           <Button onClick={ExportPDF} colorScheme={"red"} size={"sm"}>
             Export PDF
           </Button>
+          <DownloadTableExcel
+            filename="PayoutReports"
+            sheet="sheet1"
+            currentTableRef={tableRef.current}
+          >
+            <Button
+              size={["xs", "sm"]}
+              colorScheme={"whatsapp"}
+              leftIcon={<SiMicrosoftexcel />}
+            >
+              Excel
+            </Button>
+          </DownloadTableExcel>
         </HStack>
         <Box p={2} bg={"orange.500"} roundedTop={16}>
           <Text color={"#FFF"}>Search Transactions</Text>
@@ -413,14 +432,16 @@ const Index = () => {
                 bg={
                   receipt.status == "processed" || receipt?.status == true
                     ? "green.500"
-                    : receipt.status == "processing" || receipt.status == "queued"
+                    : receipt.status == "processing" ||
+                      receipt.status == "queued"
                     ? "orange.500"
                     : "red.500"
                 }
               >
                 {receipt.status == "processed" || receipt.status == true ? (
                   <BsCheck2Circle color="#FFF" fontSize={72} />
-                ) : receipt.status == "processing" || receipt.status == "queued" ? (
+                ) : receipt.status == "processing" ||
+                  receipt.status == "queued" ? (
                   <BsClockHistory color="#FFF" fontSize={72} />
                 ) : (
                   <BsXCircle color="#FFF" fontSize={72} />
@@ -433,7 +454,12 @@ const Index = () => {
                   fontSize={"sm"}
                   textTransform={"uppercase"}
                 >
-                  TRANSACTION {receipt.status == true ? "PROCESSED" : receipt?.status == false ? "FAILED": receipt.status}
+                  TRANSACTION{" "}
+                  {receipt.status == true
+                    ? "PROCESSED"
+                    : receipt?.status == false
+                    ? "FAILED"
+                    : receipt.status}
                 </Text>
               </VStack>
             </ModalHeader>
