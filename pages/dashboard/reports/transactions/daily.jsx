@@ -113,8 +113,8 @@ const Ledger = () => {
   function fetchSum() {
     BackendAxios.get(
       `/api/admin/overview?from=${
-        Formik.values.from + (Formik.values.from && "T" + "00:00")
-      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}`
+        Formik.values.from + (Formik.values.from && ("T" + "00:00"))
+      }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}`
     )
       .then((res) => {
         setOverviewData(res.data);
