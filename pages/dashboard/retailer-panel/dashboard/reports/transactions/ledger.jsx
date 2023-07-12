@@ -52,7 +52,7 @@ const Index = () => {
   const Toast = useToast({
     position: "top-right",
   });
-  const transactionKeyword = "all"
+  const transactionKeyword = "all";
   const [printableRow, setPrintableRow] = useState([]);
   const [pagination, setPagination] = useState({
     current_page: "1",
@@ -63,6 +63,7 @@ const Index = () => {
     prev_page_url: "",
   });
   const [rowData, setRowData] = useState([]);
+  const [rearrangedRows, setRearrangedRows] = useState([]);
   const [columnDefs, setColumnDefs] = useState([
     {
       headerName: "Trnxn ID",
@@ -94,7 +95,7 @@ const Index = () => {
     {
       headerName: "Event",
       field: "metadata",
-      cellRenderer: 'eventCellRenderer',
+      cellRenderer: "eventCellRenderer",
       width: 100,
     },
     {
@@ -122,7 +123,7 @@ const Index = () => {
       headerName: "Narration",
       field: "metadata",
       cellRenderer: "narrationCellRenderer",
-      width: 200
+      width: 200,
     },
     {
       headerName: "Additional Info",
@@ -170,7 +171,22 @@ const Index = () => {
   function fetchTransactions(pageLink) {
     BackendAxios.get(
       pageLink ||
-      `/api/admin/user-reports/${transactionKeyword}/${Cookies.get("viewUserId")}?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+'T'+'23:59' ? new Date(new Date(Formik.values.to+'T'+'23:59').setHours(23,59,59,999)).toISOString() : new Date().toISOString()}&page=1`
+        `/api/admin/user-reports/${transactionKeyword}/${Cookies.get(
+          "viewUserId"
+        )}?from=${
+          Formik.values.from + (Formik.values.from && "T" + "00:00")
+        }&to=${
+          Formik.values.to + "T" + "23:59"
+            ? new Date(
+                new Date(Formik.values.to + "T" + "23:59").setHours(
+                  23,
+                  59,
+                  59,
+                  999
+                )
+              ).toISOString()
+            : new Date().toISOString()
+        }&page=1`
     )
       .then((res) => {
         setPagination({
@@ -183,6 +199,7 @@ const Index = () => {
         });
         setRowData(res.data.data);
         setPrintableRow(res.data.data);
+        setRearrangedRows(res.data.data);
       })
       .catch((err) => {
         if (err?.response?.status == 401) {
@@ -202,6 +219,19 @@ const Index = () => {
   useEffect(() => {
     fetchTransactions();
   }, []);
+  useEffect(() => {
+    if (printableRow?.length) {
+      setRearrangedRows(prevRows => {
+        const newRows = [...prevRows];
+        for (let i = 0; i < newRows.length - 1; i += 2) {
+          const temp = newRows[i];
+          newRows[i] = newRows[i + 1];
+          newRows[i + 1] = temp;
+        }
+        return newRows;
+      })
+    }
+  }, [printableRow]);
 
   const pdfRef = React.createRef();
   const [receipt, setReceipt] = useState({
@@ -289,9 +319,7 @@ const Index = () => {
     const receipt = JSON.parse(params?.data?.metadata || {});
     return (
       <>
-          <Text fontWeight={"bold"}>
-            {receipt?.remarks}
-          </Text>
+        <Text fontWeight={"bold"}>{receipt?.remarks}</Text>
       </>
     );
   };
@@ -300,7 +328,9 @@ const Index = () => {
     const receipt = JSON.parse(params?.data?.metadata || {});
     return (
       <>
-        <Text fontWeight={"bold"} textTransform={'uppercase'}>{receipt?.event}</Text>
+        <Text fontWeight={"bold"} textTransform={"uppercase"}>
+          {receipt?.event}
+        </Text>
       </>
     );
   };
@@ -550,7 +580,7 @@ const Index = () => {
             </tr>
           </thead>
           <tbody>
-            {printableRow.map((data, key) => {
+            {rearrangedRows.map((data, key) => {
               return (
                 <tr key={key}>
                   <td>{key + 1}</td>
