@@ -132,11 +132,11 @@ const Ledger = () => {
     BackendAxios.post(
       pageLink ||
         `/api/admin/transactions-period?from=${
-          Formik.values.from + (Formik.values.from && "T" + "00:00")
-        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&page=1`,
+          Formik.values.from + (Formik.values.from && ("T" + "00:00"))
+        }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&page=1`,
       {
-        from: Formik.values.from,
-        to: Formik.values.to + "T" + "23:59",
+        from: Formik.values.from + (Formik.values.from && ("T" + "00:00")),
+        to: Formik.values.to + (Formik.values.to && ("T" + "23:59")),
       }
     )
       .then((res) => {
