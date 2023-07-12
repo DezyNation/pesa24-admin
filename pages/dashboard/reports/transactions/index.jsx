@@ -142,6 +142,7 @@ const Ledger = () => {
               });
               setPages(res.data.links);
               setRowData(res.data.data);
+              setRearrangedRows(res.data.data);
               setPrintableRow(res.data.data);
             })
             .catch((err) => {
