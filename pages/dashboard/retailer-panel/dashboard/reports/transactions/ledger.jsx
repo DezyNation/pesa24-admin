@@ -220,8 +220,9 @@ const Index = () => {
     fetchTransactions();
   }, []);
   useEffect(() => {
+    if (printableRow?.length) {
       setRearrangedRows(prevRows => {
-        const newRows = printableRow;
+        const newRows = [...prevRows];
         for (let i = 0; i < newRows.length - 1; i += 2) {
           const temp = newRows[i];
           newRows[i] = newRows[i + 1];
@@ -229,6 +230,7 @@ const Index = () => {
         }
         return newRows;
       })
+    }
   }, [printableRow]);
 
   const pdfRef = React.createRef();
@@ -578,7 +580,7 @@ const Index = () => {
             </tr>
           </thead>
           <tbody>
-            {rearrangedRows.map((data, key) => {
+            {printableRow.map((data, key) => {
               return (
                 <tr key={key}>
                   <td>{key + 1}</td>

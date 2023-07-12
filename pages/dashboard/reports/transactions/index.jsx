@@ -33,6 +33,7 @@ const ExportPDF = () => {
 const Ledger = () => {
   const Toast = useToast({ position: "top-right" });
   const [rowData, setRowData] = useState([]);
+  const [rearrangedRows, setRearrangedRows] = useState([])
   const [columnDefs, setColumnDefs] = useState([
     {
       headerName: "Transaction ID",
@@ -197,6 +198,20 @@ const Ledger = () => {
   useEffect(() => {
     fetchLedger();
   }, []);
+
+  useEffect(() => {
+    if (printableRow?.length) {
+      setRearrangedRows(prevRows => {
+        const newRows = [...prevRows];
+        for (let i = 0; i < newRows.length - 1; i += 2) {
+          const temp = newRows[i];
+          newRows[i] = newRows[i + 1];
+          newRows[i + 1] = temp;
+        }
+        return newRows;
+      })
+    }
+  }, [printableRow]);
 
   const creditCellRenderer = (params) => {
     return (
@@ -442,7 +457,7 @@ const Ledger = () => {
               </tr>
             </thead>
             <tbody>
-              {printableRow.map((data, key) => {
+              {rearrangedRows.map((data, key) => {
                 return (
                   <tr key={key}>
                     <td>{key + 1}</td>
