@@ -33,7 +33,7 @@ const ExportPDF = () => {
 const Ledger = () => {
   const Toast = useToast({ position: "top-right" });
   const [rowData, setRowData] = useState([]);
-  const [rearrangedRows, setRearrangedRows] = useState([])
+  const [rearrangedRows, setRearrangedRows] = useState([]);
   const [columnDefs, setColumnDefs] = useState([
     {
       headerName: "Transaction ID",
@@ -129,7 +129,13 @@ const Ledger = () => {
           Formik.setFieldValue("userId", result.data.data.id);
           BackendAxios.get(
             pageLink ||
-              `/api/admin/transactions?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+(Formik.values.to && ('T'+'23:59'))}&search=${Formik.values.query}&userId=${result.data.data.id}&page=1`
+              `/api/admin/transactions?from=${
+                Formik.values.from + (Formik.values.from && "T" + "00:00")
+              }&to=${
+                Formik.values.to + (Formik.values.to && "T" + "23:59")
+              }&search=${Formik.values.query}&userId=${
+                result.data.data.id
+              }&page=1`
           )
             .then((res) => {
               setPagination({
@@ -168,11 +174,15 @@ const Ledger = () => {
               "User not found!",
           });
         });
-        return
+      return;
     }
     BackendAxios.get(
       pageLink ||
-        `/api/admin/transactions?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+(Formik.values.to && ('T'+'23:59'))}&search=${Formik.values.query}&userId=${Formik.values.userId}&page=1`
+        `/api/admin/transactions?from=${
+          Formik.values.from + (Formik.values.from && "T" + "00:00")
+        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&search=${
+          Formik.values.query
+        }&userId=${Formik.values.userId}&page=1`
     )
       .then((res) => {
         setPagination({
@@ -203,17 +213,22 @@ const Ledger = () => {
 
   useEffect(() => {
     if (printableRow?.length) {
-      setRearrangedRows(prevRows => {
+      setRearrangedRows((prevRows) => {
         const newRows = [...prevRows];
         for (let i = 0; i < newRows.length - 1; i += 2) {
-          if(Number(newRows[i]?.debit_amount) > 0 && newRows[i]?.service_type?.includes('payout') && newRows[i+1]?.service_type?.includes('payout')){
+          if (
+            Number(newRows[i]?.debit_amount) > 0 &&
+            Number(newRows[i + 1]?.debit_amount) > 0 &&
+            newRows[i]?.service_type?.includes("payout") &&
+            newRows[i + 1]?.service_type?.includes("payout")
+          ) {
             const temp = newRows[i];
             newRows[i] = newRows[i + 1];
             newRows[i + 1] = temp;
           }
         }
         return newRows;
-      })
+      });
     }
   }, [printableRow]);
 
