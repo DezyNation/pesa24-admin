@@ -217,6 +217,8 @@ const Ledger = () => {
         const newRows = printableRow;
         for (let i = 0; i < newRows.length - 1; i += 2) {
           if (
+            Number(newRows[i]?.debit_amount) > 0 &&
+            Number(newRows[i + 1]?.debit_amount) > 0 &&
             newRows[i]?.service_type=="payout" &&
             newRows[i + 1]?.service_type == "payout-commission"
           ) {
