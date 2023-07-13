@@ -477,7 +477,7 @@ const Ledger = () => {
               </tr>
             </thead>
             <tbody>
-              {rearrangedRows.map((data, key) => {
+              {printableRow.map((data, key) => {
                 return (
                   <tr key={key}>
                     <td>{key + 1}</td>
