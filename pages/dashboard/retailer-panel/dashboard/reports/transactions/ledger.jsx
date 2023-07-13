@@ -174,18 +174,9 @@ const Index = () => {
         `/api/admin/user-reports/${transactionKeyword}/${Cookies.get(
           "viewUserId"
         )}?from=${
-          Formik.values.from + (Formik.values.from && "T" + "00:00")
+          Formik.values.from + (Formik.values.from && ("T" + "00:00"))
         }&to=${
-          Formik.values.to + "T" + "23:59"
-            ? new Date(
-                new Date(Formik.values.to + "T" + "23:59").setHours(
-                  23,
-                  59,
-                  59,
-                  999
-                )
-              ).toISOString()
-            : new Date().toISOString()
+          Formik.values.to + (Formik.values.to && ("T" + "23:59"))
         }&page=1`
     )
       .then((res) => {
