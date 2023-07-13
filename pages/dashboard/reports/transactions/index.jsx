@@ -219,8 +219,8 @@ const Ledger = () => {
           if (
             Number(newRows[i]?.debit_amount) > 0 &&
             Number(newRows[i + 1]?.debit_amount) > 0 &&
-            newRows[i]?.service_type?.includes("payout") &&
-            newRows[i + 1]?.service_type?.includes("payout")
+            newRows[i]?.service_type=="payout" &&
+            newRows[i + 1]?.service_type == "payout-commission"
           ) {
             const temp = newRows[i];
             newRows[i] = newRows[i + 1];
