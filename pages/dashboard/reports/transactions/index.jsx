@@ -464,6 +464,7 @@ const Ledger = () => {
             <thead>
               <tr>
                 <th>#</th>
+                <th>UTR</th>
                 {columnDefs
                   .filter((column) => {
                     if (column.field != "metadata") {
@@ -480,6 +481,7 @@ const Ledger = () => {
                 return (
                   <tr key={key}>
                     <td>{key + 1}</td>
+                    <td>{JSON.parse(data.metadata || {})?.utr || ""}</td>
                     <td>{data.transaction_id}</td>
                     <td>
                       ({data?.trigered_by}) {data?.transaction_by} -{" "}
