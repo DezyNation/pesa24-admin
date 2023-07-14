@@ -174,18 +174,12 @@ const FundRequests = () => {
         .then((result) => {
           BackendAxios.get(
             pageLink ||
-            `/api/admin/fetch-fund/all?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))
-            }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))
-            }&userId=${result.data.data.id}&search=${Formik.values.search
-            }&status=${Formik.values.status
-            }&pageSize=200`
+            `/api/admin/fetch-fund/all?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))
+            }&userId=${result.data.data.id}&search=${Formik.values.search}&status=${Formik.values.status}&pageSize=200`
           )
             .then((res) => {
               BackendAxios.get(
-                `/api/admin/print-report?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))
-                }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))
-                }&userId=${result.data.data.id}&search=${Formik.values.search
-                }&status=${Formik.values.status}&pageSize=`
+                `/api/admin/print-report?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${result.data.data.id}&search=${Formik.values.search}&status=${Formik.values.status}&pageSize=`
               ).then((response) => {
                 setPrintableRow(response.data);
               });
@@ -231,11 +225,10 @@ const FundRequests = () => {
         });
       return;
     }
-    await BackendAxios.get(
+    BackendAxios.get(
       `/api/admin/print-report?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))
       }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${Formik.values.userId
-      }&search=${Formik.values.search}&status=${Formik.values.status
-      }&pageSize=`
+      }&search=${Formik.values.search}&status=${Formik.values.status}&pageSize=`
     )
       .then(async (response) => {
         setPrintableRow(response.data);
