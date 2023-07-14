@@ -693,6 +693,8 @@ const FundRequests = () => {
                       <td>{data.created_at}</td>
                       <td>{data.transaction_id}</td>
                       <td>{data.amount}</td>
+                      <td>{data.opening_balance}</td>
+                      <td>{data.closing_balance}</td>
                       <td>{data.bank_name}</td>
                       <td>{data.transaction_type}</td>
                       <td>
