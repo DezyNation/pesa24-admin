@@ -188,9 +188,9 @@ const Index = () => {
           next_page_url: res.data.next_page_url,
           prev_page_url: res.data.prev_page_url,
         });
-        setRowData(res.data.data);
-        setPrintableRow(res.data.data);
-        setRearrangedRows(res.data.data);
+        setRowData(res.data);
+        setPrintableRow(res.data);
+        setRearrangedRows(res.data);
       })
       .catch((err) => {
         if (err?.response?.status == 401) {
@@ -362,7 +362,7 @@ const Index = () => {
             Search
           </Button>
         </HStack>
-        <HStack
+        {/* <HStack
           spacing={2}
           py={4}
           mt={24}
@@ -413,7 +413,7 @@ const Index = () => {
           >
             <BsChevronDoubleRight />
           </Button>
-        </HStack>
+        </HStack> */}
         <Box py={6}>
           <Box
             className="ag-theme-alpine ag-theme-pesa24-blue"
@@ -431,6 +431,8 @@ const Index = () => {
                 resizable: true,
                 sortable: true,
               }}
+              pagination={true}
+              paginationPageSize={100}
               components={{
                 receiptCellRenderer: receiptCellRenderer,
                 creditCellRenderer: creditCellRenderer,
