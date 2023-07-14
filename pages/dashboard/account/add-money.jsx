@@ -57,6 +57,7 @@ const AddMoney = () => {
                 status: 'success',
                 description: 'Funds added to your account',
             })
+            onClose()
         }).catch(err => {
             if (err?.response?.status == 401) {
               Cookies.remove("verified");

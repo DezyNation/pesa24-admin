@@ -43,6 +43,7 @@ import { FormLabel } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
 import Cookies from "js-cookie";
 import { Select } from "@chakra-ui/react";
+import { FiRefreshCw } from "react-icons/fi";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -137,6 +138,7 @@ const Index = () => {
     },
   ]);
   const [pages, setPages] = useState([]);
+  const [loading, setLoading] = useState(false)
 
   const Formik = useFormik({
     initialValues: {
@@ -150,11 +152,14 @@ const Index = () => {
   });
 
   function fetchPendingTransactions() {
+    setLoading(true)
     BackendAxios.get(`/api/admin/payouts/processing`)
       .then((res) => {
+        setLoading(false)
         setPendingRowData(res.data);
       })
       .catch((err) => {
+        setLoading(false)
         console.log(err);
         Toast({
           status: "error",
@@ -169,6 +174,7 @@ const Index = () => {
       Formik.setFieldValue("userId", "");
     }
     if (Formik.values.userQuery) {
+      setLoading(true)
       await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
         .then((result) => {
           Formik.setFieldValue("userId", result.data.data.id);
@@ -176,12 +182,17 @@ const Index = () => {
             pageLink
               ? pageLink
               : `/api/admin/payouts/${Formik.values.status}?from=${
-                  Formik.values.from + (Formik.values.from && ("T" + "00:00"))
-                }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&search=${
-                  Formik.values.query
-                }&userId=${result.data.data.id}&status=${Formik.values.status != "all" ? Formik.values.status : ""}&page=1`
+                  Formik.values.from + (Formik.values.from && "T" + "00:00")
+                }&to=${
+                  Formik.values.to + (Formik.values.to && "T" + "23:59")
+                }&search=${Formik.values.query}&userId=${
+                  result.data.data.id
+                }&status=${
+                  Formik.values.status != "all" ? Formik.values.status : ""
+                }&page=1`
           )
             .then((res) => {
+              setLoading(false)
               setPagination({
                 current_page: res.data.current_page,
                 total_pages: parseInt(res.data.last_page),
@@ -196,6 +207,7 @@ const Index = () => {
               fetchPendingTransactions();
             })
             .catch((err) => {
+              setLoading(false)
               if (err?.response?.status == 401) {
                 Cookies.remove("verified");
                 window.location.reload();
@@ -211,6 +223,7 @@ const Index = () => {
             });
         })
         .catch((err) => {
+          setLoading(false)
           if (err?.response?.status == 401) {
             Cookies.remove("verified");
             window.location.reload();
@@ -227,16 +240,20 @@ const Index = () => {
         });
       return;
     }
+    setLoading(true)
     BackendAxios.get(
       pageLink
         ? pageLink
         : `/api/admin/payouts/${Formik.values.status}?from=${
-            Formik.values.from + (Formik.values.from && ("T" + "00:00"))
+            Formik.values.from + (Formik.values.from && "T" + "00:00")
           }&to=${
-            Formik.values.to + (Formik.values.to && ("T" + "23:59"))
-          }&search=${Formik.values.query}&userId=${Formik.values.userId}&status=${Formik.values.status}&page=1`
+            Formik.values.to + (Formik.values.to && "T" + "23:59")
+          }&search=${Formik.values.query}&userId=${
+            Formik.values.userId
+          }&status=${Formik.values.status}&page=1`
     )
       .then((res) => {
+        setLoading(false)
         setPagination({
           current_page: res.data.current_page,
           total_pages: parseInt(res.data.last_page),
@@ -251,6 +268,7 @@ const Index = () => {
         fetchPendingTransactions();
       })
       .catch((err) => {
+        setLoading(false)
         if (err?.response?.status == 401) {
           Cookies.remove("verified");
           window.location.reload();
@@ -384,9 +402,11 @@ const Index = () => {
           });
           let pageUrl = `/api/admin/payouts/${Formik.values.status}?from=${
             Formik.values.from + (Formik.values.from && "T" + "00:00")
-          }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${
-            Formik.values.userId
-          }&status=${Formik.values.status}&page=${pagination.current_page}`;
+          }&to=${
+            Formik.values.to + (Formik.values.to && "T" + "23:59")
+          }&userId=${Formik.values.userId}&status=${
+            Formik.values.status
+          }&page=${pagination.current_page}`;
           fetchTransactions(pageUrl);
         })
         .catch((err) => {
@@ -453,6 +473,16 @@ const Index = () => {
               bg={"white"}
             />
           </FormControl>
+          <FormControl w={["full", "xs"]}>
+            <FormLabel>Status</FormLabel>
+            <Select name="status" onChange={Formik.handleChange} bg={"white"}>
+              <option value="all">All</option>
+              <option value="processed">Processed</option>
+              <option value="failed">Failed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="reversed">Reversed</option>
+            </Select>
+          </FormControl>
         </Stack>
         <Stack p={4} spacing={8} w={"full"} direction={["column", "row"]}>
           <FormControl w={["full", "xs"]}>
@@ -467,16 +497,6 @@ const Index = () => {
               bg={"white"}
             />
           </FormControl>
-          <FormControl w={["full", "xs"]}>
-            <FormLabel>Status</FormLabel>
-            <Select name="status" onChange={Formik.handleChange} bg={"white"}>
-              <option value="all">All</option>
-              <option value="processed">Processed</option>
-              <option value="failed">Failed</option>
-              <option value="cancelled">Cancelled</option>
-              <option value="reversed">Reversed</option>
-            </Select>
-          </FormControl>
         </Stack>
         <HStack mb={4} justifyContent={"flex-end"}>
           <Button onClick={() => fetchTransactions()} colorScheme={"twitter"}>
@@ -485,7 +505,20 @@ const Index = () => {
         </HStack>
 
         {/* Pending Payouts */}
-        <Text pb={4}>Pending Payouts</Text>
+        <HStack p={4} pt={10} w={'full'} justifyContent={'space-between'}>
+          <Text fontSize={"lg"} fontWeight={"semibold"}>
+            Pending Payouts
+          </Text>
+          <Button
+              colorScheme="blue"
+              variant={"ghost"}
+              leftIcon={<FiRefreshCw />}
+              onClick={()=>fetchPendingTransactions()}
+              isLoading={loading}
+            >
+              Refresh Pending Payouts
+            </Button>
+        </HStack>
         <Box
           rounded={16}
           overflow={"hidden"}
@@ -522,7 +555,20 @@ const Index = () => {
         <br />
         <br />
         <br />
-
+        <HStack p={4} pt={10} w={'full'} justifyContent={'space-between'}>
+          <Text fontSize={"lg"} fontWeight={"semibold"}>
+            All Payouts
+          </Text>
+          <Button
+              colorScheme="blue"
+              variant={"ghost"}
+              leftIcon={<FiRefreshCw />}
+              onClick={()=>fetchTransactions()}
+              isLoading={loading}
+            >
+              Refresh Transactions
+            </Button>
+        </HStack>
         <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
           <Button
             colorScheme={"twitter"}

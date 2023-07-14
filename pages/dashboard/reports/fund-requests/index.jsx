@@ -65,10 +65,12 @@ const FundRequests = () => {
       field: "status",
       headerName: "Status",
       cellRenderer: "statusCellRenderer",
+      width: 120
     },
     {
       headerName: "Transfer Date",
       field: "transaction_date",
+      width: 140
     },
     {
       headerName: "Request Timestamp",
@@ -84,6 +86,16 @@ const FundRequests = () => {
       headerName: "Amount",
       field: "amount",
       width: 100,
+    },
+    {
+      headerName: "Opening Balance",
+      field: "opening_balance",
+      width: 140,
+    },
+    {
+      headerName: "Closing Balance",
+      field: "closing_balance",
+      width: 140,
     },
     {
       headerName: "Requested Bank",
