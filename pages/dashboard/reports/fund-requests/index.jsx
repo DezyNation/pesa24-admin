@@ -160,7 +160,7 @@ const FundRequests = () => {
       query: "",
       userQuery: "",
       userId: "",
-      status: "",
+      status: "all",
       search: "",
     },
   });
