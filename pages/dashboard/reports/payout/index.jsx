@@ -463,8 +463,8 @@ const Index = () => {
         </Text>
         <HStack my={4}>
           <DownloadTableExcel
-            filename="UsersList"
-            sheet="users"
+            filename="PayoutReports"
+            sheet="payouts"
             currentTableRef={tableRef.current}
           >
             <Button
