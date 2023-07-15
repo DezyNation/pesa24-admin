@@ -138,7 +138,7 @@ const Index = () => {
     },
   ]);
   const [pages, setPages] = useState([]);
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const Formik = useFormik({
     initialValues: {
@@ -151,15 +151,42 @@ const Index = () => {
     },
   });
 
-  function fetchPendingTransactions() {
-    setLoading(true)
-    BackendAxios.get(`/api/admin/payouts/processing`)
+  async function fetchPendingTransactions() {
+    setLoading(true);
+    await BackendAxios.get(`/api/admin/payouts/processing`)
       .then((res) => {
-        setLoading(false)
+        setLoading(false);
         setPendingRowData(res.data);
       })
       .catch((err) => {
-        setLoading(false)
+        setLoading(false);
+        console.log(err);
+        Toast({
+          status: "error",
+          description:
+            err?.response?.data?.message || err?.response?.data || err?.message,
+        });
+      });
+  }
+
+  async function generateReport(userId) {
+    await BackendAxios.get(
+      `/api/admin/print-report?type=payouts&from=${
+        Formik.values.from + (Formik.values.from && "T" + "00:00")
+      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&search=${
+        Formik.values.query
+      }&userId=${userId || ""}&status=${
+        Formik.values.status != "all" ? Formik.values.status : ""
+      }&report=${Formik.values.status}`
+    )
+      .then((res) => {
+        setPrintableRow(res.data);
+      })
+      .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
         console.log(err);
         Toast({
           status: "error",
@@ -173,12 +200,13 @@ const Index = () => {
     if (!Formik.values.userQuery) {
       Formik.setFieldValue("userId", "");
     }
-    if (Formik.values.userQuery) {
-      setLoading(true)
+    if (Formik.values.userQuery != "") {
+      setLoading(true);
       await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
-        .then((result) => {
+        .then(async (result) => {
           Formik.setFieldValue("userId", result.data.data.id);
-          BackendAxios.get(
+          await generateReport(result.data.data.id);
+          await BackendAxios.get(
             pageLink
               ? pageLink
               : `/api/admin/payouts/${Formik.values.status}?from=${
@@ -191,8 +219,8 @@ const Index = () => {
                   Formik.values.status != "all" ? Formik.values.status : ""
                 }&page=1`
           )
-            .then((res) => {
-              setLoading(false)
+            .then(async (res) => {
+              setLoading(false);
               setPagination({
                 current_page: res.data.current_page,
                 total_pages: parseInt(res.data.last_page),
@@ -203,11 +231,9 @@ const Index = () => {
               });
               setPages(res.data?.links);
               setRowData(res.data.data);
-              setPrintableRow(res.data.data);
-              fetchPendingTransactions();
             })
             .catch((err) => {
-              setLoading(false)
+              setLoading(false);
               if (err?.response?.status == 401) {
                 Cookies.remove("verified");
                 window.location.reload();
@@ -223,7 +249,7 @@ const Index = () => {
             });
         })
         .catch((err) => {
-          setLoading(false)
+          setLoading(false);
           if (err?.response?.status == 401) {
             Cookies.remove("verified");
             window.location.reload();
@@ -240,8 +266,9 @@ const Index = () => {
         });
       return;
     }
-    setLoading(true)
-    BackendAxios.get(
+    setLoading(true);
+    await generateReport()
+    await BackendAxios.get(
       pageLink
         ? pageLink
         : `/api/admin/payouts/${Formik.values.status}?from=${
@@ -253,7 +280,7 @@ const Index = () => {
           }&status=${Formik.values.status}&page=1`
     )
       .then((res) => {
-        setLoading(false)
+        setLoading(false);
         setPagination({
           current_page: res.data.current_page,
           total_pages: parseInt(res.data.last_page),
@@ -264,11 +291,9 @@ const Index = () => {
         });
         setPages(res.data?.links);
         setRowData(res.data.data);
-        setPrintableRow(res.data.data);
-        fetchPendingTransactions();
       })
       .catch((err) => {
-        setLoading(false)
+        setLoading(false);
         if (err?.response?.status == 401) {
           Cookies.remove("verified");
           window.location.reload();
@@ -505,19 +530,19 @@ const Index = () => {
         </HStack>
 
         {/* Pending Payouts */}
-        <HStack p={4} pt={10} w={'full'} justifyContent={'space-between'}>
+        <HStack p={4} pt={10} w={"full"} justifyContent={"space-between"}>
           <Text fontSize={"lg"} fontWeight={"semibold"}>
             Pending Payouts
           </Text>
           <Button
-              colorScheme="blue"
-              variant={"ghost"}
-              leftIcon={<FiRefreshCw />}
-              onClick={()=>fetchPendingTransactions()}
-              isLoading={loading}
-            >
-              Refresh Pending Payouts
-            </Button>
+            colorScheme="blue"
+            variant={"ghost"}
+            leftIcon={<FiRefreshCw />}
+            onClick={() => fetchPendingTransactions()}
+            isLoading={loading}
+          >
+            Refresh Pending Payouts
+          </Button>
         </HStack>
         <Box
           rounded={16}
@@ -555,19 +580,19 @@ const Index = () => {
         <br />
         <br />
         <br />
-        <HStack p={4} pt={10} w={'full'} justifyContent={'space-between'}>
+        <HStack p={4} pt={10} w={"full"} justifyContent={"space-between"}>
           <Text fontSize={"lg"} fontWeight={"semibold"}>
             All Payouts
           </Text>
           <Button
-              colorScheme="blue"
-              variant={"ghost"}
-              leftIcon={<FiRefreshCw />}
-              onClick={()=>fetchTransactions()}
-              isLoading={loading}
-            >
-              Refresh Transactions
-            </Button>
+            colorScheme="blue"
+            variant={"ghost"}
+            leftIcon={<FiRefreshCw />}
+            onClick={() => fetchTransactions()}
+            isLoading={loading}
+          >
+            Refresh Transactions
+          </Button>
         </HStack>
         <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
           <Button
