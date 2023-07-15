@@ -43,6 +43,7 @@ import { useFormik } from "formik";
 import Cookies from "js-cookie";
 import { DownloadTableExcel } from "react-export-table-to-excel";
 import { SiMicrosoftexcel } from "react-icons/si";
+import { Spacer } from "@chakra-ui/react";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -128,6 +129,7 @@ const Index = () => {
       width: 80,
     },
   ]);
+  const [overviewData, setOverviewData] = useState([]);
 
   const handleShare = async () => {
     const myFile = await toBlob(pdfRef.current, { quality: 0.95 });
@@ -158,16 +160,36 @@ const Index = () => {
     },
   });
 
+  function fetchOverview() {
+    BackendAxios.get(
+      `/api/admin/user/overview/${Cookies.get("viewUserId")}?from=${
+        Formik.values.from + (Formik.values.from && "T" + "00:00")
+      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}`
+    )
+      .then((res) => {
+        setOverviewData(res.data);
+      })
+      .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+          return;
+        }
+        console.log(err);
+      });
+  }
+
   function fetchTransactions(pageLink) {
     BackendAxios.get(
       pageLink ||
-        `/api/admin/user-reports/${transactionKeyword}/${Cookies.get(
-          "viewUserId"
+      `/api/admin/user-reports/${transactionKeyword}/${Cookies.get(
+        "viewUserId"
         )}?from=${
           Formik.values.from + (Formik.values.from && "T" + "00:00")
         }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&page=1`
-    )
-      .then((res) => {
+        )
+        .then((res) => {
+        fetchOverview()
         setPagination({
           current_page: res.data.current_page,
           total_pages: parseInt(res.data.last_page),
@@ -280,7 +302,7 @@ const Index = () => {
     );
   };
 
-  const tableRef = React.useRef(null)
+  const tableRef = React.useRef(null);
   return (
     <>
       <DashboardWrapper pageTitle={"Payout Reports"}>
@@ -382,6 +404,47 @@ const Index = () => {
             <BsChevronDoubleRight />
           </Button>
         </HStack> */}
+
+        <HStack
+          mt={8}
+          mb={4}
+          p={2}
+          px={4}
+          rounded={2}
+          bgColor={"#FFF"}
+          boxShadow={"sm"}
+          w={"full"}
+        >
+          <Text fontSize={"lg"} fontWeight={"semibold"}>
+            Total
+          </Text>
+          <Spacer />
+          <HStack gap={8}>
+            <Box>
+              <Text fontSize={"10"}>Payouts</Text>
+              <Text fontSize={"md"} fontWeight={"semibold"}>
+                ₹{" "}
+                {Math.abs(
+                  overviewData[4]?.payout?.debit -
+                    overviewData[4]?.payout?.credit
+                ).toFixed(2) || 0}
+              </Text>
+            </Box>
+            <Box>
+              <Text fontSize={"10"}>Charges</Text>
+              <Text fontSize={"md"} fontWeight={"semibold"}>
+                ₹{" "}
+                {Math.abs(
+                  overviewData[7]?.["payout-commission"]?.credit +
+                    overviewData[10]?.["payout-charge"]?.credit -
+                    (overviewData[7]?.["payout-commission"]?.debit +
+                      overviewData[10]?.["payout-charge"]?.debit)
+                ).toFixed(2) || 0}
+              </Text>
+            </Box>
+          </HStack>
+        </HStack>
+
         <Box py={6}>
           <Box
             className="ag-theme-alpine ag-theme-pesa24-blue"
