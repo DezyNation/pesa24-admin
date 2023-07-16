@@ -40,6 +40,7 @@ import "jspdf-autotable";
 import { toBlob } from "html-to-image";
 import { useFormik } from "formik";
 import Cookies from "js-cookie";
+import { DownloadTableExcel } from "react-export-table-to-excel";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
