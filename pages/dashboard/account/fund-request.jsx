@@ -39,6 +39,7 @@ import { ModalFooter } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
 import { DownloadTableExcel } from "react-export-table-to-excel";
 import Cookies from "js-cookie";
+import { FiRefreshCw } from "react-icons/fi";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -130,6 +131,7 @@ const FundRequests = () => {
     },
     { headerName: "Update Timestamp", field: "updated_at" },
   ]);
+  const [loading, setLoading] = useState(false);
 
   const { onToggle, isOpen } = useDisclosure();
   const [selectedFundReq, setSelectedFundReq] = useState({
@@ -151,8 +153,10 @@ const FundRequests = () => {
   });
 
   function fetchRequests(pageLink) {
+    setLoading(true);
     BackendAxios.get(pageLink || "/api/admin/fetch-fund/pending?pageSize=200")
       .then((res) => {
+        setLoading(false);
         setPagination({
           current_page: res.data.current_page,
           total_pages: parseInt(res.data.last_page),
@@ -165,6 +169,7 @@ const FundRequests = () => {
         setPrintableRow(res.data.data);
       })
       .catch((err) => {
+        setLoading(false);
         console.log(err);
         Toast({
           status: "error",
@@ -346,7 +351,8 @@ const FundRequests = () => {
     return (
       <>
         <Text>
-          ({params.data.user_id}) {params.data.name} - {params?.data?.phone_number}
+          ({params.data.user_id}) {params.data.name} -{" "}
+          {params?.data?.phone_number}
         </Text>
       </>
     );
@@ -404,6 +410,18 @@ const FundRequests = () => {
               Print
             </Button>
           </HStack> */}
+
+          <HStack w={"full"} py={4} justifyContent={"flex-end"}>
+            <Button
+              colorScheme="blue"
+              variant={"ghost"}
+              leftIcon={<FiRefreshCw />}
+              onClick={()=>fetchRequests()}
+              isLoading={loading}
+            >
+              Refresh Data
+            </Button>
+          </HStack>
 
           <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
             <Button

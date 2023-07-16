@@ -65,10 +65,12 @@ const FundRequests = () => {
       field: "status",
       headerName: "Status",
       cellRenderer: "statusCellRenderer",
+      width: 120
     },
     {
       headerName: "Transfer Date",
       field: "transaction_date",
+      width: 140
     },
     {
       headerName: "Request Timestamp",
@@ -84,6 +86,16 @@ const FundRequests = () => {
       headerName: "Amount",
       field: "amount",
       width: 100,
+    },
+    {
+      headerName: "Opening Balance",
+      field: "opening_balance",
+      width: 140,
+    },
+    {
+      headerName: "Closing Balance",
+      field: "closing_balance",
+      width: 140,
     },
     {
       headerName: "Requested Bank",
@@ -179,7 +191,7 @@ const FundRequests = () => {
           )
             .then((res) => {
               BackendAxios.get(
-                `/api/admin/print-report?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${result.data.data.id}&search=${Formik.values.search}&status=${Formik.values.status}&pageSize=`
+                `/api/admin/print-report?type=fund-requests&from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${result.data.data.id}&search=${Formik.values.search}&status=${Formik.values.status}&pageSize=`
               ).then((response) => {
                 setPrintableRow(response.data);
               });
@@ -226,7 +238,7 @@ const FundRequests = () => {
       return;
     }
     await BackendAxios.get(
-      `/api/admin/print-report?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))
+      `/api/admin/print-report?type=fund-requests&from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))
       }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${Formik.values.userId
       }&search=${Formik.values.search}&status=${Formik.values.status}&pageSize=`
     )
@@ -681,6 +693,8 @@ const FundRequests = () => {
                       <td>{data.created_at}</td>
                       <td>{data.transaction_id}</td>
                       <td>{data.amount}</td>
+                      <td>{data.opening_balance}</td>
+                      <td>{data.closing_balance}</td>
                       <td>{data.bank_name}</td>
                       <td>{data.transaction_type}</td>
                       <td>
