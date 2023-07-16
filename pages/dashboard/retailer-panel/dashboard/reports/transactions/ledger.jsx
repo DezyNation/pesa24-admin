@@ -336,7 +336,6 @@ const Index = () => {
               <Button
                 size={["xs", "sm"]}
                 colorScheme={"whatsapp"}
-                leftIcon={<SiMicrosoftexcel />}
               >
                 Excel
               </Button>
