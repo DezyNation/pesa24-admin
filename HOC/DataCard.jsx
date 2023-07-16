@@ -30,7 +30,7 @@ const DataCard = ({ title, data, icon, color }) => {
         </Show>
         <VStack alignItems={'flex-start'} justifyContent={'space-between'} spacing={0}>
           <Text fontSize={'10'}>{title}</Text>
-          <Text fontSize={'28'} fontWeight={'semibold'}>{data || 0}</Text>
+          <Text fontSize={'28'} fontWeight={'semibold'}>{Number(data)?.toFixed(2) || 0}</Text>
         </VStack>
       </HStack>
     </>

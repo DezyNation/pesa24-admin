@@ -264,6 +264,12 @@ const menuOptions = [
     icon: <HiDocumentReport />,
     children: [
       {
+        id: "market-overview",
+        title: "market overview",
+        link: "/dashboard/reports/market-overview?pageid=market-overview&parent=reports",
+        status: true,
+      },
+      {
         id: "report-aeps",
         title: "aeps",
         link: "/dashboard/reports/aeps?pageid=report-aeps&parent=reports",

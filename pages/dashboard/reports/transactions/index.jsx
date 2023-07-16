@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import Layout from "../../layout";
-import { Box, Button, Text, HStack, VisuallyHidden } from "@chakra-ui/react";
+import { Box, Button, Text, HStack, VisuallyHidden, InputGroup, InputRightElement } from "@chakra-ui/react";
 import BackendAxios from "@/lib/utils/axios";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -33,7 +33,7 @@ const ExportPDF = () => {
 const Ledger = () => {
   const Toast = useToast({ position: "top-right" });
   const [rowData, setRowData] = useState([]);
-  const [rearrangedRows, setRearrangedRows] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [columnDefs, setColumnDefs] = useState([
     {
       headerName: "Transaction ID",
@@ -45,12 +45,6 @@ const Ledger = () => {
       cellRenderer: "userCellRenderer",
       width: 150,
     },
-    // {
-    //     headerName: "Phone",
-    //     field: "transaction_by_phone",
-    //     width: 150,
-    //     hide: true
-    // },
     {
       headerName: "Description",
       field: "description",
@@ -109,6 +103,8 @@ const Ledger = () => {
     next_page_url: "",
     prev_page_url: "",
   });
+  const [verifiedUser, setVerifiedUser] = useState({})
+  const [userId, setUserId] = useState("")
   const Formik = useFormik({
     initialValues: {
       from: "",
@@ -119,72 +115,108 @@ const Ledger = () => {
     },
   });
 
+  async function verifyUser() {
+    if(!Formik.values.userQuery) {
+      Toast({
+        description: "Please enter User ID or Phone No."
+      })
+      return
+    }
+    await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
+      .then(async (res) => {
+        Formik.setFieldValue("userId", res.data.data.id);
+        setVerifiedUser(res.data.data)
+      }).catch(err => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
+        console.log(err);
+        Toast({
+          status: "error",
+          title: "Error while verifying User",
+          description:
+            err?.response?.data?.message || err?.response?.data || err?.message,
+        });
+      })
+  }
+
+  async function generateReport(userId) {
+    if (!Formik.values.from || !Formik.values.to) return
+    setLoading(true)
+    await BackendAxios.get(
+      `/api/admin/print-report?type=ledger&from=${Formik.values.from + (Formik.values.from && "T" + "00:00")
+      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")
+      }&search=${Formik.values.query}&userId=${Formik.values.userId}`
+    )
+      .then((res) => {
+        setLoading(false)
+        setPrintableRow(res.data);
+      })
+      .catch((err) => {
+        setLoading(false)
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
+        console.log(err);
+        Toast({
+          status: "error",
+          description:
+            err?.response?.data?.message || err?.response?.data || err?.message,
+        });
+      });
+  }
+
   async function fetchLedger(pageLink) {
+    setLoading(true)
     if (!Formik.values.userQuery) {
       Formik.setFieldValue("userId", "");
     }
-    if (Formik.values.userQuery) {
-      await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
-        .then((result) => {
-          Formik.setFieldValue("userId", result.data.data.id);
-          BackendAxios.get(
-            pageLink ||
-              `/api/admin/transactions?from=${
-                Formik.values.from + (Formik.values.from && "T" + "00:00")
-              }&to=${
-                Formik.values.to + (Formik.values.to && "T" + "23:59")
-              }&search=${Formik.values.query}&userId=${
-                result.data.data.id
-              }&page=1`
-          )
-            .then((res) => {
-              setPagination({
-                current_page: res.data.current_page,
-                total_pages: parseInt(res.data.last_page),
-                first_page_url: res.data.first_page_url,
-                last_page_url: res.data.last_page_url,
-                next_page_url: res.data.next_page_url,
-                prev_page_url: res.data.prev_page_url,
-              });
-              setPages(res.data.links);
-              setRowData(res.data.data);
-              setRearrangedRows(res.data.data);
-              setPrintableRow(res.data.data);
-            })
-            .catch((err) => {
-              if (err?.response?.status == 401) {
-                Cookies.remove("verified");
-                window.location.reload();
-              }
-              console.log(err);
-            });
+    if (Formik.values.userQuery && !Formik.values.userId) {
+      Toast({
+        description: "Please verify the User first!"
+      })
+    }
+    if (Formik.values.userId) {
+      await BackendAxios.get(
+        pageLink ||
+        `/api/admin/transactions?from=${Formik.values.from + (Formik.values.from && "T" + "00:00")
+        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")
+        }&search=${Formik.values.query}&userId=${Formik.values.userId
+        }&page=1`
+      )
+        .then((res) => {
+          setLoading(false)
+          setPagination({
+            current_page: res.data.current_page,
+            total_pages: parseInt(res.data.last_page),
+            first_page_url: res.data.first_page_url,
+            last_page_url: res.data.last_page_url,
+            next_page_url: res.data.next_page_url,
+            prev_page_url: res.data.prev_page_url,
+          });
+          setPages(res.data.links);
+          setRowData(res.data.data);
         })
         .catch((err) => {
+          setLoading(false)
           if (err?.response?.status == 401) {
             Cookies.remove("verified");
             window.location.reload();
           }
-          Toast({
-            status: "error",
-            title: "Error while fetching user info",
-            description:
-              err?.response?.data?.message ||
-              err?.response?.data ||
-              err?.message ||
-              "User not found!",
-          });
         });
-      return;
+      return
     }
-    BackendAxios.get(
+
+    await BackendAxios.get(
       pageLink ||
-        `/api/admin/transactions?from=${
-          Formik.values.from + (Formik.values.from && "T" + "00:00")
-        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&search=${
-          Formik.values.query
-        }&userId=${Formik.values.userId}&page=1`
+      `/api/admin/transactions?from=${Formik.values.from + (Formik.values.from && "T" + "00:00")
+      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&search=${Formik.values.query
+      }&userId=${Formik.values.userId}&page=1`
     )
       .then((res) => {
+        setLoading(false)
         setPagination({
           current_page: res.data.current_page,
           total_pages: parseInt(res.data.last_page),
@@ -195,42 +227,19 @@ const Ledger = () => {
         });
         setPages(res.data.links);
         setRowData(res.data.data);
-        setRearrangedRows(res.data.data);
-        setPrintableRow(res.data.data);
       })
       .catch((err) => {
+        setLoading(false)
         if (err?.response?.status == 401) {
           Cookies.remove("verified");
           window.location.reload();
         }
-        console.log(err);
       });
   }
 
   useEffect(() => {
     fetchLedger();
   }, []);
-
-  useEffect(() => {
-    if (printableRow?.length) {
-      setRearrangedRows((prevRows) => {
-        const newRows = [...prevRows];
-        for (let i = 0; i < newRows.length - 1; i += 2) {
-          if (
-            Number(newRows[i]?.debit_amount) > 0 &&
-            Number(newRows[i + 1]?.debit_amount) > 0 &&
-            newRows[i]?.service_type=="payout" &&
-            newRows[i + 1]?.service_type == "payout-commission"
-          ) {
-            const temp = newRows[i];
-            newRows[i] = newRows[i + 1];
-            newRows[i + 1] = temp;
-          }
-        }
-        return newRows;
-      });
-    }
-  }, [printableRow]);
 
   const creditCellRenderer = (params) => {
     return (
@@ -285,6 +294,7 @@ const Ledger = () => {
         <Text fontSize={"lg"} fontWeight={"semibold"}>
           Transactions Ledger
         </Text>
+
         <HStack my={4}>
           <DownloadTableExcel
             filename="TransactionsLedger"
@@ -337,16 +347,27 @@ const Ledger = () => {
           </FormControl>
           <FormControl w={["full", "xs"]}>
             <FormLabel>User ID or Phone</FormLabel>
-            <Input
-              placeholder="User ID or Phone"
-              name="userQuery"
-              onChange={Formik.handleChange}
-              bg={"white"}
-            />
+            <InputGroup>
+              <Input
+                placeholder="User ID or Phone"
+                name="userQuery"
+                onChange={Formik.handleChange}
+                bg={"white"}
+              />
+              <InputRightElement paddingRight={2} fontSize={'xs'} children={<Text fontSize={'xs'} color={'twitter.500'} cursor={'pointer'} onClick={verifyUser}>Verify</Text>} />
+            </InputGroup>
+            <Text fontSize={'xs'}>{verifiedUser?.name} {verifiedUser?.phone_number}</Text>
           </FormControl>
         </Stack>
         <HStack mb={4} justifyContent={"flex-end"}>
-          <Button onClick={() => fetchLedger()} colorScheme={"twitter"}>
+          <Button
+            isLoading={loading}
+            onClick={async () => {
+              await fetchLedger().then(async (id) => {
+                console.log(id)
+                await generateReport(id)
+              })
+            }} colorScheme={"twitter"}>
             Search
           </Button>
         </HStack>

@@ -170,6 +170,7 @@ const Index = () => {
   }
 
   async function generateReport(userId) {
+    if(!Formik.values.from || !Formik.values.to) return
     await BackendAxios.get(
       `/api/admin/print-report?type=payouts&from=${
         Formik.values.from + (Formik.values.from && "T" + "00:00")
@@ -205,7 +206,7 @@ const Index = () => {
       await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
         .then(async (result) => {
           Formik.setFieldValue("userId", result.data.data.id);
-          await generateReport(result.data.data.id);
+          // await generateReport(result.data.data.id);
           await BackendAxios.get(
             pageLink
               ? pageLink
@@ -267,7 +268,6 @@ const Index = () => {
       return;
     }
     setLoading(true);
-    await generateReport()
     await BackendAxios.get(
       pageLink
         ? pageLink
@@ -309,6 +309,7 @@ const Index = () => {
 
   useEffect(() => {
     fetchTransactions();
+    fetchPendingTransactions()
   }, []);
 
   const pdfRef = React.createRef();
@@ -457,7 +458,7 @@ const Index = () => {
   const tableRef = useRef(null);
   return (
     <>
-      <Layout pageTitle={"DMT Reports"}>
+      <Layout pageTitle={"Payout Reports"}>
         <Text fontSize={"lg"} fontWeight={"semibold"}>
           Payout Transactions
         </Text>
@@ -524,7 +525,10 @@ const Index = () => {
           </FormControl>
         </Stack>
         <HStack mb={4} justifyContent={"flex-end"}>
-          <Button onClick={() => fetchTransactions()} colorScheme={"twitter"}>
+          <Button onClick={async () => {
+            await fetchTransactions()
+            await generateReport(Formik.values.userId)
+            }} colorScheme={"twitter"}>
             Search
           </Button>
         </HStack>
