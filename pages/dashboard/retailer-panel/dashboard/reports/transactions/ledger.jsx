@@ -95,7 +95,7 @@ const Index = () => {
     },
     {
       headerName: "Description",
-      field: "description",
+      field: "transaction_for",
       width: 150,
     },
     {
@@ -589,7 +589,7 @@ const Index = () => {
                   <td>{data.credit_amount}</td>
                   <td>{data.opening_balance}</td>
                   <td>{data.closing_balance}</td>
-                  <td>{data.description}</td>
+                  <td>{data.transaction_for}</td>
                   <td>{data.service_type}</td>
                   <td>
                     {JSON.parse(data.metadata).status}
