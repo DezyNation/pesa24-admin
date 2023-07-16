@@ -77,6 +77,18 @@ const MarketOverview = () => {
             width: 100,
             suppressMovable: true
         },
+        {
+            field: "created_at",
+            headerName: "Created At",
+            width: 120,
+            suppressMovable: true
+        },
+        {
+            field: "updated_at",
+            headerName: "Updated At",
+            width: 120,
+            suppressMovable: true
+        },
     ])
 
     function fetchData() {
