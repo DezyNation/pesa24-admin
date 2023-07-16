@@ -193,12 +193,12 @@ const MarketOverview = () => {
                 </HStack>
                 <br /><br />
                 <Stack w={'full'} gap={6} direction={['column', 'row']}>
-                    <DataCard
+                    {/* <DataCard
                         title={"Opening Balance"}
                         data={data?.opening_balance}
                         icon={<BiRupee color="#FF7B54" size={"32"} />}
                         color={"#FF7B54"}
-                    />
+                    /> */}
                     <DataCard
                         title={"Closing Balance"}
                         data={data?.closing_balance}
@@ -208,7 +208,7 @@ const MarketOverview = () => {
                 </Stack>
                 <br /><br />
                 <Stack w={'full'} gap={6} direction={['column', 'row']} justifyContent={'space-between'}>
-                    <Box
+                    {/* <Box
                         rounded={16}
                         overflow={"hidden"}
                         className="ag-theme-alpine ag-theme-pesa24-blue"
@@ -230,7 +230,7 @@ const MarketOverview = () => {
                                 statusCellRenderer: statusCellRenderer,
                             }}
                         ></AgGridReact>
-                    </Box>
+                    </Box> */}
 
                     <Box
                         rounded={16}
