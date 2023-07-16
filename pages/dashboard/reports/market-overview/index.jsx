@@ -136,7 +136,7 @@ const MarketOverview = () => {
     const userCellRenderer = (params) => {
         return (
             <Text>
-                ({params.data.user_id}) {params.data.name}
+                ({params.data.user_id}) {params.data.user_name} - {params.data.user_phone}
             </Text>
         );
     };
