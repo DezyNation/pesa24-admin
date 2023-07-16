@@ -269,11 +269,11 @@ const Index = () => {
         receipt.status == "processing" ||
         receipt.status == "queued" ? (
           <Text color={"green"} fontWeight={"bold"}>
-            SUCCESS
+            {receipt.status}
           </Text>
         ) : (
           <Text color={"red"} fontWeight={"bold"}>
-            FAILED
+            {receipt.status}
           </Text>
         )}
       </>

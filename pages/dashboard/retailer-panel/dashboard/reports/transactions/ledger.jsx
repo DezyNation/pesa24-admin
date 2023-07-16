@@ -93,10 +93,9 @@ const Index = () => {
       width: 150,
     },
     {
-      headerName: "Event",
-      field: "metadata",
-      cellRenderer: "eventCellRenderer",
-      width: 100,
+      headerName: "Description",
+      field: "description",
+      width: 150,
     },
     {
       headerName: "Trnxn Type",
@@ -129,13 +128,6 @@ const Index = () => {
       headerName: "Additional Info",
       field: "metadata",
       hide: true,
-    },
-    {
-      headerName: "Receipt",
-      field: "receipt",
-      pinned: "right",
-      cellRenderer: "receiptCellRenderer",
-      width: 80,
     },
   ]);
 
@@ -295,11 +287,11 @@ const Index = () => {
         receipt.status == "processing" ||
         receipt.status == "queued" ? (
           <Text color={"green"} fontWeight={"bold"}>
-            SUCCESS
+            {receipt.status}
           </Text>
         ) : (
           <Text color={"red"} fontWeight={"bold"}>
-            FAILED
+            {receipt.status}
           </Text>
         )}
       </>
@@ -326,6 +318,8 @@ const Index = () => {
     );
   };
 
+  const tableRef = React.useRef(null)
+
   return (
     <>
       <DashboardWrapper pageTitle={"Transaction Ledger"}>
@@ -333,6 +327,19 @@ const Index = () => {
           <Button onClick={ExportPDF} colorScheme={"red"} size={"sm"}>
             Export PDF
           </Button>
+          <DownloadTableExcel
+              filename={`Ledger (User ${Cookies.get("viewUserId")})`}
+              sheet="sheet1"
+              currentTableRef={tableRef.current}
+            >
+              <Button
+                size={["xs", "sm"]}
+                colorScheme={"whatsapp"}
+                leftIcon={<SiMicrosoftexcel />}
+              >
+                Excel
+              </Button>
+            </DownloadTableExcel>
         </HStack>
         <Box p={2} bg={"orange.500"} roundedTop={16}>
           <Text color={"#FFF"}>Search Transactions</Text>
@@ -551,7 +558,7 @@ const Index = () => {
       </Modal>
 
       <VisuallyHidden>
-        <table id="printable-table">
+        <table id="printable-table" ref={tableRef}>
           <thead>
             <tr>
               <th>#</th>
@@ -580,9 +587,10 @@ const Index = () => {
                   <td>{data.credit_amount}</td>
                   <td>{data.opening_balance}</td>
                   <td>{data.closing_balance}</td>
+                  <td>{data.description}</td>
                   <td>{data.service_type}</td>
                   <td>
-                    {JSON.parse(data.metadata).status ? "SUCCESS" : "FAILED"}
+                    {JSON.parse(data.metadata).status}
                   </td>
                   <td>{data.created_at}</td>
                   <td>{data.updated_at}</td>
