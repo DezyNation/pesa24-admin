@@ -477,8 +477,9 @@ const CreateAdmin = () => {
                     <Text fontSize={'md'} fontWeight={'semibold'}>{admin.name} ({admin.id})</Text>
                     <Text fontSize={'md'}>{admin.phone_number}</Text>
                     <Text fontSize={'xs'}>{admin.email}</Text>
-                    <HStack justifyContent={'flex-end'} w={'full'}>
-                      <Button size={'sm'} colorScheme='blue' onClick={()=>sendCredentials(admin?.email, admin?.name)}>Send Credentials</Button>
+                    <br />
+                    <HStack justifyContent={'flex-end'} w={'full'} pt={4}>
+                      <Button size={'xs'} colorScheme='blue' onClick={()=>sendCredentials(admin?.email, admin?.name)}>Send Credentials</Button>
                     </HStack>
                     <HStack
                       w={'full'} pt={4}
