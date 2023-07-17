@@ -77,6 +77,18 @@ const MarketOverview = () => {
             width: 100,
             suppressMovable: true
         },
+        {
+            field: "created_at",
+            headerName: "Created At",
+            width: 120,
+            suppressMovable: true
+        },
+        {
+            field: "updated_at",
+            headerName: "Updated At",
+            width: 120,
+            suppressMovable: true
+        },
     ])
 
     function fetchData() {
@@ -136,7 +148,7 @@ const MarketOverview = () => {
     const userCellRenderer = (params) => {
         return (
             <Text>
-                ({params.data.user_id}) {params.data.name}
+                ({params.data.user_id}) {params.data.user_name} - {params.data.user_phone}
             </Text>
         );
     };
@@ -181,12 +193,12 @@ const MarketOverview = () => {
                 </HStack>
                 <br /><br />
                 <Stack w={'full'} gap={6} direction={['column', 'row']}>
-                    <DataCard
+                    {/* <DataCard
                         title={"Opening Balance"}
                         data={data?.opening_balance}
                         icon={<BiRupee color="#FF7B54" size={"32"} />}
                         color={"#FF7B54"}
-                    />
+                    /> */}
                     <DataCard
                         title={"Closing Balance"}
                         data={data?.closing_balance}
@@ -196,7 +208,7 @@ const MarketOverview = () => {
                 </Stack>
                 <br /><br />
                 <Stack w={'full'} gap={6} direction={['column', 'row']} justifyContent={'space-between'}>
-                    <Box
+                    {/* <Box
                         rounded={16}
                         overflow={"hidden"}
                         className="ag-theme-alpine ag-theme-pesa24-blue"
@@ -218,7 +230,7 @@ const MarketOverview = () => {
                                 statusCellRenderer: statusCellRenderer,
                             }}
                         ></AgGridReact>
-                    </Box>
+                    </Box> */}
 
                     <Box
                         rounded={16}
