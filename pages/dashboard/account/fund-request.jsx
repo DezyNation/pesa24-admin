@@ -132,6 +132,7 @@ const FundRequests = () => {
     { headerName: "Update Timestamp", field: "updated_at" },
   ]);
   const [loading, setLoading] = useState(false);
+  const [processingApproval, setProcessingApproval] = useState(false)
 
   const { onToggle, isOpen } = useDisclosure();
   const [selectedFundReq, setSelectedFundReq] = useState({
@@ -187,6 +188,7 @@ const FundRequests = () => {
   function updateFundRequest() {
     console.log(selectedFundReq);
     console.log(remarks);
+    setProcessingApproval(true)
     if (selectedFundReq.action == "approved") {
       BackendAxios.post(`/api/admin/update-fund-requests`, {
         id: selectedFundReq.id,
@@ -196,6 +198,7 @@ const FundRequests = () => {
         amount: selectedFundReq.amount,
       })
         .then((res) => {
+          setProcessingApproval(false)
           Toast({
             status: "success",
             description: "Status Updated",
@@ -204,6 +207,7 @@ const FundRequests = () => {
           fetchRequests();
         })
         .catch((err) => {
+          setProcessingApproval(false)
           if (err?.response?.status == 401) {
             Cookies.remove("verified");
             window.location.reload();
@@ -227,6 +231,7 @@ const FundRequests = () => {
         remarks: remarks,
       })
         .then((res) => {
+          setProcessingApproval(false)
           onToggle();
           Toast({
             status: "success",
@@ -235,6 +240,7 @@ const FundRequests = () => {
           fetchRequests();
         })
         .catch((err) => {
+          setProcessingApproval(false)
           if (err?.response?.status == 401) {
             Cookies.remove("verified");
             window.location.reload();
@@ -260,6 +266,7 @@ const FundRequests = () => {
         fundId: selectedFundReq.id,
       })
         .then((res) => {
+          setProcessingApproval(false)
           onToggle();
           Toast({
             status: "success",
@@ -268,6 +275,7 @@ const FundRequests = () => {
           fetchRequests();
         })
         .catch((err) => {
+          setProcessingApproval(false)
           if (err?.response?.status == 401) {
             Cookies.remove("verified");
             window.location.reload();
@@ -633,7 +641,7 @@ const FundRequests = () => {
           </ModalBody>
           <ModalFooter>
             <HStack justifyContent={"flex-end"}>
-              <Button colorScheme="twitter" onClick={updateFundRequest}>
+              <Button colorScheme="twitter" onClick={updateFundRequest} isLoading={processingApproval}>
                 Confirm
               </Button>
             </HStack>
