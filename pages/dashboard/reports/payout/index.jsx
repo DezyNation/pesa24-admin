@@ -433,7 +433,7 @@ const Index = () => {
           }&userId=${Formik.values.userId}&status=${
             Formik.values.status
           }&page=${pagination.current_page}`;
-          fetchTransactions(pageUrl);
+          fetchPendingTransactions()
         })
         .catch((err) => {
           Toast({
