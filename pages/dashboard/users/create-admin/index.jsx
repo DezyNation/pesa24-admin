@@ -213,6 +213,24 @@ const CreateAdmin = () => {
     })
   }
 
+  function sendCredentials(userEmail, name) {
+    BackendAxios.post(`/admin-send-creds`, {
+        email: userEmail,
+        name: name
+    }).then(res => {
+        Toast({
+            status: 'success',
+            description: 'Credentials Sent!'
+        })
+    }).catch(err => {
+        Toast({
+            status: 'error',
+            title: 'Error while sending credentials',
+            description: err.response.data.message || err.response.data || err.message
+        })
+    })
+}
+
   useEffect(() => {
     getAllAdmins()
   }, [])
@@ -459,6 +477,9 @@ const CreateAdmin = () => {
                     <Text fontSize={'md'} fontWeight={'semibold'}>{admin.name} ({admin.id})</Text>
                     <Text fontSize={'md'}>{admin.phone_number}</Text>
                     <Text fontSize={'xs'}>{admin.email}</Text>
+                    <HStack justifyContent={'flex-end'} w={'full'}>
+                      <Button size={'sm'} colorScheme='blue' onClick={()=>sendCredentials(admin?.email, admin?.name)}>Send Credentials</Button>
+                    </HStack>
                     <HStack
                       w={'full'} pt={4}
                       justifyContent={'space-between'}
