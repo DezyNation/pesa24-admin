@@ -101,7 +101,9 @@ const Ledger = () => {
     },
     onSubmit: (values) => {
       fetchLedger(
-        `/api/admin/transactions-period?from=${values.from + (values.from && ("T" + "00:00"))}&to=${values.to + (values.to && ("T" + "23:59"))}&page=1`
+        `/api/admin/transactions-period?from=${
+          values.from + (values.from && "T" + "00:00")
+        }&to=${values.to + (values.to && "T" + "23:59")}&page=1`
       );
     },
   });
@@ -113,8 +115,8 @@ const Ledger = () => {
   function fetchSum() {
     BackendAxios.get(
       `/api/admin/overview?from=${
-        Formik.values.from + (Formik.values.from && ("T" + "00:00"))
-      }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}`
+        Formik.values.from + (Formik.values.from && "T" + "00:00")
+      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}`
     )
       .then((res) => {
         setOverviewData(res.data);
@@ -132,11 +134,11 @@ const Ledger = () => {
     BackendAxios.post(
       pageLink ||
         `/api/admin/transactions-period?from=${
-          Formik.values.from + (Formik.values.from && ("T" + "00:00"))
-        }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&page=1`,
+          Formik.values.from + (Formik.values.from && "T" + "00:00")
+        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&page=1`,
       {
-        from: Formik.values.from + (Formik.values.from && ("T" + "00:00")),
-        to: Formik.values.to + (Formik.values.to && ("T" + "23:59")),
+        from: Formik.values.from + (Formik.values.from && "T" + "00:00"),
+        to: Formik.values.to + (Formik.values.to && "T" + "23:59"),
       }
     )
       .then((res) => {
@@ -298,7 +300,6 @@ const Ledger = () => {
           <Table
             colorScheme="twitter"
             variant={"striped"}
-            ref={tableRef}
             id="printable-table"
           >
             <Thead bgColor={"twitter.500"} color={"#FFF"}>
@@ -383,51 +384,96 @@ const Ledger = () => {
           </Table>
         </TableContainer>
 
-        {/* <VisuallyHidden>
-                    <table id='printable-table' ref={tableRef}>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                {
-                                    columnDefs.filter((column) => {
-                                        if (
-                                            column.field != "metadata" &&
-                                            column.field != "name" &&
-                                            column.field != "receipt"
-                                        ) {
-                                            return (
-                                                column
-                                            )
-                                        }
-                                    }).map((column, key) => {
-                                        return (
-                                            <th key={key}>{column.headerName}</th>
-                                        )
-                                    })
-                                }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {
-                                printableRow.map((data, key) => {
-                                    return (
-                                        <tr key={key}>
-                                            <td>{key + 1}</td>
-                                            <td>({data.trigered_by}) {data.trigered_by_name}</td>
-                                            <td>{data.transaction_id}</td>
-                                            <td>{data.credit_amount}</td>
-                                            <td>{data.debit_amount}</td>
-                                            <td>{data.service_type}</td>
-                                            <td>{data.opening_balance}</td>
-                                            <td>{data.closing_balance}</td>
-                                            <td>{data.created_at}</td>
-                                        </tr>
-                                    )
-                                })
-                            }
-                        </tbody>
-                    </table>
-                </VisuallyHidden> */}
+        <VisuallyHidden>
+          <Table
+            colorScheme="twitter"
+            variant={"striped"}
+            ref={tableRef}
+          >
+            <Thead bgColor={"twitter.500"} color={"#FFF"}>
+              <Tr>
+                <Th color={"#FFF"} rowSpan={2}>
+                  User
+                </Th>
+                <Th color={"#FFF"} rowSpan={2}>
+                  Phone No.
+                </Th>
+                <Th color={"#FFF"} rowSpan={2}>
+                  Wallet Balance
+                </Th>
+                <Th color={"#FFF"} colSpan={4} textAlign={"center"}>
+                  Transactions
+                </Th>
+              </Tr>
+              <Tr>
+                <Th color={"#FFF"}>Payout</Th>
+                <Th color={"#FFF"}>Charge</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {rowData.map((item, key) => (
+                <Tr key={key}>
+                  <Td>
+                      <Text fontSize={"lg"} fontWeight={"semibold"}>
+                        {item?.userName} ({item?.userId})
+                      </Text>
+                  </Td>
+                  <Td>
+                      <Text>
+                        {item?.userPhone}
+                      </Text>
+                  </Td>
+                  <Td>{item?.userWallet || 0}</Td>
+                  <Td>
+                    {item?.transactions?.find(
+                      (trnxn) => trnxn.category == "payout"
+                    )?.total || 0}
+                  </Td>
+                  <Td>
+                    {item?.transactions?.find(
+                      (trnxn) => trnxn.category == "payout-commission"
+                    )?.total || 0}
+                  </Td>
+                </Tr>
+              ))}
+              <Tr>
+                <Td colSpan={3}>
+                  <Text
+                    textAlign={"right"}
+                    fontWeight={"semibold"}
+                    fontSize={"lg"}
+                  >
+                    TOTAL
+                  </Text>
+                </Td>
+                <Td>
+                  <Text
+                    textAlign={"left"}
+                    fontWeight={"semibold"}
+                    fontSize={"lg"}
+                  >
+                    {Number(
+                      overviewData[0]?.payout?.debit -
+                        overviewData[0]?.payout?.credit
+                    ) || 0}
+                  </Text>
+                </Td>
+                <Td>
+                  <Text
+                    textAlign={"left"}
+                    fontWeight={"semibold"}
+                    fontSize={"lg"}
+                  >
+                    {Number(
+                      overviewData[4]?.["payout-commission"]?.debit -
+                        overviewData[4]?.["payout-commission"]?.credit
+                    ) || 0}
+                  </Text>
+                </Td>
+              </Tr>
+            </Tbody>
+          </Table>
+        </VisuallyHidden>
       </Layout>
     </>
   );
