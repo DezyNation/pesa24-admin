@@ -408,6 +408,7 @@ const Layout = (props) => {
   const [bbpsStatus, setBbpsStatus] = useState(true);
   const [dmtStatus, setDmtStatus] = useState(true);
   const [rechargeStatus, setRechargeStatus] = useState(true);
+  const [payoutStatus, setPayoutStatus] = useState(false)
   const [userName, setUserName] = useState("NA");
   const [userType, setUserType] = useState("NA");
 
@@ -433,6 +434,7 @@ const Layout = (props) => {
         setBbpsStatus(res.data.bbps_status);
         setDmtStatus(res.data.dmt_status);
         setRechargeStatus(res.data.recharge_status);
+        setPayoutStatus(res.data.payout_status);
       })
       .catch((err) => {
         console.log(err.message);
@@ -772,6 +774,16 @@ const Layout = (props) => {
                   }
                 />
               </Stack> */}
+              <Stack direction={["column", "row"]} spacing={2}>
+                <Text fontSize={"xs"}>Payout</Text>
+                <Switch
+                  id={"payoutStatus"}
+                  isChecked={payoutStatus}
+                  onChange={(e) =>
+                    updateOrganisation({ payout_status: e.target.checked })
+                  }
+                />
+              </Stack>
               <Show above="md">
                 <HStack
                   p={2}
