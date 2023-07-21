@@ -432,7 +432,7 @@ const Layout = (props) => {
   }
 
   function fetchOrganisationServiceStatus() {
-    ClientAxios.get("/api/global")
+    ClientAxios.get("/api/organisation")
       .then((res) => {
         setAepsStatus(res.data.aeps_status);
         setBbpsStatus(res.data.bbps_status);
