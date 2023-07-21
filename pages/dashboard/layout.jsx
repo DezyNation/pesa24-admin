@@ -414,6 +414,10 @@ const Layout = (props) => {
 
   const [profilePic, setProfilePic] = useState("");
 
+  useEffect(()=>{
+    fetchOrganisationServiceStatus()
+  },[])
+
   function fetchServiceStatus() {
     ClientAxios.get("/api/global")
       .then((res) => {
