@@ -15,6 +15,7 @@ import { useFormik } from "formik";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import { Text } from "@chakra-ui/react";
 
 const page = () => {
   const Toast = useToast({
