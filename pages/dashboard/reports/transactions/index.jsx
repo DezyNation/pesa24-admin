@@ -1,6 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
 import Layout from "../../layout";
-import { Box, Button, Text, HStack, VisuallyHidden, InputGroup, InputRightElement } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Text,
+  HStack,
+  VisuallyHidden,
+  InputGroup,
+  InputRightElement,
+} from "@chakra-ui/react";
 import BackendAxios from "@/lib/utils/axios";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
@@ -22,6 +30,7 @@ import { FormLabel } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
 import Cookies from "js-cookie";
 import { useToast } from "@chakra-ui/react";
+import { useSearchParams } from "next/navigation";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -34,6 +43,7 @@ const Ledger = () => {
   const Toast = useToast({ position: "top-right" });
   const [rowData, setRowData] = useState([]);
   const [loading, setLoading] = useState(false);
+
   const [columnDefs, setColumnDefs] = useState([
     {
       headerName: "Transaction ID",
@@ -103,8 +113,8 @@ const Ledger = () => {
     next_page_url: "",
     prev_page_url: "",
   });
-  const [verifiedUser, setVerifiedUser] = useState({})
-  const [userId, setUserId] = useState("")
+  const [verifiedUser, setVerifiedUser] = useState({});
+  const [userId, setUserId] = useState("");
   const Formik = useFormik({
     initialValues: {
       from: "",
@@ -115,18 +125,28 @@ const Ledger = () => {
     },
   });
 
+  const params = useSearchParams();
+  const transactionIdFromParams = params.get("transactionId");
+  useEffect(() => {
+    if (transactionIdFromParams) {
+      Formik.setFieldValue("query", transactionIdFromParams);
+      fetchLedger()
+    }
+  }, [transactionIdFromParams]);
+
   async function verifyUser() {
-    if(!Formik.values.userQuery) {
+    if (!Formik.values.userQuery) {
       Toast({
-        description: "Please enter User ID or Phone No."
-      })
-      return
+        description: "Please enter User ID or Phone No.",
+      });
+      return;
     }
     await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
       .then(async (res) => {
         Formik.setFieldValue("userId", res.data.data.id);
-        setVerifiedUser(res.data.data)
-      }).catch(err => {
+        setVerifiedUser(res.data.data);
+      })
+      .catch((err) => {
         if (err?.response?.status == 401) {
           Cookies.remove("verified");
           window.location.reload();
@@ -138,23 +158,25 @@ const Ledger = () => {
           description:
             err?.response?.data?.message || err?.response?.data || err?.message,
         });
-      })
+      });
   }
 
   async function generateReport(userId) {
-    if (!Formik.values.from || !Formik.values.to) return
-    setLoading(true)
+    if (!Formik.values.from || !Formik.values.to) return;
+    setLoading(true);
     await BackendAxios.get(
-      `/api/admin/print-report?type=ledger&from=${Formik.values.from + (Formik.values.from && "T" + "00:00")
-      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")
-      }&search=${Formik.values.query}&userId=${Formik.values.userId}`
+      `/api/admin/print-report?type=ledger&from=${
+        Formik.values.from + (Formik.values.from && "T" + "00:00")
+      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&search=${
+        Formik.values.query
+      }&userId=${Formik.values.userId}`
     )
       .then((res) => {
-        setLoading(false)
+        setLoading(false);
         setPrintableRow(res.data);
       })
       .catch((err) => {
-        setLoading(false)
+        setLoading(false);
         if (err?.response?.status == 401) {
           Cookies.remove("verified");
           window.location.reload();
@@ -169,25 +191,26 @@ const Ledger = () => {
   }
 
   async function fetchLedger(pageLink) {
-    setLoading(true)
+    setLoading(true);
     if (!Formik.values.userQuery) {
       Formik.setFieldValue("userId", "");
     }
     if (Formik.values.userQuery && !Formik.values.userId) {
       Toast({
-        description: "Please verify the User first!"
-      })
+        description: "Please verify the User first!",
+      });
     }
     if (Formik.values.userId) {
       await BackendAxios.get(
         pageLink ||
-        `/api/admin/transactions?from=${Formik.values.from + (Formik.values.from && "T" + "00:00")
-        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")
-        }&search=${Formik.values.query}&userId=${Formik.values.userId
-        }&page=1`
+          `/api/admin/transactions?from=${
+            Formik.values.from + (Formik.values.from && "T" + "00:00")
+          }&to=${
+            Formik.values.to + (Formik.values.to && "T" + "23:59")
+          }&search=${Formik.values.query}&userId=${Formik.values.userId}&page=1`
       )
         .then((res) => {
-          setLoading(false)
+          setLoading(false);
           setPagination({
             current_page: res.data.current_page,
             total_pages: parseInt(res.data.last_page),
@@ -200,23 +223,25 @@ const Ledger = () => {
           setRowData(res.data.data);
         })
         .catch((err) => {
-          setLoading(false)
+          setLoading(false);
           if (err?.response?.status == 401) {
             Cookies.remove("verified");
             window.location.reload();
           }
         });
-      return
+      return;
     }
 
     await BackendAxios.get(
       pageLink ||
-      `/api/admin/transactions?from=${Formik.values.from + (Formik.values.from && "T" + "00:00")
-      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&search=${Formik.values.query
-      }&userId=${Formik.values.userId}&page=1`
+        `/api/admin/transactions?from=${
+          Formik.values.from + (Formik.values.from && "T" + "00:00")
+        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&search=${
+          Formik.values.query
+        }&userId=${Formik.values.userId}&page=1`
     )
       .then((res) => {
-        setLoading(false)
+        setLoading(false);
         setPagination({
           current_page: res.data.current_page,
           total_pages: parseInt(res.data.last_page),
@@ -229,7 +254,7 @@ const Ledger = () => {
         setRowData(res.data.data);
       })
       .catch((err) => {
-        setLoading(false)
+        setLoading(false);
         if (err?.response?.status == 401) {
           Cookies.remove("verified");
           window.location.reload();
@@ -354,9 +379,24 @@ const Ledger = () => {
                 onChange={Formik.handleChange}
                 bg={"white"}
               />
-              <InputRightElement paddingRight={2} fontSize={'xs'} children={<Text fontSize={'xs'} color={'twitter.500'} cursor={'pointer'} onClick={verifyUser}>Verify</Text>} />
+              <InputRightElement
+                paddingRight={2}
+                fontSize={"xs"}
+                children={
+                  <Text
+                    fontSize={"xs"}
+                    color={"twitter.500"}
+                    cursor={"pointer"}
+                    onClick={verifyUser}
+                  >
+                    Verify
+                  </Text>
+                }
+              />
             </InputGroup>
-            <Text fontSize={'xs'}>{verifiedUser?.name} {verifiedUser?.phone_number}</Text>
+            <Text fontSize={"xs"}>
+              {verifiedUser?.name} {verifiedUser?.phone_number}
+            </Text>
           </FormControl>
         </Stack>
         <HStack mb={4} justifyContent={"flex-end"}>
@@ -364,10 +404,12 @@ const Ledger = () => {
             isLoading={loading}
             onClick={async () => {
               await fetchLedger().then(async (id) => {
-                console.log(id)
-                await generateReport(id)
-              })
-            }} colorScheme={"twitter"}>
+                console.log(id);
+                await generateReport(id);
+              });
+            }}
+            colorScheme={"twitter"}
+          >
             Search
           </Button>
         </HStack>
@@ -425,7 +467,7 @@ const Ledger = () => {
               floatingFilter: true,
               resizable: true,
               wrapText: true,
-              autoHeight: true
+              autoHeight: true,
             }}
             onFilterChanged={(params) => {
               setPrintableRow(

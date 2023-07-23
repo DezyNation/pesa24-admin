@@ -8,7 +8,7 @@ import {
   useToast,
   HStack,
   Button,
-  Box
+  Box,
 } from "@chakra-ui/react";
 import BackendAxios from "@/lib/utils/axios";
 import { useFormik } from "formik";
@@ -16,13 +16,27 @@ import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { Text } from "@chakra-ui/react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const page = () => {
   const Toast = useToast({
     position: "top-right",
   });
+  const Router = useRouter();
   const [loading, setLoading] = useState(false);
   const [columnDefs, setColumnDefs] = useState([
+    {
+      field: "action",
+      headerName: "Action",
+      cellRenderer: "actionCellRenderer",
+      width: 120,
+    },
+    {
+      field: "transaction_id",
+      headerName: "Trnxn ID",
+      width: 150,
+    },
     {
       field: "user_id",
       headerName: "User ID",
@@ -31,6 +45,7 @@ const page = () => {
     {
       field: "service_type",
       headerName: "Type",
+      width: 120,
     },
     {
       field: "transaction_for",
@@ -146,6 +161,19 @@ const page = () => {
     );
   };
 
+  const actionCellRenderer = (params) => {
+    return (
+      <>
+        <Link
+          href={`/dashboard/reports/transactions?pageid=transaction-ledger&parent=reports&transactionId=${params.data.transaction_id}`}
+          target="_blank"
+        >
+          <Button size={"sm"}>View Ledger</Button>
+        </Link>
+      </>
+    );
+  };
+
   return (
     <>
       <Layout pageTitle={"Duplicate Transactions"}>
@@ -196,6 +224,7 @@ const page = () => {
               creditCellRenderer: creditCellRenderer,
               debitCellRenderer: debitCellRenderer,
               narrationCellRenderer: narrationCellRenderer,
+              actionCellRenderer: actionCellRenderer,
             }}
           ></AgGridReact>
         </Box>
