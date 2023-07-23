@@ -418,10 +418,12 @@ const Index = () => {
 
   const actionCellRenderer = (params) => {
     function updateData() {
+      setLoading(true)
       BackendAxios.post("api/razorpay/payment-status", {
         payoutId: params.data.payout_id,
       })
         .then(() => {
+          setLoading(false)
           Toast({
             status: "success",
             description: `Payout ${params.data.payout_id} updated!`,
@@ -436,6 +438,7 @@ const Index = () => {
           fetchPendingTransactions()
         })
         .catch((err) => {
+          setLoading(false)
           Toast({
             status: "error",
             description:
@@ -447,7 +450,7 @@ const Index = () => {
       <>
         {params.data?.status == "processing" ||
         params.data?.status == "queued" ? (
-          <Button size={"xs"} colorScheme="twitter" onClick={updateData}>
+          <Button size={"xs"} colorScheme="twitter" isLoading={loading} onClick={updateData}>
             UPDATE
           </Button>
         ) : null}
