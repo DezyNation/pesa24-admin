@@ -168,7 +168,7 @@ const page = () => {
           href={`/dashboard/reports/transactions?pageid=transaction-ledger&parent=reports&transactionId=${params.data.transaction_id}`}
           target="_blank"
         >
-          <Button size={"sm"}>View Ledger</Button>
+          <Button size={"xs"} colorScheme="facebook">View Ledger</Button>
         </Link>
       </>
     );
