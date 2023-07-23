@@ -424,6 +424,8 @@ const Ledger = () => {
               filter: true,
               floatingFilter: true,
               resizable: true,
+              wrapText: true,
+              autoHeight: true
             }}
             onFilterChanged={(params) => {
               setPrintableRow(

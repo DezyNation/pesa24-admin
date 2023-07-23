@@ -382,6 +382,12 @@ const menuOptions = [
         status: true,
       },
       {
+        id: "duplicate-transactions",
+        title: "duplicate transactions",
+        link: "/dashboard/reports/duplicate-transactions?pageid=duplicate-transactions&parent=reports",
+        status: true,
+      },
+      {
         id: "login-reports",
         title: "login report",
         link: "/dashboard/reports/logins?pageid=login-reports&parent=reports",
