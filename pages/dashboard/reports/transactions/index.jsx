@@ -128,8 +128,10 @@ const Ledger = () => {
   const params = useSearchParams();
   const transactionIdFromParams = params.get("transactionId");
   useEffect(() => {
+    if (transactionIdFromParams) {
       Formik.setFieldValue("query", transactionIdFromParams);
-      fetchLedger()
+      fetchLedger();
+    }
   }, []);
 
   async function verifyUser() {
