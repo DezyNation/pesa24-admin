@@ -29,6 +29,13 @@ td {
     font-size: 12px;
 }
 
+.ag-theme-pesa24-blue .ag-cell-value {
+    line-height: 20px !important;
+    word-break: normal; /* prevent words from breaking */
+    padding-top: 5px; /* space top */
+    padding-bottom: 5px; /* space bottom */
+  }
+
 .ag-theme-pesa24-blue .ag-cell-focus {
     user-select: text;
     -webkit-user-select: text;
