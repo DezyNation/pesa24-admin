@@ -17,6 +17,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: "#525FE1",
     color: "#FFF",
+    padding: 5
   },
   cell: {
     flex: 1,

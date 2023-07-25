@@ -1,3 +1,4 @@
+'use client'
 import React, { useEffect, useState } from "react";
 import DashboardWrapper from "@/hocs/DashboardLayout";
 import {
