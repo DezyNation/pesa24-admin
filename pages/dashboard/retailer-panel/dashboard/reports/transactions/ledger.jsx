@@ -41,6 +41,97 @@ import { toBlob } from "html-to-image";
 import { useFormik } from "formik";
 import Cookies from "js-cookie";
 import { DownloadTableExcel } from "react-export-table-to-excel";
+import {
+  PDFDownloadLink,
+  Document,
+  Page,
+  Text,
+  View,
+  StyleSheet,
+} from "@react-pdf/renderer";
+
+const styles = StyleSheet.create({
+  page: {
+    padding: 20,
+  },
+  container: {
+    flexDirection: "row",
+  },
+  column: {
+    flexDirection: "row",
+    backgroundColor: "#525FE1",
+    color: "#FFF",
+  },
+  cell: {
+    flex: 1,
+    padding: 5,
+  },
+});
+
+const PdfDocument = ({ rowData, columnDefs }) => (
+  <Document>
+    <Page size="A4" orientation="landscape" style={styles.page}>
+      <View style={styles.column}>
+        {columnDefs
+          .filter((column) => {
+            if (
+              column.field != "metadata" &&
+              column.field != "name" &&
+              column.field != "receipt"
+            ) {
+              return column;
+            }
+          })
+          .map((column, key) => {
+            return (
+              <View style={styles.cell} key={key}>
+                <Text>{column?.headerName}</Text>
+              </View>
+            );
+          })}
+      </View>
+      <View style={styles.container}>
+        {rowData.map((data, key) => (
+          <View style={styles.container} key={key}>
+            <View style={styles.cell}>
+              <Text>{key + 1}</Text>
+            </View>
+            <View style={styles.cell}>
+              <Text>{data.transaction_id}</Text>
+            </View>
+            <View style={styles.cell}>
+              <Text>{data.debit_amount}</Text>
+            </View>
+            <View style={styles.cell}>
+              <Text>{data.credit_amount}</Text>
+            </View>
+            <View style={styles.cell}>
+              <Text>{data.opening_balance}</Text>
+            </View>
+            <View style={styles.cell}>
+              <Text>{data.closing_balance}</Text>
+            </View>
+            <View style={styles.cell}>
+              <Text>{data.transaction_for}</Text>
+            </View>
+            <View style={styles.cell}>
+              <Text>{data.service_type}</Text>
+            </View>
+            <View style={styles.cell}>
+              <Text>{JSON.parse(data.metadata).status}</Text>
+            </View>
+            <View style={styles.cell}>
+              <Text>{data.created_at}</Text>
+            </View>
+            <View style={styles.cell}>
+              <Text>{data.updated_at}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+    </Page>
+  </Document>
+);
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -167,10 +258,8 @@ const Index = () => {
         `/api/admin/user-reports/${transactionKeyword}/${Cookies.get(
           "viewUserId"
         )}?from=${
-          Formik.values.from + (Formik.values.from && ("T" + "00:00"))
-        }&to=${
-          Formik.values.to + (Formik.values.to && ("T" + "23:59"))
-        }&page=1`
+          Formik.values.from + (Formik.values.from && "T" + "00:00")
+        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&page=1`
     )
       .then((res) => {
         setPagination({
@@ -205,7 +294,7 @@ const Index = () => {
   }, []);
   useEffect(() => {
     if (printableRow?.length) {
-      setRearrangedRows(prevRows => {
+      setRearrangedRows((prevRows) => {
         const newRows = [...prevRows];
         for (let i = 0; i < newRows.length - 1; i += 2) {
           const temp = newRows[i];
@@ -213,7 +302,7 @@ const Index = () => {
           newRows[i + 1] = temp;
         }
         return newRows;
-      })
+      });
     }
   }, [printableRow]);
 
@@ -319,27 +408,32 @@ const Index = () => {
     );
   };
 
-  const tableRef = React.useRef(null)
+  const tableRef = React.useRef(null);
 
   return (
     <>
       <DashboardWrapper pageTitle={"Transaction Ledger"}>
         <HStack pb={8}>
-          <Button onClick={ExportPDF} colorScheme={"red"} size={"sm"}>
+          {/* <Button onClick={ExportPDF} colorScheme={"red"} size={"sm"}>
             Export PDF
-          </Button>
+          </Button> */}
+          <PDFDownloadLink
+            document={<PdfDocument rowData={rowData} />}
+            fileName={`Ledger(${Cookies.get("viewUserId")}).pdf`}
+          >
+            {({ blob, url, loading, error }) =>
+              loading ? "Generating PDF..." : "Download PDF"
+            }
+          </PDFDownloadLink>
           <DownloadTableExcel
-              filename={`Ledger (User ${Cookies.get("viewUserId")})`}
-              sheet="sheet1"
-              currentTableRef={tableRef.current}
-            >
-              <Button
-                size={["xs", "sm"]}
-                colorScheme={"whatsapp"}
-              >
-                Excel
-              </Button>
-            </DownloadTableExcel>
+            filename={`Ledger (User ${Cookies.get("viewUserId")})`}
+            sheet="sheet1"
+            currentTableRef={tableRef.current}
+          >
+            <Button size={["xs", "sm"]} colorScheme={"whatsapp"}>
+              Excel
+            </Button>
+          </DownloadTableExcel>
         </HStack>
         <Box p={2} bg={"orange.500"} roundedTop={16}>
           <Text color={"#FFF"}>Search Transactions</Text>
@@ -591,9 +685,7 @@ const Index = () => {
                   <td>{data.closing_balance}</td>
                   <td>{data.transaction_for}</td>
                   <td>{data.service_type}</td>
-                  <td>
-                    {JSON.parse(data.metadata).status}
-                  </td>
+                  <td>{JSON.parse(data.metadata).status}</td>
                   <td>{data.created_at}</td>
                   <td>{data.updated_at}</td>
                 </tr>
