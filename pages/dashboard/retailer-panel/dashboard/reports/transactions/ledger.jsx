@@ -41,7 +41,7 @@ import "jspdf-autotable";
 import { toBlob } from "html-to-image";
 import { useFormik } from "formik";
 import Cookies from "js-cookie";
-import { DownloadTableExcel } from "react-export-table-to-excel";
+import { DownloadTableExcel, downloadExcel } from "react-export-table-to-excel";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import PdfDocument from "@/lib/utils/pdfExport/PdfDocument";
 
@@ -58,6 +58,7 @@ const Index = () => {
   });
   const [isClient, setIsClient] = useState(false);
   const transactionKeyword = "all";
+  const [loading, setLoading] = useState(false);
   const [printableRow, setPrintableRow] = useState([]);
   const [pagination, setPagination] = useState({
     current_page: "1",
@@ -170,6 +171,7 @@ const Index = () => {
   });
 
   function fetchTransactions(pageLink) {
+    setLoading(true);
     BackendAxios.get(
       pageLink ||
         `/api/admin/user-reports/${transactionKeyword}/${Cookies.get(
@@ -179,6 +181,7 @@ const Index = () => {
         }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&page=1`
     )
       .then((res) => {
+        setLoading(false);
         setPagination({
           current_page: res.data.current_page,
           total_pages: parseInt(res.data.last_page),
@@ -192,6 +195,7 @@ const Index = () => {
         setRearrangedRows(res.data);
       })
       .catch((err) => {
+        setLoading(false);
         if (err?.response?.status == 401) {
           Cookies.remove("verified");
           window.location.reload();
@@ -325,7 +329,39 @@ const Index = () => {
     );
   };
 
-  const tableRef = React.useRef(null);
+  function handleDownloadExcel() {
+    downloadExcel({
+      fileName: `Ledger (User ${Cookies.get("viewUserId")})`,
+      sheet: "transactions",
+      tablePayload: {
+        header: columnDefs
+          .filter((column) => {
+            if (
+              column.field != "metadata" &&
+              column.field != "name" &&
+              column.field != "receipt"
+            ) {
+              return column;
+            }
+          })
+          .map((column, key) => {
+            return column.headerName;
+          }),
+        body: rowData.map((data) => [
+          data.transaction_id,
+          data.debit_amount,
+          data.credit_amount,
+          data.opening_balance,
+          data.closing_balance,
+          data.transaction_for,
+          data.service_type,
+          JSON.parse(data.metadata).status,
+          data.created_at,
+          data.updated_at,
+        ]),
+      },
+    });
+  }
 
   return (
     <>
@@ -341,20 +377,26 @@ const Index = () => {
               }
               fileName={`Ledger(${Cookies.get("viewUserId")}).pdf`}
             >
-              {({ blob, url, loading, error }) =>
-                loading ? "Generating PDF..." : "Download PDF"
-              }
+              {({ blob, url, loading, error }) => (
+                <Button colorScheme={"red"} size={"sm"}>
+                  {loading ? "Generating PDF..." : "Download PDF"}
+                </Button>
+              )}
             </PDFDownloadLink>
           ) : null}
-          <DownloadTableExcel
+          {/* <DownloadTableExcel
             filename={`Ledger (User ${Cookies.get("viewUserId")})`}
             sheet="sheet1"
             currentTableRef={tableRef.current}
+          > */}
+          <Button
+            size={["xs", "sm"]}
+            onClick={handleDownloadExcel}
+            colorScheme={"whatsapp"}
           >
-            <Button size={["xs", "sm"]} colorScheme={"whatsapp"}>
-              Excel
-            </Button>
-          </DownloadTableExcel>
+            Excel
+          </Button>
+          {/* </DownloadTableExcel> */}
         </HStack>
         <Box p={2} bg={"orange.500"} roundedTop={16}>
           <Text color={"#FFF"}>Search Transactions</Text>
@@ -380,62 +422,15 @@ const Index = () => {
           </FormControl>
         </Stack>
         <HStack mb={4} justifyContent={"flex-end"}>
-          <Button onClick={() => fetchTransactions()} colorScheme={"orange"}>
+          <Button
+            isLoading={loading}
+            onClick={() => fetchTransactions()}
+            colorScheme={"orange"}
+          >
             Search
           </Button>
         </HStack>
-        {/* <HStack
-          spacing={2}
-          py={4}
-          mt={24}
-          bg={"white"}
-          justifyContent={"center"}
-        >
-          <Button
-            colorScheme={"orange"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchTransactions(pagination.first_page_url)}
-          >
-            <BsChevronDoubleLeft />
-          </Button>
-          <Button
-            colorScheme={"orange"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchTransactions(pagination.prev_page_url)}
-          >
-            <BsChevronLeft />
-          </Button>
-          <Button
-            colorScheme={"orange"}
-            fontSize={12}
-            size={"xs"}
-            variant={"solid"}
-          >
-            {pagination.current_page}
-          </Button>
-          <Button
-            colorScheme={"orange"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchTransactions(pagination.next_page_url)}
-          >
-            <BsChevronRight />
-          </Button>
-          <Button
-            colorScheme={"orange"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchTransactions(pagination.last_page_url)}
-          >
-            <BsChevronDoubleRight />
-          </Button>
-        </HStack> */}
+
         <Box py={6}>
           <Box
             className="ag-theme-alpine ag-theme-pesa24-blue"
@@ -574,7 +569,7 @@ const Index = () => {
         </ModalContent>
       </Modal>
 
-      <VisuallyHidden>
+      {/* <VisuallyHidden>
         <table id="printable-table" ref={tableRef}>
           <thead>
             <tr>
@@ -614,7 +609,7 @@ const Index = () => {
             })}
           </tbody>
         </table>
-      </VisuallyHidden>
+      </VisuallyHidden> */}
     </>
   );
 };
