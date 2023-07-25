@@ -1,4 +1,4 @@
-'use client'
+"use client";
 import React, { useEffect, useState } from "react";
 import DashboardWrapper from "@/hocs/DashboardLayout";
 import {
@@ -56,6 +56,7 @@ const Index = () => {
   const Toast = useToast({
     position: "top-right",
   });
+  const [isClient, setIsClient] = useState(false);
   const transactionKeyword = "all";
   const [printableRow, setPrintableRow] = useState([]);
   const [pagination, setPagination] = useState({
@@ -134,6 +135,10 @@ const Index = () => {
       hide: true,
     },
   ]);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleShare = async () => {
     const myFile = await toBlob(pdfRef.current, { quality: 0.95 });
@@ -329,14 +334,18 @@ const Index = () => {
           {/* <Button onClick={ExportPDF} colorScheme={"red"} size={"sm"}>
             Export PDF
           </Button> */}
-          <PDFDownloadLink
-            document={<PdfDocument rowData={rowData} columnDefs={columnDefs} />}
-            fileName={`Ledger(${Cookies.get("viewUserId")}).pdf`}
-          >
-            {({ blob, url, loading, error }) =>
-              loading ? "Generating PDF..." : "Download PDF"
-            }
-          </PDFDownloadLink>
+          {isClient ? (
+            <PDFDownloadLink
+              document={
+                <PdfDocument rowData={rowData} columnDefs={columnDefs} />
+              }
+              fileName={`Ledger(${Cookies.get("viewUserId")}).pdf`}
+            >
+              {({ blob, url, loading, error }) =>
+                loading ? "Generating PDF..." : "Download PDF"
+              }
+            </PDFDownloadLink>
+          ) : null}
           <DownloadTableExcel
             filename={`Ledger (User ${Cookies.get("viewUserId")})`}
             sheet="sheet1"
