@@ -146,7 +146,7 @@ const Index = () => {
 
     function sendOtp(){
         setLoading(true)
-        BackendAxios.post(`/api/send-otp`).then(res=>{
+        BackendAxios.post(`/api/send-otp/profile`).then(res=>{
             setLoading(false)
             onOpen()
             Toast({
