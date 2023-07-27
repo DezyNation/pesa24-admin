@@ -364,12 +364,12 @@ const Index = () => {
     });
   }
 
-  const generatePdfDocument = async (fileName) => {
+  const generatePdfDocument = async (csvReport, ReportsDownload, fileName) => {
     const blob = await pdf(
-      <PdfDocument rowData={rowData} columnDefs={columnDefs} />
+        <PdfDocument rowData={rowData} columnDefs={columnDefs}/>
     ).toBlob();
     FileSaver.saveAs(blob, fileName);
-  };
+};
 
   return (
     <>
@@ -378,9 +378,20 @@ const Index = () => {
           {/* <Button onClick={ExportPDF} colorScheme={"red"} size={"sm"}>
             Export PDF
           </Button> */}
-          <Button colorScheme={"red"} size={"sm"} onClick={()=>generatePdfDocument("User Ledger")}>
-            Download PDF
-          </Button>
+          {isClient ? (
+            <PDFDownloadLink
+              document={
+                <PdfDocument rowData={rowData} columnDefs={columnDefs} />
+              }
+              fileName={`Ledger(${Cookies.get("viewUserId")}).pdf`}
+            >
+              {({ blob, url, loading, error }) => (
+                <Button colorScheme={"red"} size={"sm"}>
+                  {loading ? "Generating PDF..." : "Download PDF"}
+                </Button>
+              )}
+            </PDFDownloadLink>
+          ) : null}
           {/* <DownloadTableExcel
             filename={`Ledger (User ${Cookies.get("viewUserId")})`}
             sheet="sheet1"
