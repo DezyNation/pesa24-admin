@@ -47,6 +47,9 @@ dependencies:
   chart.js:
     specifier: ^4.3.0
     version: 4.3.0
+  file-saver:
+    specifier: ^2.0.5
+    version: 2.0.5
   formik:
     specifier: ^2.2.9
     version: 2.2.9(react@18.2.0)
@@ -2491,6 +2494,10 @@ packages:
 
   /fflate@0.4.8:
     resolution: {integrity: sha512-FJqqoDBR00Mdj9ppamLa/Y7vxm+PRmNWA67N846RvsoYVMKB4q3y/de5PA7gUmRMYK/8CMz2GDZQmCRN1wBcWA==}
+    dev: false
+
+  /file-saver@2.0.5:
+    resolution: {integrity: sha512-P9bmyZ3h/PRG+Nzga+rbdI4OEpNDzAVyy74uVO9ATgzLK6VtAsYybF/+TOCvrc0MO793d6+42lLyZTw7/ArVzA==}
     dev: false
 
   /find-root@1.1.0:

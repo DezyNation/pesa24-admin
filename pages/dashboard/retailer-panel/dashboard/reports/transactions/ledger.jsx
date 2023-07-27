@@ -44,6 +44,7 @@ import Cookies from "js-cookie";
 import { DownloadTableExcel, downloadExcel } from "react-export-table-to-excel";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import PdfDocument from "@/lib/utils/pdfExport/PdfDocument";
+import { pdf } from "@react-pdf/renderer";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -363,6 +364,13 @@ const Index = () => {
     });
   }
 
+  const generatePdfDocument = async (fileName) => {
+    const blob = await pdf(
+      <PdfDocument rowData={rowData} columnDefs={columnDefs} />
+    ).toBlob();
+    FileSaver.saveAs(blob, fileName);
+  };
+
   return (
     <>
       <DashboardWrapper pageTitle={"Transaction Ledger"}>
@@ -370,20 +378,9 @@ const Index = () => {
           {/* <Button onClick={ExportPDF} colorScheme={"red"} size={"sm"}>
             Export PDF
           </Button> */}
-          {isClient ? (
-            <PDFDownloadLink
-              document={
-                <PdfDocument rowData={rowData} columnDefs={columnDefs} />
-              }
-              fileName={`Ledger(${Cookies.get("viewUserId")}).pdf`}
-            >
-              {({ blob, url, loading, error }) => (
-                <Button colorScheme={"red"} size={"sm"}>
-                  {loading ? "Generating PDF..." : "Download PDF"}
-                </Button>
-              )}
-            </PDFDownloadLink>
-          ) : null}
+          <Button colorScheme={"red"} size={"sm"} onClick={()=>generatePdfDocument("User Ledger")}>
+            Download PDF
+          </Button>
           {/* <DownloadTableExcel
             filename={`Ledger (User ${Cookies.get("viewUserId")})`}
             sheet="sheet1"
