@@ -31,6 +31,7 @@ import { Input } from "@chakra-ui/react";
 import Cookies from "js-cookie";
 import { useToast } from "@chakra-ui/react";
 import { useSearchParams } from "next/navigation";
+import fileDownload from "js-file-download";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -169,11 +170,15 @@ const Ledger = () => {
         Formik.values.from + (Formik.values.from && "T" + "00:00")
       }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&search=${
         Formik.values.query
-      }&userId=${Formik.values.userId}`
+      }&userId=${Formik.values.userId}`,
+      {
+        responseType: 'blob'
+      }
     )
       .then((res) => {
         setLoading(false);
-        setPrintableRow(res.data);
+        // setPrintableRow(res.data);
+        fileDownload(res.data, `TransactionsLedger.xlsx`);
       })
       .catch((err) => {
         setLoading(false);
@@ -321,7 +326,7 @@ const Ledger = () => {
         </Text>
 
         <HStack my={4}>
-          <DownloadTableExcel
+          {/* <DownloadTableExcel
             filename="TransactionsLedger"
             sheet="transactions"
             currentTableRef={tableRef.current}
@@ -333,7 +338,15 @@ const Ledger = () => {
             >
               Export Excel
             </Button>
-          </DownloadTableExcel>
+          </DownloadTableExcel> */}
+          <Button
+            size={["xs", "sm"]}
+            colorScheme={"whatsapp"}
+            leftIcon={<SiMicrosoftexcel />}
+            onClick={()=>generateReport()}
+          >
+            Export Excel
+          </Button>
           <Button onClick={ExportPDF} colorScheme={"red"} size={"sm"}>
             Export PDF
           </Button>
@@ -403,10 +416,7 @@ const Ledger = () => {
           <Button
             isLoading={loading}
             onClick={async () => {
-              await fetchLedger().then(async (id) => {
-                console.log(id);
-                await generateReport(id);
-              });
+              fetchLedger();
             }}
             colorScheme={"twitter"}
           >

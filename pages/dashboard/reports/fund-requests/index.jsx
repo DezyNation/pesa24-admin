@@ -42,6 +42,7 @@ import Cookies from "js-cookie";
 import { FormControl } from "@chakra-ui/react";
 import { FormLabel } from "@chakra-ui/react";
 import { Select } from "@chakra-ui/react";
+import fileDownload from "js-file-download";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -65,12 +66,12 @@ const FundRequests = () => {
       field: "status",
       headerName: "Status",
       cellRenderer: "statusCellRenderer",
-      width: 120
+      width: 120,
     },
     {
       headerName: "Transfer Date",
       field: "transaction_date",
-      width: 140
+      width: 140,
     },
     {
       headerName: "Request Timestamp",
@@ -153,6 +154,7 @@ const FundRequests = () => {
     action: "",
   });
   const [remarks, setRemarks] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [printableRow, setPrintableRow] = useState(rowData);
   const [pagination, setPagination] = useState({
@@ -177,6 +179,39 @@ const FundRequests = () => {
     },
   });
 
+  async function generateReport(userId) {
+    if (!Formik.values.from || !Formik.values.to) return;
+    setLoading(true);
+    await BackendAxios.get(
+      `/api/admin/print-report?type=fund-requests&from=${
+        Formik.values.from + (Formik.values.from && "T" + "00:00")
+      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&userId=${
+        Formik.values.userId
+      }&search=${Formik.values.search}&status=${Formik.values.status}`,
+      {
+        responseType: "blob",
+      }
+    )
+      .then((res) => {
+        setLoading(false);
+        // setPrintableRow(res.data);
+        fileDownload(res.data, `FundRequests.xlsx`);
+      })
+      .catch((err) => {
+        setLoading(false);
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
+        console.log(err);
+        Toast({
+          status: "error",
+          description:
+            err?.response?.data?.message || err?.response?.data || err?.message,
+        });
+      });
+  }
+
   async function fetchRequests(pageLink) {
     if (!Formik.values.userQuery) {
       Formik.setFieldValue("userId", "");
@@ -186,15 +221,17 @@ const FundRequests = () => {
         .then((result) => {
           BackendAxios.get(
             pageLink ||
-            `/api/admin/fetch-fund/all?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))
-            }&userId=${result.data.data.id}&search=${Formik.values.search}&status=${Formik.values.status != "all" ? Formik.values.status : ""}&pageSize=200`
+              `/api/admin/fetch-fund/all?from=${
+                Formik.values.from + (Formik.values.from && "T" + "00:00")
+              }&to=${
+                Formik.values.to + (Formik.values.to && "T" + "23:59")
+              }&userId=${result.data.data.id}&search=${
+                Formik.values.search
+              }&status=${
+                Formik.values.status != "all" ? Formik.values.status : ""
+              }&pageSize=200`
           )
             .then((res) => {
-              BackendAxios.get(
-                `/api/admin/print-report?type=fund-requests&from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${result.data.data.id}&search=${Formik.values.search}&status=${Formik.values.status}&pageSize=`
-              ).then((response) => {
-                setPrintableRow(response.data);
-              });
               setPagination({
                 current_page: res.data.current_page,
                 total_pages: parseInt(res.data.last_page),
@@ -238,45 +275,26 @@ const FundRequests = () => {
       return;
     }
     await BackendAxios.get(
-      `/api/admin/print-report?type=fund-requests&from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))
-      }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${Formik.values.userId
-      }&search=${Formik.values.search}&status=${Formik.values.status}&pageSize=`
+      pageLink ||
+        `/api/admin/fetch-fund/all?from=${
+          Formik.values.from + (Formik.values.from && "T" + "00:00")
+        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&userId=${
+          Formik.values.userId
+        }&search=${Formik.values.search}&status=${
+          Formik.values.status != "all" ? Formik.values.status : ""
+        }&pageSize=200`
     )
-      .then(async (response) => {
-        setPrintableRow(response.data);
-        await BackendAxios.get(
-          pageLink ||
-          `/api/admin/fetch-fund/all?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))
-          }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))
-          }&userId=${Formik.values.userId}&search=${Formik.values.search
-          }&status=${Formik.values.status != "all" ? Formik.values.status : ""
-          }&pageSize=200`
-        )
-          .then((res) => {
-            setPagination({
-              current_page: res.data.current_page,
-              total_pages: parseInt(res.data.last_page),
-              first_page_url: res.data.first_page_url,
-              last_page_url: res.data.last_page_url,
-              next_page_url: res.data.next_page_url,
-              prev_page_url: res.data.prev_page_url,
-            });
-            setPages(res.data?.links);
-            setRowData(res.data.data);
-          })
-          .catch((err) => {
-            if (err?.response?.status == 401) {
-              Cookies.remove("verified");
-              window.location.reload();
-            }
-            console.log(err);
-            Toast({
-              status: "error",
-              title: "Error Occured",
-              description:
-                err.response.data.message || err.response.data || err.message,
-            });
-          });
+      .then((res) => {
+        setPagination({
+          current_page: res.data.current_page,
+          total_pages: parseInt(res.data.last_page),
+          first_page_url: res.data.first_page_url,
+          last_page_url: res.data.last_page_url,
+          next_page_url: res.data.next_page_url,
+          prev_page_url: res.data.prev_page_url,
+        });
+        setPages(res.data?.links);
+        setRowData(res.data.data);
       })
       .catch((err) => {
         if (err?.response?.status == 401) {
@@ -284,6 +302,12 @@ const FundRequests = () => {
           window.location.reload();
         }
         console.log(err);
+        Toast({
+          status: "error",
+          title: "Error Occured",
+          description:
+            err.response.data.message || err.response.data || err.message,
+        });
       });
   }
 
@@ -403,8 +427,8 @@ const FundRequests = () => {
                 params.data.status == "approved"
                   ? "whatsapp"
                   : params.data.status == "deleted"
-                    ? "red"
-                    : "orange"
+                  ? "red"
+                  : "orange"
               }
               textTransform={"capitalize"}
             >
@@ -532,7 +556,7 @@ const FundRequests = () => {
           </HStack>
 
           <HStack spacing={4} my={4}>
-            <DownloadTableExcel
+            {/* <DownloadTableExcel
               filename="FundRequests"
               sheet="sheet1"
               currentTableRef={tableRef.current}
@@ -544,7 +568,15 @@ const FundRequests = () => {
               >
                 Excel
               </Button>
-            </DownloadTableExcel>
+            </DownloadTableExcel> */}
+            <Button
+                size={["xs", "sm"]}
+                colorScheme={"whatsapp"}
+                leftIcon={<SiMicrosoftexcel />}
+                onClick={generateReport}
+              >
+                Excel
+              </Button>
 
             <Button
               size={["xs", "sm"]}

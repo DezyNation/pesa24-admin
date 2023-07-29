@@ -44,6 +44,7 @@ import { Input } from "@chakra-ui/react";
 import Cookies from "js-cookie";
 import { Select } from "@chakra-ui/react";
 import { FiRefreshCw } from "react-icons/fi";
+import fileDownload from "js-file-download";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -170,18 +171,22 @@ const Index = () => {
   }
 
   async function generateReport(userId) {
-    if(!Formik.values.from || !Formik.values.to) return
+    if (!Formik.values.from || !Formik.values.to) return;
     await BackendAxios.get(
       `/api/admin/print-report?type=payouts&from=${
         Formik.values.from + (Formik.values.from && "T" + "00:00")
       }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&search=${
         Formik.values.query
-      }&userId=${userId || ""}&status=${
+      }&userId=${Formik.values.userId || ""}&status=${
         Formik.values.status != "all" ? Formik.values.status : ""
-      }&report=${Formik.values.status}`
+      }&report=${Formik.values.status}`,
+      {
+        responseType: "blob",
+      }
     )
       .then((res) => {
-        setPrintableRow(res.data);
+        // setPrintableRow(res.data);
+        fileDownload(res.data, `PayoutsReport.xlsx`);
       })
       .catch((err) => {
         if (err?.response?.status == 401) {
@@ -206,7 +211,7 @@ const Index = () => {
       await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
         .then(async (result) => {
           Formik.setFieldValue("userId", result.data.data.id);
-          // await generateReport(result.data.data.id);
+
           await BackendAxios.get(
             pageLink
               ? pageLink
@@ -309,7 +314,7 @@ const Index = () => {
 
   useEffect(() => {
     fetchTransactions();
-    fetchPendingTransactions()
+    fetchPendingTransactions();
   }, []);
 
   const pdfRef = React.createRef();
@@ -418,27 +423,21 @@ const Index = () => {
 
   const actionCellRenderer = (params) => {
     function updateData() {
-      setLoading(true)
+      setLoading(true);
       BackendAxios.post("api/razorpay/payment-status", {
         payoutId: params.data.payout_id,
       })
-        .then(() => {
-          setLoading(false)
+        .then((res) => {
+          setLoading(false);
           Toast({
             status: "success",
             description: `Payout ${params.data.payout_id} updated!`,
           });
-          let pageUrl = `/api/admin/payouts/${Formik.values.status}?from=${
-            Formik.values.from + (Formik.values.from && "T" + "00:00")
-          }&to=${
-            Formik.values.to + (Formik.values.to && "T" + "23:59")
-          }&userId=${Formik.values.userId}&status=${
-            Formik.values.status
-          }&page=${pagination.current_page}`;
-          fetchPendingTransactions()
+          
+          fetchPendingTransactions();
         })
         .catch((err) => {
-          setLoading(false)
+          setLoading(false);
           Toast({
             status: "error",
             description:
@@ -450,7 +449,12 @@ const Index = () => {
       <>
         {params.data?.status == "processing" ||
         params.data?.status == "queued" ? (
-          <Button size={"xs"} colorScheme="twitter" isLoading={loading} onClick={updateData}>
+          <Button
+            size={"xs"}
+            colorScheme="twitter"
+            isLoading={loading}
+            onClick={updateData}
+          >
             UPDATE
           </Button>
         ) : null}
@@ -466,7 +470,7 @@ const Index = () => {
           Payout Transactions
         </Text>
         <HStack my={4}>
-          <DownloadTableExcel
+          {/* <DownloadTableExcel
             filename="PayoutReports"
             sheet="payouts"
             currentTableRef={tableRef.current}
@@ -478,7 +482,15 @@ const Index = () => {
             >
               Export Excel
             </Button>
-          </DownloadTableExcel>
+          </DownloadTableExcel> */}
+          <Button
+            size={["xs", "sm"]}
+            colorScheme={"whatsapp"}
+            leftIcon={<SiMicrosoftexcel />}
+            onClick={generateReport}
+          >
+            Export Excel
+          </Button>
           <Button onClick={ExportPDF} colorScheme={"red"} size={"sm"}>
             Export PDF
           </Button>
@@ -528,10 +540,12 @@ const Index = () => {
           </FormControl>
         </Stack>
         <HStack mb={4} justifyContent={"flex-end"}>
-          <Button onClick={async () => {
-            await fetchTransactions()
-            await generateReport(Formik.values.userId)
-            }} colorScheme={"twitter"}>
+          <Button
+            onClick={async () => {
+              await fetchTransactions();
+            }}
+            colorScheme={"twitter"}
+          >
             Search
           </Button>
         </HStack>
