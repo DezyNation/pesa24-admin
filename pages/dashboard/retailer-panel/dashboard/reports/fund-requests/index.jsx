@@ -260,7 +260,7 @@ const Index = () => {
         <Box py={6}>
           <Box
             className="ag-theme-alpine ag-theme-pesa24-blue"
-            rounded={"full"}
+            rounded={"12"}
             overflow={"hidden"}
             w={"full"}
             h={["2xl"]}
