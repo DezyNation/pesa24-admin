@@ -27,6 +27,8 @@ import "jspdf-autotable";
 import { toBlob } from "html-to-image";
 import { useFormik } from "formik";
 import Cookies from "js-cookie";
+import { DownloadTableExcel } from "react-export-table-to-excel";
+import { SiMicrosoftexcel } from "react-icons/si";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -152,13 +154,28 @@ const Index = () => {
     fetchTransactions();
   }, []);
 
+  const tableRef = React.useRef(null)
+
   return (
     <>
       <DashboardWrapper pageTitle={"Fund Requests Reports"}>
-        <HStack>
+        <HStack mb={8}>
           <Button onClick={ExportPDF} colorScheme={"red"} size={"sm"}>
             Export PDF
           </Button>
+          <DownloadTableExcel
+            filename="FundRequests"
+            sheet="sheet1"
+            currentTableRef={tableRef.current}
+          >
+            <Button
+              size={["xs", "sm"]}
+              colorScheme={"whatsapp"}
+              leftIcon={<SiMicrosoftexcel />}
+            >
+              Excel
+            </Button>
+          </DownloadTableExcel>
         </HStack>
         <Box p={2} bg={"orange.500"}>
           <Text color={"#FFF"}>Search Transactions</Text>
@@ -270,7 +287,7 @@ const Index = () => {
       </DashboardWrapper>
 
       <VisuallyHidden>
-        <table id="printable-table">
+        <table id="printable-table" ref={tableRef}>
           <thead>
             <tr>
               <th>#</th>
