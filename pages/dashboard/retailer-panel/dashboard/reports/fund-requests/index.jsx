@@ -76,6 +76,11 @@ const Index = () => {
       field: 'remarks',
       defaultMinWidth: 300
     },
+    {
+      headerName: "Admin Remarks",
+      field: 'admin_remarks',
+      defaultMinWidth: 300
+    },
   ])
 
   const handleShare = async () => {
