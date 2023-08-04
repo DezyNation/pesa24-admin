@@ -512,6 +512,7 @@ const FundRequests = () => {
                 filter: true,
                 floatingFilter: true,
                 resizable: true,
+                suppressMovable: true
               }}
               onFilterChanged={(params) => {
                 setPrintableRow(

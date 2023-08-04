@@ -580,6 +580,7 @@ const Index = () => {
               floatingFilter: true,
               resizable: true,
               sortable: true,
+              suppressMovable: true
             }}
             components={{
               receiptCellRenderer: receiptCellRenderer,
