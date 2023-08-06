@@ -582,6 +582,7 @@ const Index = () => {
               sortable: true,
               suppressMovable: true
             }}
+            suppressScrollOnNewData={true}
             components={{
               receiptCellRenderer: receiptCellRenderer,
               creditCellRenderer: creditCellRenderer,
