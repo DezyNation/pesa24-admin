@@ -211,7 +211,7 @@ const Preferences = () => {
             <Text>Recharge Provider</Text>
             <HStack p={2} rounded={8}>
               <Button
-                w={36}
+                w={48}
                 colorScheme={
                   globalInfo.recharge_provider == "rechargetradition"
                     ? "twitter"
