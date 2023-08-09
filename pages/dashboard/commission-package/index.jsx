@@ -653,8 +653,8 @@ const CommissionSetup = () => {
                                     <Th>BBPS</Th> */}
                                     <Th>Payout</Th>
                                     <Th>DMT</Th>
-                                    {/* <Th>Recharge</Th>
-                                    <Th>LIC</Th>
+                                    <Th>Recharge</Th>
+                                    {/* <Th>LIC</Th>
                                     <Th>CMS</Th>
                                     <Th>Fastag</Th> */}
                                     <Th>Delete Package</Th>
