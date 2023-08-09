@@ -289,7 +289,7 @@ const menuOptions = [
       },
       {
         id: "report-recharge",
-        title: "recharge",
+        title: "recharges",
         link: "/dashboard/reports/recharge?pageid=report-recharge&parent=reports",
         status: false,
       },
@@ -556,7 +556,6 @@ const Layout = (props) => {
       });
   }
 
-  console.log(Router.asPath);
 
   return (
     <>

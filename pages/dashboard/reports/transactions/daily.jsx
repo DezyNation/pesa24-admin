@@ -11,6 +11,13 @@ import {
   FormLabel,
   Input,
   Select,
+  TableContainer,
+  Table,
+  Thead,
+  Tr,
+  Th,
+  Tbody,
+  Td,
 } from "@chakra-ui/react";
 import BackendAxios from "@/lib/utils/axios";
 import jsPDF from "jspdf";
@@ -27,14 +34,8 @@ import {
 import { useFormik } from "formik";
 import { DownloadTableExcel } from "react-export-table-to-excel";
 import { SiMicrosoftexcel } from "react-icons/si";
-import { TableContainer } from "@chakra-ui/react";
-import { Table } from "@chakra-ui/react";
-import { Thead } from "@chakra-ui/react";
-import { Tr } from "@chakra-ui/react";
-import { Th } from "@chakra-ui/react";
-import { Tbody } from "@chakra-ui/react";
-import { Td } from "@chakra-ui/react";
 import Cookies from "js-cookie";
+import { useToast } from "@chakra-ui/react";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -43,7 +44,7 @@ const ExportPDF = () => {
 };
 
 const Ledger = () => {
-  const today = new Date();
+  const Toast = useToast({ position: "top-right" });
   const [rowData, setRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([
     {
@@ -85,6 +86,8 @@ const Ledger = () => {
     },
   ]);
   const [printableRow, setPrintableRow] = useState(rowData);
+  const [isLoading, setIsLoading] = useState(false);
+  const [users, setUsers] = useState([]);
   const [overviewData, setOverviewData] = useState([]);
   const [pagination, setPagination] = useState({
     current_page: "1",
@@ -130,8 +133,28 @@ const Ledger = () => {
       });
   }
 
+  function fetchUsers() {
+    BackendAxios.get(`/api/admin/users-list/all`)
+      .then((res) => {
+        setUsers(res.data.data);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
+        setIsLoading(false);
+        Toast({
+          status: "error",
+          description:
+            err?.response?.data?.message || err?.response?.data || err.message,
+        });
+      });
+  }
+
   function fetchLedger(pageLink) {
-    BackendAxios.post(
+    BackendAxios.get(
       pageLink ||
         `/api/admin/transactions-period?from=${
           Formik.values.from + (Formik.values.from && "T" + "00:00")
@@ -151,32 +174,79 @@ const Ledger = () => {
           prev_page_url: res.data.prev_page_url,
         });
 
-        setRowData(
-          Object.entries(res.data).map((item) => {
+        console.log(
+          Object.keys(res.data).map((userId) => {
             return {
-              userId: item[0],
-              userName:
-                Object.entries(item[1]).map(
-                  (transaction) => transaction[1][0]?.trigered_by_name
-                )[0] || "NA",
-              userPhone:
-                Object.entries(item[1]).map(
-                  (transaction) => transaction[1][0]?.trigered_by_phone
-                )[0] || "NA",
-              userWallet:
-                Object.entries(item[1]).map(
-                  (transaction) => transaction[1][0]?.wallet_amount
-                )[0] || "NA",
-              transactions: Object.entries(item[1]).map((transaction) => ({
-                category: transaction[0],
-                total: transaction[1]
-                  ?.map((data) =>
-                    Number(data?.debit_amount - data?.credit_amount)
-                  )
-                  ?.reduce(addTransactions, 0),
-              })),
+              userId: userId,
+              userName: users.find(
+                (user) => parseInt(user.id) == parseInt(userId)
+              )?.name,
+              userPhone: users.find(
+                (user) => parseInt(user.id) == parseInt(userId)
+              )?.phone_number,
+              userWallet: users.find(
+                (user) => parseInt(user.id) == parseInt(userId)
+              )?.wallet,
+              transactions: Object.keys(res.data[userId])?.map((category) => {
+                return {
+                  category: category,
+                  total: Math.abs(
+                    res.data[userId][category]?.debit_amount - res.data[userId][category]?.credit_amount
+                  ),
+                };
+              }),
             };
           })
+        );
+
+        setRowData(
+          Object.keys(res.data).map((userId) => {
+            return {
+              userId: userId,
+              userName: users.find(
+                (user) => parseInt(user.id) == parseInt(userId)
+              )?.name,
+              userPhone: users.find(
+                (user) => parseInt(user.id) == parseInt(userId)
+              )?.phone_number,
+              userWallet: users.find(
+                (user) => parseInt(user.id) == parseInt(userId)
+              )?.wallet,
+              transactions: Object.keys(res.data[userId])?.map((category) => {
+                return {
+                  category: category,
+                  total: Math.abs(
+                    res.data[userId][category]?.debit_amount - res.data[userId][category]?.credit_amount
+                  ),
+                };
+              }),
+            };
+          })
+          // Object.entries(res.data).map((item) => {
+          //   return {
+          //     userId: item[0],
+          //     userName:
+          //       Object.entries(item[1]).map(
+          //         (transaction) => transaction[1][0]?.trigered_by_name
+          //       )[0] || "NA",
+          //     userPhone:
+          //       Object.entries(item[1]).map(
+          //         (transaction) => transaction[1][0]?.trigered_by_phone
+          //       )[0] || "NA",
+          //     userWallet:
+          //       Object.entries(item[1]).map(
+          //         (transaction) => transaction[1][0]?.wallet_amount
+          //       )[0] || "NA",
+          //     transactions: Object.entries(item[1]).map((transaction) => ({
+          //       category: transaction[0],
+          //       total: transaction[1]
+          //         ?.map((data) =>
+          //           Number(data?.debit_amount - data?.credit_amount)
+          //         )
+          //         ?.reduce(addTransactions, 0),
+          //     })),
+          //   };
+          // })
         );
 
         // setPrintableRow(res.data)
@@ -194,6 +264,7 @@ const Ledger = () => {
 
   useEffect(() => {
     fetchLedger();
+    fetchUsers();
   }, []);
 
   const userCellRenderer = (params) => {
@@ -297,11 +368,7 @@ const Ledger = () => {
                 </Box> */}
 
         <TableContainer rounded={16}>
-          <Table
-            colorScheme="twitter"
-            variant={"striped"}
-            id="printable-table"
-          >
+          <Table colorScheme="twitter" variant={"striped"} id="printable-table">
             <Thead bgColor={"twitter.500"} color={"#FFF"}>
               <Tr>
                 <Th color={"#FFF"} rowSpan={2}>
@@ -316,6 +383,9 @@ const Ledger = () => {
               </Tr>
               <Tr>
                 <Th color={"#FFF"}>Payout</Th>
+                <Th color={"#FFF"}>Charge</Th>
+              
+                <Th color={"#FFF"}>Recharge</Th>
                 <Th color={"#FFF"}>Charge</Th>
               </Tr>
             </Thead>
@@ -341,6 +411,16 @@ const Ledger = () => {
                   <Td>
                     {item?.transactions?.find(
                       (trnxn) => trnxn.category == "payout-commission"
+                    )?.total || 0}
+                  </Td>
+                  <Td>
+                    {item?.transactions?.find(
+                      (trnxn) => trnxn.category == "recharge"
+                    )?.total || 0}
+                  </Td>
+                  <Td>
+                    {item?.transactions?.find(
+                      (trnxn) => trnxn.category == "recharge-commission"
                     )?.total || 0}
                   </Td>
                 </Tr>
@@ -379,17 +459,37 @@ const Ledger = () => {
                     ) || 0}
                   </Text>
                 </Td>
+                <Td>
+                  <Text
+                    textAlign={"left"}
+                    fontWeight={"semibold"}
+                    fontSize={"lg"}
+                  >
+                    {Number(
+                      overviewData[6]?.recharge?.debit -
+                        overviewData[6]?.recharge?.credit
+                    ) || 0}
+                  </Text>
+                </Td>
+                <Td>
+                  <Text
+                    textAlign={"left"}
+                    fontWeight={"semibold"}
+                    fontSize={"lg"}
+                  >
+                    {Number(
+                      overviewData[7]?.["recharge-commission"]?.debit -
+                        overviewData[7]?.["recharge-commission"]?.credit
+                    ) || 0}
+                  </Text>
+                </Td>
               </Tr>
             </Tbody>
           </Table>
         </TableContainer>
 
         <VisuallyHidden>
-          <Table
-            colorScheme="twitter"
-            variant={"striped"}
-            ref={tableRef}
-          >
+          <Table colorScheme="twitter" variant={"striped"} ref={tableRef}>
             <Thead bgColor={"twitter.500"} color={"#FFF"}>
               <Tr>
                 <Th color={"#FFF"} rowSpan={2}>
@@ -414,25 +514,23 @@ const Ledger = () => {
               {rowData.map((item, key) => (
                 <Tr key={key}>
                   <Td>
-                      <Text fontSize={"lg"} fontWeight={"semibold"}>
-                        {item?.userName} ({item?.userId})
-                      </Text>
+                    <Text fontSize={"lg"} fontWeight={"semibold"}>
+                      {item?.userName} ({item?.userId})
+                    </Text>
                   </Td>
                   <Td>
-                      <Text>
-                        {item?.userPhone}
-                      </Text>
+                    <Text>{item?.userPhone}</Text>
                   </Td>
                   <Td>{item?.userWallet || 0}</Td>
                   <Td>
                     {item?.transactions?.find(
-                      (trnxn) => trnxn.category == "payout"
-                    )?.total || 0}
+                      (trnxn) => (trnxn.category == "payout")
+                    )?.total}
                   </Td>
                   <Td>
                     {item?.transactions?.find(
-                      (trnxn) => trnxn.category == "payout-commission"
-                    )?.total || 0}
+                      (trnxn) => (trnxn.category == "payout-commission")
+                    )?.total}
                   </Td>
                 </Tr>
               ))}

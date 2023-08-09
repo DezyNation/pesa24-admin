@@ -219,6 +219,7 @@ const FundRequests = () => {
     if (Formik.values.userQuery) {
       await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
         .then((result) => {
+          Formik.setFieldValue("userId", result.data.data.id);
           BackendAxios.get(
             pageLink ||
               `/api/admin/fetch-fund/all?from=${
@@ -570,13 +571,13 @@ const FundRequests = () => {
               </Button>
             </DownloadTableExcel> */}
             <Button
-                size={["xs", "sm"]}
-                colorScheme={"whatsapp"}
-                leftIcon={<SiMicrosoftexcel />}
-                onClick={generateReport}
-              >
-                Excel
-              </Button>
+              size={["xs", "sm"]}
+              colorScheme={"whatsapp"}
+              leftIcon={<SiMicrosoftexcel />}
+              onClick={generateReport}
+            >
+              Excel
+            </Button>
 
             <Button
               size={["xs", "sm"]}
@@ -647,7 +648,7 @@ const FundRequests = () => {
                 filter: true,
                 floatingFilter: true,
                 resizable: true,
-                suppressMovable: true
+                suppressMovable: true,
               }}
               onFilterChanged={(params) => {
                 setPrintableRow(
