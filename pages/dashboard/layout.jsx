@@ -563,9 +563,9 @@ const Layout = (props) => {
   }
 
   useEffect(()=>{
-    const channel = pusher.subscribe("fund-request");
+    const channel = pusher.subscribe("janpay-01-production");
     const sound = new Audio("/notification.mp3");
-    channel.bind("janpay-01-production", (data) => {
+    channel.bind("new-fund-request", (data) => {
       sound.play();
       Toast({
         title: `Fund request from ${data?.user}`,
@@ -574,8 +574,8 @@ const Layout = (props) => {
     });
 
     return () => {
-      channel.unbind("janpay-01-production");
-      pusher.unsubscribe("fund-request");
+      channel.unbind("new-fund-request");
+      pusher.unsubscribe("janpay-01-production");
     };
   },[])
 
