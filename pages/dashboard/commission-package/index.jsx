@@ -764,7 +764,7 @@ const CommissionSetup = () => {
                                                     </Button>
                                                 </Td>
                                                     {/* Recharge */}
-                                                {/* <Td>
+                                                <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -772,7 +772,7 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td> */}
+                                                </Td>
                                                     {/* LIC */}
                                                 {/* <Td>
                                                     <Button

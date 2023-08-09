@@ -130,98 +130,146 @@ const Preferences = () => {
         <Text fontSize={"lg"} fontWeight={"semibold"}>
           Manage Preferences For Your Portal
         </Text>
+        <Stack
+          direction={["column", "row"]}
+          justifyContent={"space-between"}
+          pt={16}
+          pb={8}
+          gap={10}
+        >
+          {/* <Box>
+            <Text>Preferred AePS Provider</Text>
+            <HStack p={2} rounded={8}>
+              <Button
+                w={36}
+                colorScheme={
+                  globalInfo.aeps_provider == "eko" ? "twitter" : "gray"
+                }
+                onClick={() => updateGlobalInfo({ aeps_provider: "eko" })}
+              >
+                Eko
+              </Button>
+              <Button
+                w={36}
+                colorScheme={
+                  globalInfo.aeps_provider == "paysprint" ? "twitter" : "gray"
+                }
+                onClick={() => updateGlobalInfo({ aeps_provider: "paysprint" })}
+              >
+                Paysprint
+              </Button>
+            </HStack>
+          </Box> */}
+          {/* <Box>
+            <Text>Preferred BBPS Provider</Text>
+            <HStack p={2} rounded={8}>
+              <Button
+                w={36}
+                colorScheme={
+                  globalInfo.bbps_provider == "eko" ? "twitter" : "gray"
+                }
+                onClick={() => updateGlobalInfo({ bbps_provider: "eko" })}
+              >
+                Eko
+              </Button>
+              <Button
+                w={36}
+                colorScheme={
+                  globalInfo.bbps_provider == "paysprint" ? "twitter" : "gray"
+                }
+                onClick={() => updateGlobalInfo({ bbps_provider: "paysprint" })}
+              >
+                Paysprint
+              </Button>
+            </HStack>
+          </Box> */}
+          {/* <Box>
+            <Text>Preferred DMT Provider</Text>
+            <HStack p={2} rounded={8}>
+              <Button
+                w={36}
+                colorScheme={
+                  globalInfo.dmt_provider == "eko" ? "twitter" : "gray"
+                }
+                onClick={() => updateGlobalInfo({ dmt_provider: "eko" })}
+              >
+                Eko
+              </Button>
+              <Button
+                w={36}
+                colorScheme={
+                  globalInfo.dmt_provider == "paysprint" ? "twitter" : "gray"
+                }
+                onClick={() => updateGlobalInfo({ dmt_provider: "paysprint" })}
+              >
+                Paysprint
+              </Button>
+            </HStack>
+          </Box> */}
+
+          <Box>
+            <Text>Recharge Provider</Text>
+            <HStack p={2} rounded={8}>
+              <Button
+                w={36}
+                colorScheme={
+                  globalInfo.recharge_provider == "rechargetradition"
+                    ? "twitter"
+                    : "gray"
+                }
+                onClick={() =>
+                  updateGlobalInfo({ recharge_provider: "rechargetradition" })
+                }
+              >
+                Recharge Tradition
+              </Button>
+              <Button
+                w={36}
+                colorScheme={
+                  globalInfo.recharge_provider == "paysprint"
+                    ? "twitter"
+                    : "gray"
+                }
+                onClick={() =>
+                  updateGlobalInfo({ recharge_provider: "paysprint" })
+                }
+              >
+                Paysprint
+              </Button>
+            </HStack>
+          </Box>
+        </Stack>
         {/* <Stack
-                    direction={['column', 'row']}
-                    justifyContent={'space-between'}
-                    pt={16} pb={8} gap={10}
-                >
-                    <Box>
-                        <Text>Preferred AePS Provider</Text>
-                        <HStack p={2} rounded={8}>
-                            <Button
-                                w={36}
-                                colorScheme={
-                                    globalInfo.aeps_provider == "eko" ?
-                                        "twitter" : "gray"
-                                }
-                                onClick={() => updateGlobalInfo({ aeps_provider: "eko" })}
-                            >Eko</Button>
-                            <Button
-                                w={36}
-                                colorScheme={globalInfo.aeps_provider == "paysprint" ?
-                                    "twitter" : "gray"
-                                }
-                                onClick={() => updateGlobalInfo({ aeps_provider: "paysprint" })}
-                            >Paysprint</Button>
-                        </HStack>
-                    </Box>
-                    <Box>
-                        <Text>Preferred BBPS Provider</Text>
-                        <HStack p={2} rounded={8}>
-                            <Button
-                                w={36}
-                                colorScheme={
-                                    globalInfo.bbps_provider == "eko" ?
-                                        "twitter" : "gray"
-                                }
-                                onClick={() => updateGlobalInfo({ bbps_provider: "eko" })}
-                            >Eko</Button>
-                            <Button
-                                w={36}
-                                colorScheme={globalInfo.bbps_provider == "paysprint" ?
-                                    "twitter" : "gray"
-                                }
-                                onClick={() => updateGlobalInfo({ bbps_provider: "paysprint" })}
-                            >Paysprint</Button>
-                        </HStack>
-                    </Box>
-                    <Box>
-                        <Text>Preferred DMT Provider</Text>
-                        <HStack p={2} rounded={8}>
-                            <Button
-                                w={36}
-                                colorScheme={
-                                    globalInfo.dmt_provider == "eko" ?
-                                        "twitter" : "gray"
-                                }
-                                onClick={() => updateGlobalInfo({ dmt_provider: "eko" })}
-                            >Eko</Button>
-                            <Button
-                                w={36}
-                                colorScheme={globalInfo.dmt_provider == "paysprint" ?
-                                    "twitter" : "gray"
-                                }
-                                onClick={() => updateGlobalInfo({ dmt_provider: "paysprint" })}
-                            >Paysprint</Button>
-                        </HStack>
-                    </Box>
-                </Stack>
-                <Stack
-                    direction={['column', 'row']}
-                    justifyContent={'space-between'}
-                    pt={16} pb={8} gap={10}
-                >
-                    <Box>
-                        <Text>LIC Transaction Type</Text>
-                        <HStack p={2} rounded={8}>
-                            <Button
-                                w={36}
-                                colorScheme={
-                                    organisationInfo.lic_type == "online" ?
-                                        "twitter" : "gray"
-                                }
-                                onClick={() => updateOrganisation({ lic_type: "online" })}
-                            >Online</Button>
-                            <Button
-                                w={36}
-                                colorScheme={organisationInfo.lic_type == "offline" ?
-                                    "twitter" : "gray"
-                                }
-                                onClick={() => updateOrganisation({ lic_type: "offline" })}
-                            >Offline</Button>
-                        </HStack>
-                    </Box>
-                </Stack> */}
+          direction={["column", "row"]}
+          justifyContent={"space-between"}
+          pt={16}
+          pb={8}
+          gap={10}
+        >
+          <Box>
+            <Text>LIC Transaction Type</Text>
+            <HStack p={2} rounded={8}>
+              <Button
+                w={36}
+                colorScheme={
+                  organisationInfo.lic_type == "online" ? "twitter" : "gray"
+                }
+                onClick={() => updateOrganisation({ lic_type: "online" })}
+              >
+                Online
+              </Button>
+              <Button
+                w={36}
+                colorScheme={
+                  organisationInfo.lic_type == "offline" ? "twitter" : "gray"
+                }
+                onClick={() => updateOrganisation({ lic_type: "offline" })}
+              >
+                Offline
+              </Button>
+            </HStack>
+          </Box>
+        </Stack> */}
         <Box mt={8} mb={6}>
           <Text pb={12}>Portal Registration Settings</Text>
           <TableContainer w={"full"}>
@@ -337,18 +385,25 @@ const Preferences = () => {
                                             onChange={(e) => updateOrganisation({ dmt_status: e.target.checked })} />
                                     </Td>
                                 </Tr>
-                                <Tr>
-                                    <Td>Recharge Services</Td>
-                                    <Td>{globalInfo.recharge_provider || "paysprint"}</Td>
-                                    <Td>
-                                        <Switch
-                                            id={'rechargeStatus'} isChecked={rechargeStatus}
-                                            onChange={(e) => updateOrganisation({ recharge_status: e.target.checked })} />
-                                    </Td>
-                                </Tr> */}
+                                  </Tr> */}
+                <Tr>
+                  <Td>Recharge Services</Td>
+                  <Td>{globalInfo.recharge_provider || "paysprint"}</Td>
+                  <Td>
+                    <Switch
+                      id={"rechargeStatus"}
+                      isChecked={rechargeStatus}
+                      onChange={(e) =>
+                        updateOrganisation({
+                          recharge_status: e.target.checked,
+                        })
+                      }
+                    />
+                  </Td>
+                </Tr>
                 <Tr>
                   <Td>Payout Services</Td>
-                  <Td>{globalInfo.payout_provider || "paysprint"}</Td>
+                  <Td>{globalInfo.payout_provider || "razorpay"}</Td>
                   <Td>
                     <Switch
                       id={"payoutStatus"}

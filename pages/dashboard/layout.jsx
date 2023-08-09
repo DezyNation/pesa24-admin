@@ -45,6 +45,11 @@ import Cookies from "js-cookie";
 var bcrypt = require("bcryptjs");
 import { useRouter } from "next/router";
 import Link from "next/link";
+import Pusher from "pusher-js";
+
+const pusher = new Pusher(process.env.NEXT_PUBLIC_PUSHER_KEY, {
+  cluster: "ap2",
+});
 
 const menuOptions = [
   {
@@ -291,7 +296,7 @@ const menuOptions = [
         id: "report-recharge",
         title: "recharges",
         link: "/dashboard/reports/recharge?pageid=report-recharge&parent=reports",
-        status: false,
+        status: true,
       },
       // {
       //   id: "report-matm",
@@ -406,6 +411,7 @@ const menuOptions = [
 
 const Layout = (props) => {
   const Router = useRouter();
+  
   const Toast = useToast({ position: "top-right" });
   const [myPermissions, setMyPermissions] = useState([]);
   const { isOpen, onClose, onOpen } = useDisclosure();
@@ -555,6 +561,23 @@ const Layout = (props) => {
         });
       });
   }
+
+  useEffect(()=>{
+    const channel = pusher.subscribe("fund-request");
+    const sound = new Audio("/notification.mp3");
+    channel.bind("new-fund-request", (data) => {
+      sound.play();
+      Toast({
+        title: `Fund request from ${data?.user}`,
+        description: `Amount ₹${data?.amount}`,
+      });
+    });
+
+    return () => {
+      channel.unbind("new-fund-request");
+      pusher.unsubscribe("fund-request");
+    };
+  },[])
 
 
   return (
