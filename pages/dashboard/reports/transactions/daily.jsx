@@ -133,8 +133,8 @@ const Ledger = () => {
       });
   }
 
-  function fetchUsers() {
-    BackendAxios.get(`/api/admin/users-list/all`)
+  async function fetchUsers() {
+    await BackendAxios.get(`/api/admin/users-list/all`)
       .then((res) => {
         setUsers(res.data.data);
         setIsLoading(false);
@@ -153,7 +153,8 @@ const Ledger = () => {
       });
   }
 
-  function fetchLedger(pageLink) {
+  async function fetchLedger(pageLink) {
+    await fetchUsers()
     BackendAxios.get(
       pageLink ||
         `/api/admin/transactions-period?from=${
@@ -264,7 +265,6 @@ const Ledger = () => {
 
   useEffect(() => {
     fetchLedger();
-    fetchUsers();
   }, []);
 
   const userCellRenderer = (params) => {
