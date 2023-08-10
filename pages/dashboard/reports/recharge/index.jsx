@@ -513,7 +513,6 @@ const Index = () => {
             <FormLabel>Status</FormLabel>
             <Select name="status" onChange={Formik.handleChange} bg={"white"}>
               <option value="all">All</option>
-              <option value="pending">Pending</option>
               <option value="success">Success</option>
               <option value="failed">Failed</option>
             </Select>
