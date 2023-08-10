@@ -118,6 +118,11 @@ const Index = () => {
       width: 120,
     },
     {
+      headerName: "Remarks",
+      field: "remarks",
+      width: 180,
+    },
+    {
       headerName: "Updated Timestamp",
       field: "updated_at",
     },
