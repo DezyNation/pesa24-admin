@@ -612,8 +612,8 @@ const FundRequests = () => {
                         {data.sender_phone}
                       </td>
                       <td>
-                        {data.reciever_name} ({data.receiver_id}) -{" "}
-                        {data.receiver_phone}
+                        {data.reciever_name} ({data.reciever_id}) -{" "}
+                        {data.reciever_phone}
                       </td>
                       <td>{data.amount}</td>
                       <td>{data.remarks}</td>
