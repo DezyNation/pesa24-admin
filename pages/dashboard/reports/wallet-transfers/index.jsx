@@ -113,10 +113,12 @@ const FundRequests = () => {
           BackendAxios.get(
             pageLink ||
               `/api/admin/wallet-transfers?from=${
-                Formik.values.from + (Formik.values.from && ("T" + "00:00"))
-              }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${
-                result.data.data.id
-              }&userType=${Formik.values.userType}`
+                Formik.values.from + (Formik.values.from && "T" + "00:00")
+              }&to=${
+                Formik.values.to + (Formik.values.to && "T" + "23:59")
+              }&userId=${result.data.data.id}&userType=${
+                Formik.values.userType
+              }`
           )
             .then((res) => {
               setPagination({
@@ -164,8 +166,8 @@ const FundRequests = () => {
     BackendAxios.get(
       pageLink ||
         `/api/admin/wallet-transfers?from=${
-          Formik.values.from + (Formik.values.from && ("T" + "00:00"))
-        }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${
+          Formik.values.from + (Formik.values.from && "T" + "00:00")
+        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&userId=${
           Formik.values.userId
         }&userType=${Formik.values.userType}`
     )
@@ -522,7 +524,7 @@ const FundRequests = () => {
                 filter: true,
                 floatingFilter: true,
                 resizable: true,
-                suppressMovable: true
+                suppressMovable: true,
               }}
               onFilterChanged={(params) => {
                 setPrintableRow(
@@ -606,11 +608,12 @@ const FundRequests = () => {
                       <td>{data.created_at}</td>
                       <td>{data.id}</td>
                       <td>
-                        {data.name} ({data.user_id}) - {data.phone_number}
+                        {data.sender_name} ({data.sender_id}) -{" "}
+                        {data.sender_phone}
                       </td>
                       <td>
-                        {data.admin_name} ({data.admin_id}) -{" "}
-                        {data.admin_number}
+                        {data.reciever_name} ({data.receiver_id}) -{" "}
+                        {data.receiver_phone}
                       </td>
                       <td>{data.amount}</td>
                       <td>{data.remarks}</td>
