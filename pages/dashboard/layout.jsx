@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useLayoutEffect } from "react";
+'use client'
+import React, { useEffect, useState } from "react";
 import {
   HStack,
   VStack,
