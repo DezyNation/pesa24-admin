@@ -97,11 +97,11 @@ const Index = () => {
       cellRenderer: 'statusCellRenderer'
     },
     {
-      headerName: "Created Timestamp",
+      headerName: "Created At",
       field: 'created_at'
     },
     {
-      headerName: "Updated Timestamp",
+      headerName: "Updated At",
       field: 'updated_at'
     },
     {

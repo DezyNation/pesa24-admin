@@ -104,12 +104,12 @@ const Index = () => {
       width: 100
     },
     {
-      headerName: "Created Timestamp",
+      headerName: "Created At",
       field: 'created_at',
       width: 150
     },
     {
-      headerName: "Updated Timestamp",
+      headerName: "Updated At",
       field: 'updated_at'
     },
     {

@@ -77,7 +77,7 @@ const Index = () => {
       width: 100,
     },
     {
-      headerName: "Created Timestamp",
+      headerName: "Created At",
       field: "created_at",
       width: 160,
     },
@@ -123,7 +123,7 @@ const Index = () => {
       width: 180,
     },
     {
-      headerName: "Updated Timestamp",
+      headerName: "Updated At",
       field: "updated_at",
     },
     {
