@@ -222,7 +222,7 @@ const menuOptions = [
       {
         title: "add new operator",
         link: "/dashboard/controls/add-operator?pageid=controls",
-        status: true,
+        status: false,
       },
       {
         id: "manage-banks",
