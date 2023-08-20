@@ -41,6 +41,9 @@ import "jspdf-autotable";
 import { toBlob } from "html-to-image";
 import { useFormik } from "formik";
 import Cookies from "js-cookie";
+import { DownloadTableExcel } from "react-export-table-to-excel";
+import { SiMicrosoftexcel } from "react-icons/si";
+import { Spacer } from "@chakra-ui/react";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -126,6 +129,7 @@ const Index = () => {
       width: 80,
     },
   ]);
+  const [overviewData, setOverviewData] = useState([]);
 
   const handleShare = async () => {
     const myFile = await toBlob(pdfRef.current, { quality: 0.95 });
@@ -156,12 +160,36 @@ const Index = () => {
     },
   });
 
+  function fetchOverview() {
+    BackendAxios.get(
+      `/api/admin/user/overview/${Cookies.get("viewUserId")}?from=${
+        Formik.values.from + (Formik.values.from && "T" + "00:00")
+      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}`
+    )
+      .then((res) => {
+        setOverviewData(res.data);
+      })
+      .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+          return;
+        }
+        console.log(err);
+      });
+  }
+
   function fetchTransactions(pageLink) {
     BackendAxios.get(
       pageLink ||
-        `/api/admin/user-reports/${transactionKeyword}/${Cookies.get("viewUserId")}?from=${Formik.values.from}&to=${Formik.values.to}&page=1`
-    )
-      .then((res) => {
+      `/api/admin/user-reports/${transactionKeyword}/${Cookies.get(
+        "viewUserId"
+        )}?from=${
+          Formik.values.from + (Formik.values.from && "T" + "00:00")
+        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&page=1`
+        )
+        .then((res) => {
+        fetchOverview()
         setPagination({
           current_page: res.data.current_page,
           total_pages: parseInt(res.data.last_page),
@@ -170,8 +198,8 @@ const Index = () => {
           next_page_url: res.data.next_page_url,
           prev_page_url: res.data.prev_page_url,
         });
-        setRowData(res.data.data);
-        setPrintableRow(res.data.data);
+        setRowData(res.data);
+        setPrintableRow(res.data);
       })
       .catch((err) => {
         if (err?.response?.status == 401) {
@@ -255,21 +283,26 @@ const Index = () => {
   };
 
   const statusCellRenderer = (params) => {
+    const receipt = JSON.parse(params.data.metadata);
     return (
       <>
-        {JSON.parse(params.data.metadata).status ? (
+        {receipt.status == "processed" ||
+        receipt?.status == true ||
+        receipt.status == "processing" ||
+        receipt.status == "queued" ? (
           <Text color={"green"} fontWeight={"bold"}>
-            SUCCESS
+            {receipt.status}
           </Text>
         ) : (
           <Text color={"red"} fontWeight={"bold"}>
-            FAILED
+            {receipt.status}
           </Text>
         )}
       </>
     );
   };
 
+  const tableRef = React.useRef(null);
   return (
     <>
       <DashboardWrapper pageTitle={"Payout Reports"}>
@@ -277,6 +310,19 @@ const Index = () => {
           <Button onClick={ExportPDF} colorScheme={"red"} size={"sm"}>
             Export PDF
           </Button>
+          <DownloadTableExcel
+            filename="PayoutReports"
+            sheet="sheet1"
+            currentTableRef={tableRef.current}
+          >
+            <Button
+              size={["xs", "sm"]}
+              colorScheme={"whatsapp"}
+              leftIcon={<SiMicrosoftexcel />}
+            >
+              Excel
+            </Button>
+          </DownloadTableExcel>
         </HStack>
         <Box p={2} bg={"orange.500"} roundedTop={16}>
           <Text color={"#FFF"}>Search Transactions</Text>
@@ -306,7 +352,7 @@ const Index = () => {
             Search
           </Button>
         </HStack>
-        <HStack
+        {/* <HStack
           spacing={2}
           py={4}
           mt={24}
@@ -357,7 +403,48 @@ const Index = () => {
           >
             <BsChevronDoubleRight />
           </Button>
+        </HStack> */}
+
+        <HStack
+          mt={8}
+          mb={4}
+          p={2}
+          px={4}
+          rounded={2}
+          bgColor={"#FFF"}
+          boxShadow={"sm"}
+          w={"full"}
+        >
+          <Text fontSize={"lg"} fontWeight={"semibold"}>
+            Total
+          </Text>
+          <Spacer />
+          <HStack gap={8}>
+            <Box>
+              <Text fontSize={"10"}>Payouts</Text>
+              <Text fontSize={"md"} fontWeight={"semibold"}>
+                ₹{" "}
+                {Math.abs(
+                  overviewData[4]?.payout?.debit -
+                    overviewData[4]?.payout?.credit
+                ).toFixed(2) || 0}
+              </Text>
+            </Box>
+            <Box>
+              <Text fontSize={"10"}>Charges</Text>
+              <Text fontSize={"md"} fontWeight={"semibold"}>
+                ₹{" "}
+                {Math.abs(
+                  overviewData[7]?.["payout-commission"]?.credit +
+                    overviewData[10]?.["payout-charge"]?.credit -
+                    (overviewData[7]?.["payout-commission"]?.debit +
+                      overviewData[10]?.["payout-charge"]?.debit)
+                ).toFixed(2) || 0}
+              </Text>
+            </Box>
+          </HStack>
         </HStack>
+
         <Box py={6}>
           <Box
             className="ag-theme-alpine ag-theme-pesa24-blue"
@@ -375,6 +462,8 @@ const Index = () => {
                 resizable: true,
                 sortable: true,
               }}
+              pagination={true}
+              paginationPageSize={100}
               components={{
                 receiptCellRenderer: receiptCellRenderer,
                 creditCellRenderer: creditCellRenderer,
@@ -409,14 +498,16 @@ const Index = () => {
                 bg={
                   receipt.status == "processed" || receipt?.status == true
                     ? "green.500"
-                    : receipt.status == "processing" || receipt.status == "queued"
+                    : receipt.status == "processing" ||
+                      receipt.status == "queued"
                     ? "orange.500"
                     : "red.500"
                 }
               >
                 {receipt.status == "processed" || receipt.status == true ? (
                   <BsCheck2Circle color="#FFF" fontSize={72} />
-                ) : receipt.status == "processing" || receipt.status == "queued" ? (
+                ) : receipt.status == "processing" ||
+                  receipt.status == "queued" ? (
                   <BsClockHistory color="#FFF" fontSize={72} />
                 ) : (
                   <BsXCircle color="#FFF" fontSize={72} />
@@ -429,7 +520,12 @@ const Index = () => {
                   fontSize={"sm"}
                   textTransform={"uppercase"}
                 >
-                  TRANSACTION {receipt.status == true ? "PROCESSED" : receipt?.status == false ? "FAILED": receipt.status}
+                  TRANSACTION{" "}
+                  {receipt.status == true
+                    ? "PROCESSED"
+                    : receipt?.status == false
+                    ? "FAILED"
+                    : receipt.status}
                 </Text>
               </VStack>
             </ModalHeader>
@@ -507,7 +603,7 @@ const Index = () => {
       </Modal>
 
       <VisuallyHidden>
-        <table id="printable-table">
+        <table id="printable-table" ref={tableRef}>
           <thead>
             <tr>
               <th>#</th>

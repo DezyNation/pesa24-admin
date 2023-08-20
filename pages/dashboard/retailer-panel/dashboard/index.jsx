@@ -38,6 +38,7 @@ import SimpleAccordion from '@/hocs/SimpleAccordion'
 import DashboardWrapper from '@/hocs/DashboardLayout'
 import Link from 'next/link'
 import BackendAxios from '@/lib/utils/axios'
+import Cookies from 'js-cookie'
 
 const Dashboard = () => {
   const [newNotification, setNewNotification] = useState(true)
@@ -74,6 +75,10 @@ const Dashboard = () => {
       setCmsData(res.data[7].cms)
       setRechargeData(res.data[8].recharge)
     }).catch(err => {
+      if (err?.response?.status == 401) {
+        Cookies.remove("verified");
+        window.location.reload();
+      }
       console.log(err)
     })
   }

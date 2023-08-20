@@ -182,7 +182,7 @@ const Index = () => {
   })
 
   function fetchTransactions(pageLink) {
-    BackendAxios.get(pageLink || `/api/user/ledger/${transactionKeyword}?from=${Formik.values.from}&to=${Formik.values.to}&page=1`).then((res) => {
+    BackendAxios.get(pageLink || `/api/user/ledger/${transactionKeyword}?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+(Formik.values.to && ("T" + "23:59"))}&page=1`).then((res) => {
       setPagination({
         current_page: res.data.current_page,
         total_pages: parseInt(res.data.last_page),

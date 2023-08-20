@@ -19,6 +19,7 @@ import {
     useToast
 } from '@chakra-ui/react'
 import BackendAxios from '@/lib/utils/axios'
+import Cookies from 'js-cookie'
 
 const ManageServices = () => {
     const [services, setServices] = useState([])
@@ -40,6 +41,12 @@ const ManageServices = () => {
     function fetchServices() {
         BackendAxios.get("/api/admin/services").then(res => {
             setServices(res.data)
+        }).catch(err=>{
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
+            console.log(err)
         })
     }
     useEffect(() => {

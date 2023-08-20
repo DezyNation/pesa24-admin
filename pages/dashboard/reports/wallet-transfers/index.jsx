@@ -35,6 +35,7 @@ import { FormLabel } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
 import { DownloadTableExcel } from "react-export-table-to-excel";
 import { useRef } from "react";
+import { Select } from "@chakra-ui/react";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -48,7 +49,6 @@ const FundRequests = () => {
     position: "top-right",
   });
   const [rowData, setRowData] = useState([]);
-
   const [columnDefs, setColumnDefs] = useState([
     {
       headerName: "Datetime",
@@ -60,23 +60,18 @@ const FundRequests = () => {
       width: 80,
     },
     {
-      headerName: "Beneficiary",
-      field: "user_id",
-      cellRenderer: "userCellRenderer",
+      headerName: "Sender",
+      field: "sender_id",
+      cellRenderer: "adminCellRenderer",
     },
     {
-      headerName: "Admin",
-      field: "admin_name",
-      cellRenderer: "adminCellRenderer",
+      headerName: "Beneficiary",
+      field: "reciever_id",
+      cellRenderer: "userCellRenderer",
     },
     {
       headerName: "Amount",
       field: "amount",
-      width: 100,
-    },
-    {
-      headerName: "Type",
-      field: "transaction_type",
       width: 100,
     },
     {
@@ -95,7 +90,6 @@ const FundRequests = () => {
     next_page_url: "",
     prev_page_url: "",
   });
-  const [pages, setPages] = useState([]);
 
   const Formik = useFormik({
     initialValues: {
@@ -104,6 +98,7 @@ const FundRequests = () => {
       query: "",
       userQuery: "",
       userId: "",
+      userType: "sender",
     },
   });
 
@@ -117,11 +112,13 @@ const FundRequests = () => {
           Formik.setFieldValue("userId", result.data.data.id);
           BackendAxios.get(
             pageLink ||
-              `/api/admin/fetch-admin-funds?from=${
+              `/api/admin/wallet-transfers?from=${
                 Formik.values.from + (Formik.values.from && "T" + "00:00")
               }&to=${
                 Formik.values.to + (Formik.values.to && "T" + "23:59")
-              }&userId=${result.data?.data?.id}`
+              }&userId=${result.data.data.id}&userType=${
+                Formik.values.userType
+              }`
           )
             .then((res) => {
               setPagination({
@@ -132,7 +129,6 @@ const FundRequests = () => {
                 next_page_url: res.data.next_page_url,
                 prev_page_url: res.data.prev_page_url,
               });
-              setPages(res.data?.links);
               setRowData(res.data.data);
               setPrintableRow(res.data.data);
             })
@@ -169,9 +165,11 @@ const FundRequests = () => {
     }
     BackendAxios.get(
       pageLink ||
-        `/api/admin/fetch-admin-funds?from=${
+        `/api/admin/wallet-transfers?from=${
           Formik.values.from + (Formik.values.from && "T" + "00:00")
-        }&to=${Formik.values.to + (Formik.values.to && ("T" + "23:59"))}&userId=${Formik.values.userId}`
+        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&userId=${
+          Formik.values.userId
+        }&userType=${Formik.values.userType}`
     )
       .then((res) => {
         setPagination({
@@ -182,7 +180,6 @@ const FundRequests = () => {
           next_page_url: res.data.next_page_url,
           prev_page_url: res.data.prev_page_url,
         });
-        setPages(res.data?.links);
         setRowData(res.data.data);
         setPrintableRow(res.data.data);
       })
@@ -338,8 +335,8 @@ const FundRequests = () => {
     return (
       <>
         <Text>
-          {params.data.name} ({params.data.user_id}) -{" "}
-          {params.data.phone_number}
+          {params.data.reciever_name} ({params.data.reciever_id}) -{" "}
+          {params.data.reciever_phone}
         </Text>
       </>
     );
@@ -349,8 +346,8 @@ const FundRequests = () => {
     return (
       <>
         <Text>
-          {params.data.admin_name} ({params.data.admin_id}) -{" "}
-          {params.data.admin_phone}
+          {params.data.sender_name} ({params.data.sender_id}) -{" "}
+          {params.data.sender_phone}
         </Text>
       </>
     );
@@ -453,6 +450,13 @@ const FundRequests = () => {
                 bg={"white"}
               />
             </FormControl>
+            <FormControl w={["full", "xs"]}>
+              <FormLabel>Search as</FormLabel>
+              <Select name="userType" onChange={Formik.handleChange}>
+                <option value="sender">Sender</option>
+                <option value="reciever">Reciever</option>
+              </Select>
+            </FormControl>
           </Stack>
           <HStack mb={4} justifyContent={"flex-end"}>
             <Button onClick={() => fetchRequests()} colorScheme={"twitter"}>
@@ -470,24 +474,32 @@ const FundRequests = () => {
             >
               <BsChevronDoubleLeft />
             </Button>
-            {pages.map((item, key) => (
-              <Button
-                key={key}
-                colorScheme={"twitter"}
-                fontSize={12}
-                size={"xs"}
-                variant={item?.active ? "solid" : "outline"}
-                onClick={() => fetchRequests(item?.url)}
-              >
-                {item?.label == "&laquo; Previous" ? (
-                  <BsChevronLeft />
-                ) : item?.label == "Next &raquo;" ? (
-                  <BsChevronRight />
-                ) : (
-                  item?.label
-                )}
-              </Button>
-            ))}
+            <Button
+              colorScheme={"twitter"}
+              fontSize={12}
+              size={"xs"}
+              variant={"outline"}
+              onClick={() => fetchRequests(pagination.prev_page_url)}
+            >
+              <BsChevronLeft />
+            </Button>
+            <Button
+              colorScheme={"twitter"}
+              fontSize={12}
+              size={"xs"}
+              variant={"solid"}
+            >
+              {pagination.current_page}
+            </Button>
+            <Button
+              colorScheme={"twitter"}
+              fontSize={12}
+              size={"xs"}
+              variant={"outline"}
+              onClick={() => fetchRequests(pagination.next_page_url)}
+            >
+              <BsChevronRight />
+            </Button>
             <Button
               colorScheme={"twitter"}
               fontSize={12}
@@ -512,7 +524,7 @@ const FundRequests = () => {
                 filter: true,
                 floatingFilter: true,
                 resizable: true,
-                suppressMovable: true
+                suppressMovable: true,
               }}
               onFilterChanged={(params) => {
                 setPrintableRow(
@@ -539,24 +551,32 @@ const FundRequests = () => {
             >
               <BsChevronDoubleLeft />
             </Button>
-            {pages.map((item, key) => (
-              <Button
-                key={key}
-                colorScheme={"twitter"}
-                fontSize={12}
-                size={"xs"}
-                variant={item?.active ? "solid" : "outline"}
-                onClick={() => fetchRequests(item?.url)}
-              >
-                {item?.label == "&laquo; Previous" ? (
-                  <BsChevronLeft />
-                ) : item?.label == "Next &raquo;" ? (
-                  <BsChevronRight />
-                ) : (
-                  item?.label
-                )}
-              </Button>
-            ))}
+            <Button
+              colorScheme={"twitter"}
+              fontSize={12}
+              size={"xs"}
+              variant={"outline"}
+              onClick={() => fetchRequests(pagination.prev_page_url)}
+            >
+              <BsChevronLeft />
+            </Button>
+            <Button
+              colorScheme={"twitter"}
+              fontSize={12}
+              size={"xs"}
+              variant={"solid"}
+            >
+              {pagination.current_page}
+            </Button>
+            <Button
+              colorScheme={"twitter"}
+              fontSize={12}
+              size={"xs"}
+              variant={"outline"}
+              onClick={() => fetchRequests(pagination.next_page_url)}
+            >
+              <BsChevronRight />
+            </Button>
             <Button
               colorScheme={"twitter"}
               fontSize={12}
@@ -588,14 +608,14 @@ const FundRequests = () => {
                       <td>{data.created_at}</td>
                       <td>{data.id}</td>
                       <td>
-                        {data.name} ({data.user_id}) - {data.phone_number}
+                        {data.sender_name} ({data.sender_id}) -{" "}
+                        {data.sender_phone}
                       </td>
                       <td>
-                        {data.admin_name} ({data.admin_id}) -{" "}
-                        {data.admin_number}
+                        {data.reciever_name} ({data.reciever_id}) -{" "}
+                        {data.reciever_phone}
                       </td>
                       <td>{data.amount}</td>
-                      <td>{data.transaction_type}</td>
                       <td>{data.remarks}</td>
                     </tr>
                   );

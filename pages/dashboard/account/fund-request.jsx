@@ -38,6 +38,8 @@ import { ModalBody } from "@chakra-ui/react";
 import { ModalFooter } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
 import { DownloadTableExcel } from "react-export-table-to-excel";
+import Cookies from "js-cookie";
+import { FiRefreshCw } from "react-icons/fi";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -61,6 +63,10 @@ const FundRequests = () => {
       field: "status",
       headerName: "Status",
       cellRenderer: "statusCellRenderer",
+    },
+    {
+      headerName: "Transfer Date",
+      field: "transaction_date",
     },
     {
       headerName: "Request Timestamp",
@@ -125,6 +131,8 @@ const FundRequests = () => {
     },
     { headerName: "Update Timestamp", field: "updated_at" },
   ]);
+  const [loading, setLoading] = useState(false);
+  const [processingApproval, setProcessingApproval] = useState(false)
 
   const { onToggle, isOpen } = useDisclosure();
   const [selectedFundReq, setSelectedFundReq] = useState({
@@ -146,8 +154,10 @@ const FundRequests = () => {
   });
 
   function fetchRequests(pageLink) {
-    BackendAxios.get(pageLink || "/api/admin/fetch-fund/pending")
+    setLoading(true);
+    BackendAxios.get(pageLink || "/api/admin/fetch-fund/pending?pageSize=200")
       .then((res) => {
+        setLoading(false);
         setPagination({
           current_page: res.data.current_page,
           total_pages: parseInt(res.data.last_page),
@@ -160,6 +170,7 @@ const FundRequests = () => {
         setPrintableRow(res.data.data);
       })
       .catch((err) => {
+        setLoading(false);
         console.log(err);
         Toast({
           status: "error",
@@ -177,6 +188,7 @@ const FundRequests = () => {
   function updateFundRequest() {
     console.log(selectedFundReq);
     console.log(remarks);
+    setProcessingApproval(true)
     if (selectedFundReq.action == "approved") {
       BackendAxios.post(`/api/admin/update-fund-requests`, {
         id: selectedFundReq.id,
@@ -186,6 +198,7 @@ const FundRequests = () => {
         amount: selectedFundReq.amount,
       })
         .then((res) => {
+          setProcessingApproval(false)
           Toast({
             status: "success",
             description: "Status Updated",
@@ -194,6 +207,11 @@ const FundRequests = () => {
           fetchRequests();
         })
         .catch((err) => {
+          setProcessingApproval(false)
+          if (err?.response?.status == 401) {
+            Cookies.remove("verified");
+            window.location.reload();
+          }
           Toast({
             status: "error",
             description:
@@ -213,6 +231,7 @@ const FundRequests = () => {
         remarks: remarks,
       })
         .then((res) => {
+          setProcessingApproval(false)
           onToggle();
           Toast({
             status: "success",
@@ -221,6 +240,11 @@ const FundRequests = () => {
           fetchRequests();
         })
         .catch((err) => {
+          setProcessingApproval(false)
+          if (err?.response?.status == 401) {
+            Cookies.remove("verified");
+            window.location.reload();
+          }
           onToggle();
           console.log(err);
           Toast({
@@ -237,11 +261,12 @@ const FundRequests = () => {
       });
       return;
     }
-    if (selectedFundReq.action == "deleted") {
+    if (selectedFundReq.action == "delete") {
       BackendAxios.post("/api/admin/delete-fund", {
         fundId: selectedFundReq.id,
       })
         .then((res) => {
+          setProcessingApproval(false)
           onToggle();
           Toast({
             status: "success",
@@ -250,6 +275,11 @@ const FundRequests = () => {
           fetchRequests();
         })
         .catch((err) => {
+          setProcessingApproval(false)
+          if (err?.response?.status == 401) {
+            Cookies.remove("verified");
+            window.location.reload();
+          }
           onToggle();
           console.log(err);
           Toast({
@@ -329,7 +359,8 @@ const FundRequests = () => {
     return (
       <>
         <Text>
-          ({params.data.user_id}) {params.data.name} - {params?.data?.phone_number}
+          ({params.data.user_id}) {params.data.name} -{" "}
+          {params?.data?.phone_number}
         </Text>
       </>
     );
@@ -356,10 +387,7 @@ const FundRequests = () => {
         </Text>
 
         <Box py={6}>
-          <Text fontWeight={"medium"} pb={4}>
-            Search and manage fund requests
-          </Text>
-          <HStack spacing={4} my={4}>
+          {/* <HStack spacing={4} my={4}>
             <DownloadTableExcel
               filename="FundRequests"
               sheet="sheet1"
@@ -388,6 +416,18 @@ const FundRequests = () => {
               onClick={ExportPDF}
             >
               Print
+            </Button>
+          </HStack> */}
+
+          <HStack w={"full"} py={4} justifyContent={"flex-end"}>
+            <Button
+              colorScheme="blue"
+              variant={"ghost"}
+              leftIcon={<FiRefreshCw />}
+              onClick={()=>fetchRequests()}
+              isLoading={loading}
+            >
+              Refresh Data
             </Button>
           </HStack>
 
@@ -451,6 +491,7 @@ const FundRequests = () => {
                 filter: true,
                 floatingFilter: true,
                 resizable: true,
+                suppressMovable: true
               }}
               onFilterChanged={(params) => {
                 setPrintableRow(
@@ -533,6 +574,7 @@ const FundRequests = () => {
                       <td>{key + 1}</td>
                       <td>{data.id}</td>
                       <td>{data.status}</td>
+                      <td>{data.transaction_date}</td>
                       <td>{data.created_at}</td>
                       <td>{data.transaction_id}</td>
                       <td>{data.amount}</td>
@@ -600,7 +642,7 @@ const FundRequests = () => {
           </ModalBody>
           <ModalFooter>
             <HStack justifyContent={"flex-end"}>
-              <Button colorScheme="twitter" onClick={updateFundRequest}>
+              <Button colorScheme="twitter" onClick={updateFundRequest} isLoading={processingApproval}>
                 Confirm
               </Button>
             </HStack>

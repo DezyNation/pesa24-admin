@@ -15,6 +15,7 @@ import {
 } from '@chakra-ui/react'
 import { useFormik } from 'formik'
 import { FormAxios } from '@/lib/utils/axios'
+import Cookies from 'js-cookie'
 
 const Create = () => {
     const Toast = useToast({ position: 'top-right' })
@@ -49,6 +50,10 @@ const Create = () => {
                     description: 'Whitelable organisation added'
                 })
             }).catch(err=>{
+                if (err?.response?.status == 401) {
+                  Cookies.remove("verified");
+                  window.location.reload();
+                }
                 Toast({
                     status: 'error',
                     title: 'Error while creating organisation',

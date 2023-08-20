@@ -39,6 +39,7 @@ import CommissionStructure from '@/lib/commission-structure/CommissionStructure'
 import { BsChevronDoubleLeft, BsChevronDoubleRight, BsChevronLeft, BsChevronRight, BsTrash } from 'react-icons/bs'
 import { useFormik } from 'formik'
 import BackendAxios from '@/lib/utils/axios'
+import Cookies from 'js-cookie';
 
 
 const CommissionSetup = () => {
@@ -114,6 +115,10 @@ const CommissionSetup = () => {
                 })
                 fetchAllPackages()
             }).catch(err => {
+                if (err?.response?.status == 401) {
+                  Cookies.remove("verified");
+                  window.location.reload();
+                }
                 Toast({
                     status: 'error',
                     description: err.message
@@ -141,6 +146,10 @@ const CommissionSetup = () => {
                         description: 'Package assigned successfully!'
                     })
                 }).catch(err => {
+                    if (err?.response?.status == 401) {
+                      Cookies.remove("verified");
+                      window.location.reload();
+                    }
                     Toast({
                         status: 'error',
                         description: err.response.data.message || err.response.data || err.message
@@ -163,6 +172,10 @@ const CommissionSetup = () => {
             })
             setAllPackages(res.data.data)
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: `Error while fetching packages`
@@ -180,6 +193,10 @@ const CommissionSetup = () => {
             }
             setModalStatus(true)
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: "error",
                 description: "Error while fetching commission"
@@ -204,6 +221,10 @@ const CommissionSetup = () => {
                         description: `Commission Updated`
                     })
                 }).catch(err => {
+                    if (err?.response?.status == 401) {
+                      Cookies.remove("verified");
+                      window.location.reload();
+                    }
                     Toast({
                         status: 'error',
                         description: `Error while updating commission`
@@ -221,6 +242,10 @@ const CommissionSetup = () => {
                     description: `Commission Updated`
                 })
             }).catch(err => {
+                if (err?.response?.status == 401) {
+                  Cookies.remove("verified");
+                  window.location.reload();
+                }
                 Toast({
                     status: 'error',
                     description: `Error while updating commission`
@@ -238,6 +263,10 @@ const CommissionSetup = () => {
                         description: `Commission Updated`
                     })
                 }).catch(err => {
+                    if (err?.response?.status == 401) {
+                      Cookies.remove("verified");
+                      window.location.reload();
+                    }
                     Toast({
                         status: 'error',
                         description: `Error while updating commission`
@@ -256,6 +285,10 @@ const CommissionSetup = () => {
                         description: `Commission Updated`
                     })
                 }).catch(err => {
+                    if (err?.response?.status == 401) {
+                      Cookies.remove("verified");
+                      window.location.reload();
+                    }
                     Toast({
                         status: 'error',
                         description: `Error while updating commission`
@@ -272,6 +305,10 @@ const CommissionSetup = () => {
                 description: 'Commission Deleted Successfully!'
             })
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 title: 'Error while deleting commission',
@@ -296,6 +333,10 @@ const CommissionSetup = () => {
                     return columnDef;
                 }))
             }).catch(err => {
+                if (err?.response?.status == 401) {
+                  Cookies.remove("verified");
+                  window.location.reload();
+                }
                 console.log(err)
             })
         }
@@ -314,6 +355,10 @@ const CommissionSetup = () => {
                     return columnDef;
                 }))
             }).catch(err => {
+                if (err?.response?.status == 401) {
+                  Cookies.remove("verified");
+                  window.location.reload();
+                }
                 console.log(err)
             })
         }
@@ -389,6 +434,10 @@ const CommissionSetup = () => {
         BackendAxios.get('/api/admin/package-count').then(res => {
 
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             console.log(err)
         })
     }, [])
@@ -407,6 +456,10 @@ const CommissionSetup = () => {
 
             })
         }).catch((err) => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: err.response.data.message || err.response.data || 'User not found!'
@@ -431,6 +484,10 @@ const CommissionSetup = () => {
                 description: "Details Updated Successfully"
             })
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: err.response.data.message || err.response.data || err.message
@@ -448,6 +505,10 @@ const CommissionSetup = () => {
             })
             fetchAllPackages()
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: err.response.data.message || err.response.data || err.message
@@ -478,6 +539,10 @@ const CommissionSetup = () => {
             }
             setIsAssignModalOpen({ status: false })
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: err.response.data.message || err.response.data || err.message
@@ -582,16 +647,16 @@ const CommissionSetup = () => {
                                     <Th>Total Users</Th>
                                     <Th>Default</Th>
                                     <Th>Status</Th>
-                                    <Th>AePS Cash Wihtdrawal</Th>
+                                    {/* <Th>AePS Cash Wihtdrawal</Th>
                                     <Th>AePS Aadhaar Pay</Th>
                                     <Th>AePS Mini Statement</Th>
-                                    <Th>BBPS</Th>
+                                    <Th>BBPS</Th> */}
                                     <Th>Payout</Th>
                                     <Th>DMT</Th>
                                     <Th>Recharge</Th>
-                                    <Th>LIC</Th>
+                                    {/* <Th>LIC</Th>
                                     <Th>CMS</Th>
-                                    <Th>Fastag</Th>
+                                    <Th>Fastag</Th> */}
                                     <Th>Delete Package</Th>
                                 </Tr>
                             </Thead>
@@ -638,8 +703,8 @@ const CommissionSetup = () => {
                                                         onChange={e => updatePackageDetails({ status: e.target.checked }, item.id)}
                                                     ></Switch>
                                                 </Td>
-                                                <Td>
                                                     {/* AEPS Cash Wihtdrawal */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -647,9 +712,9 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
-                                                <Td>
+                                                </Td> */}
                                                     {/* AEPS Aadhaar Pay */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -657,9 +722,9 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
-                                                <Td>
+                                                </Td> */}
                                                     {/* AEPS Mini Statement */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -667,9 +732,9 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
-                                                <Td>
+                                                </Td> */}
                                                     {/* BBPS */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -677,9 +742,9 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
-                                                <Td>
+                                                </Td> */}
                                                     {/* Payout */}
+                                                <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -688,8 +753,8 @@ const CommissionSetup = () => {
                                                         Set Commission
                                                     </Button>
                                                 </Td>
-                                                <Td>
                                                     {/* DMT */}
+                                                <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -698,8 +763,8 @@ const CommissionSetup = () => {
                                                         Set Commission
                                                     </Button>
                                                 </Td>
-                                                <Td>
                                                     {/* Recharge */}
+                                                <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -708,8 +773,8 @@ const CommissionSetup = () => {
                                                         Set Commission
                                                     </Button>
                                                 </Td>
-                                                <Td>
                                                     {/* LIC */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -717,9 +782,9 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
-                                                <Td>
+                                                </Td> */}
                                                     {/* CMS */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -727,9 +792,9 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
-                                                <Td>
+                                                </Td> */}
                                                     {/* Fastag */}
+                                                {/* <Td>
                                                     <Button
                                                         size={'sm'}
                                                         colorScheme={'blue'}
@@ -737,7 +802,7 @@ const CommissionSetup = () => {
                                                     >
                                                         Set Commission
                                                     </Button>
-                                                </Td>
+                                                </Td> */}
                                                 <Td>
                                                     {/* Delete */}
                                                     <Button

@@ -15,6 +15,7 @@ import { VStack } from '@chakra-ui/react'
 import { MdCall, MdEmail, MdPrint } from 'react-icons/md'
 import { Button } from '@chakra-ui/react'
 import { Image } from '@chakra-ui/react';
+import Cookies from 'js-cookie';
 
 const UserInfo = () => {
     const router = useRouter()
@@ -35,6 +36,10 @@ const UserInfo = () => {
             BackendAxios.post(`/api/admin/user/info/${userId}`).then(res => {
                 setUserInfo(res.data?.data || {})
             }).catch(err => {
+                if (err?.response?.status == 401) {
+                  Cookies.remove("verified");
+                  window.location.reload();
+                }
                 Toast({
                     status: 'error',
                     title: 'Error while fetching user info',

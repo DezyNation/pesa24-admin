@@ -29,6 +29,7 @@ import { AgGridReact } from 'ag-grid-react'
 import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import BackendAxios from '@/lib/utils/axios'
+import Cookies from 'js-cookie'
 
 
 const AddMoney = () => {
@@ -56,7 +57,12 @@ const AddMoney = () => {
                 status: 'success',
                 description: 'Funds added to your account',
             })
+            onClose()
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: err.response.data.message || err.response.data || err.message

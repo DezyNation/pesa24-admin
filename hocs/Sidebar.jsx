@@ -210,7 +210,7 @@ export const SidebarOptions =
         {
           title: 'fund requests',
           link: '/dashboard/retailer-panel/dashboard/reports/fund-requests?pageId=reports',
-          id: "fundRequests",
+          id: "basicFundRequesReport",
           soon: false,
         },
         // {
@@ -325,7 +325,7 @@ const Sidebar = ({ userName, userImage }) => {
           w={"64"}
           boxShadow={"md"}
           h={"100vh"}
-          bgImage={'/sidebarBg.svg'}
+          bgImage={'/sidebarbg.svg'}
           bgSize={'cover'}
           bgRepeat={'no-repeat'}
           p={4} color={'#FFF'}

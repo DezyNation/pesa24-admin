@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react'
-import Layout from '../layout'
+import React, { useEffect, useState } from "react";
+import Layout from "../layout";
 import {
     Text,
     Box,
@@ -17,104 +17,110 @@ import {
 import BackendAxios, { ClientAxios } from '@/lib/utils/axios'
 
 const Preferences = () => {
-    const [globalInfo, setGlobalInfo] = useState({})
-    const [defaultRole, setDefaultRole] = useState("")
-    const [services, setServices] = useState([])
-    const Toast = useToast({
-        position: 'top-right'
+  const [globalInfo, setGlobalInfo] = useState({});
+  const [defaultRole, setDefaultRole] = useState("");
+  const [services, setServices] = useState([]);
+  const Toast = useToast({
+    position: "top-right",
+  });
+  const [aepsStatus, setAepsStatus] = useState(false);
+  const [bbpsStatus, setBbpsStatus] = useState(false);
+  const [dmtStatus, setDmtStatus] = useState(false);
+  const [rechargeStatus, setRechargeStatus] = useState(false);
+  const [payoutStatus, setPayoutStatus] = useState(false);
+  const [panStatus, setPanStatus] = useState(false);
+  const [licStatus, setLicStatus] = useState(false);
+  const [cmsStatus, setCmsStatus] = useState(false);
+  const [fastagStatus, setFastagStatus] = useState(false);
+  const [axisStatus, setAxisStatus] = useState(false);
+  const [organisationInfo, setOrganisationInfo] = useState({});
+
+  function fetchOrganisationServiceStatus() {
+    ClientAxios.get("/api/organisation")
+      .then((res) => {
+        setAepsStatus(res.data.aeps_status);
+        setBbpsStatus(res.data.bbps_status);
+        setDmtStatus(res.data.dmt_status);
+        setRechargeStatus(res.data.recharge_status);
+        setPayoutStatus(res.data.payout_status);
+        setPanStatus(res.data.pan_status);
+        setLicStatus(res.data.lic_status);
+        setCmsStatus(res.data.cms_status);
+        setFastagStatus(res.data.fastag_status);
+        setAxisStatus(res.data.axis_status);
+        setOrganisationInfo(res.data);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  }
+  function updateOrganisation(data) {
+    ClientAxios.post("/api/organisation", data, {
+      headers: {
+        "Content-Type": "application/json",
+      },
     })
-    const [aepsStatus, setAepsStatus] = useState(false)
-    const [bbpsStatus, setBbpsStatus] = useState(false)
-    const [dmtStatus, setDmtStatus] = useState(false)
-    const [rechargeStatus, setRechargeStatus] = useState(false)
-    const [payoutStatus, setPayoutStatus] = useState(false)
-    const [panStatus, setPanStatus] = useState(false)
-    const [licStatus, setLicStatus] = useState(false)
-    const [cmsStatus, setCmsStatus] = useState(false)
-    const [fastagStatus, setFastagStatus] = useState(false)
-    const [axisStatus, setAxisStatus] = useState(false)
-    const [organisationInfo, setOrganisationInfo] = useState({})
+      .then((res) => {
+        fetchOrganisationServiceStatus();
+        Toast({
+          position: "top",
+          status: "success",
+          title: "Organisation Data updated",
+        });
+      })
+      .catch((err) => {
+        Toast({
+          status: "error",
+          title: "Error while updating",
+        });
+      });
+  }
 
-    function fetchOrganisationServiceStatus() {
-        ClientAxios.get("/api/organisation").then(res => {
-            setAepsStatus(res.data.aeps_status)
-            setBbpsStatus(res.data.bbps_status)
-            setDmtStatus(res.data.dmt_status)
-            setRechargeStatus(res.data.recharge_status)
-            setPayoutStatus(res.data.payout_status)
-            setPanStatus(res.data.pan_status)
-            setLicStatus(res.data.lic_status)
-            setCmsStatus(res.data.cms_status)
-            setFastagStatus(res.data.fastag_status)
-            setAxisStatus(res.data.axis_status)
-            setOrganisationInfo(res.data)
-        }).catch(err => {
-            console.log(err.message)
-        })
-    }
-    function updateOrganisation(data) {
-        ClientAxios.post('/api/organisation', data, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).then(res => {
-            fetchOrganisationServiceStatus()
-            Toast({
-                position: 'top',
-                status: 'success',
-                title: 'Organisation Data updated'
-            })
-        }).catch(err => {
-            Toast({
-                status: 'error',
-                title: 'Error while updating'
-            })
-        })
-    }
+  useEffect(() => {
+    fetchOrganisationServiceStatus();
+  }, []);
 
-    useEffect(() => {
-        fetchOrganisationServiceStatus()
-    }, [])
+  function fetchGlobalInfo() {
+    ClientAxios.get("/api/global")
+      .then((res) => {
+        setGlobalInfo(res.data);
+        setDefaultRole(res.data.default_role);
+        console.log(globalInfo);
+      })
+      .catch((err) => {
+        Toast({
+          status: "error",
+          title: "Error while fetching global info",
+          description: err.message,
+        });
+      });
+  }
 
-    function fetchGlobalInfo() {
-        ClientAxios.get('/api/global').then((res) => {
-            setGlobalInfo(res.data)
-            setDefaultRole(res.data.default_role)
-            console.log(globalInfo)
-        }).catch((err) => {
-            Toast({
-                status: 'error',
-                title: 'Error while fetching global info',
-                description: err.message
-            })
-        })
-    }
+  useEffect(() => {
+    fetchGlobalInfo();
+  }, []);
 
-    useEffect(() => {
-        fetchGlobalInfo()
-    }, [])
-
-
-    function updateGlobalInfo(data) {
-        ClientAxios.post("/api/global", data, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        }).then(res => {
-            fetchGlobalInfo()
-            Toast({
-                status: 'success',
-                title: 'Data Updated'
-            })
-        }).catch(err => {
-            console.log(err.message)
-            Toast({
-                status: 'success',
-                title: 'Error while updating'
-            })
-        })
-    }
-
+  function updateGlobalInfo(data) {
+    ClientAxios.post("/api/global", data, {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((res) => {
+        fetchGlobalInfo();
+        Toast({
+          status: "success",
+          title: "Data Updated",
+        });
+      })
+      .catch((err) => {
+        console.log(err.message);
+        Toast({
+          status: "success",
+          title: "Error while updating",
+        });
+      });
+  }
 
     return (
         <>
@@ -385,5 +391,3 @@ const Preferences = () => {
         </>
     )
 }
-
-export default Preferences

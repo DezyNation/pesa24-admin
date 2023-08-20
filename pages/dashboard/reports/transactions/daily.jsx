@@ -11,6 +11,13 @@ import {
   FormLabel,
   Input,
   Select,
+  TableContainer,
+  Table,
+  Thead,
+  Tr,
+  Th,
+  Tbody,
+  Td,
 } from "@chakra-ui/react";
 import BackendAxios from "@/lib/utils/axios";
 import jsPDF from "jspdf";
@@ -27,13 +34,8 @@ import {
 import { useFormik } from "formik";
 import { DownloadTableExcel } from "react-export-table-to-excel";
 import { SiMicrosoftexcel } from "react-icons/si";
-import { TableContainer } from "@chakra-ui/react";
-import { Table } from "@chakra-ui/react";
-import { Thead } from "@chakra-ui/react";
-import { Tr } from "@chakra-ui/react";
-import { Th } from "@chakra-ui/react";
-import { Tbody } from "@chakra-ui/react";
-import { Td } from "@chakra-ui/react";
+import Cookies from "js-cookie";
+import { useToast } from "@chakra-ui/react";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -42,7 +44,7 @@ const ExportPDF = () => {
 };
 
 const Ledger = () => {
-  const today = new Date();
+  const Toast = useToast({ position: "top-right" });
   const [rowData, setRowData] = useState([]);
   const [columnDefs, setColumnDefs] = useState([
     {
@@ -84,7 +86,9 @@ const Ledger = () => {
     },
   ]);
   const [printableRow, setPrintableRow] = useState(rowData);
-  const [overviewData, setOverviewData] = useState([])
+  const [isLoading, setIsLoading] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [overviewData, setOverviewData] = useState([]);
   const [pagination, setPagination] = useState({
     current_page: "1",
     total_pages: "1",
@@ -100,7 +104,9 @@ const Ledger = () => {
     },
     onSubmit: (values) => {
       fetchLedger(
-        `/api/admin/transactions-period?from=${values.from}&to=${values.to}&page=1`
+        `/api/admin/transactions-period?from=${
+          values.from + (values.from && "T" + "00:00")
+        }&to=${values.to + (values.to && "T" + "23:59")}&page=1`
       );
     },
   });
@@ -109,19 +115,56 @@ const Ledger = () => {
     return accumulator + a;
   }
 
-  function fetchSum(){
-    BackendAxios.get(`/api/admin/overview?from=${Formik.values.from}&to=${Formik.values.to}`).then(res => {
-      setOverviewData(res.data)
-    }).catch(err => {
-      console.log(err)
-    })
+  function fetchSum() {
+    BackendAxios.get(
+      `/api/admin/overview?from=${
+        Formik.values.from + (Formik.values.from && "T" + "00:00")
+      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}`
+    )
+      .then((res) => {
+        setOverviewData(res.data);
+      })
+      .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
+        console.log(err);
+      });
   }
 
-  function fetchLedger(pageLink) {
-    BackendAxios.post(pageLink || `/api/admin/transactions-period?page=1`, {
-      from: Formik.values.from,
-      to: Formik.values.to,
-    })
+  async function fetchUsers() {
+    await BackendAxios.get(`/api/admin/users-list/all`)
+      .then((res) => {
+        setUsers(res.data.data);
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
+        setIsLoading(false);
+        Toast({
+          status: "error",
+          description:
+            err?.response?.data?.message || err?.response?.data || err.message,
+        });
+      });
+  }
+
+  async function fetchLedger(pageLink) {
+    await fetchUsers()
+    BackendAxios.get(
+      pageLink ||
+        `/api/admin/transactions-period?from=${
+          Formik.values.from + (Formik.values.from && "T" + "00:00")
+        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&page=1`,
+      {
+        from: Formik.values.from + (Formik.values.from && "T" + "00:00"),
+        to: Formik.values.to + (Formik.values.to && "T" + "23:59"),
+      }
+    )
       .then((res) => {
         setPagination({
           current_page: res.data.current_page,
@@ -132,41 +175,92 @@ const Ledger = () => {
           prev_page_url: res.data.prev_page_url,
         });
 
-        setRowData(
-          Object.entries(res.data).map((item) => {
+        console.log(
+          Object.keys(res.data).map((userId) => {
             return {
-              userId: item[0],
-              userName:
-                Object.entries(item[1]).map(
-                  (transaction) => transaction[1][0]?.trigered_by_name
-                )[0] || "NA",
-              userPhone:
-                Object.entries(item[1]).map(
-                  (transaction) => transaction[1][0]?.trigered_by_phone
-                )[0] || "NA",
-              userWallet:
-                Object.entries(item[1]).map(
-                  (transaction) => transaction[1][0]?.wallet_amount
-                )[0] || "NA",
-              transactions: Object.entries(item[1]).map((transaction) => ({
-                category: transaction[0],
-                total: transaction[1]
-                  ?.map((data) =>
-                    Number(data?.debit_amount - data?.credit_amount)
-                  )
-                  ?.reduce(addTransactions, 0),
-              })),
+              userId: userId,
+              userName: users.find(
+                (user) => parseInt(user.id) == parseInt(userId)
+              )?.name,
+              userPhone: users.find(
+                (user) => parseInt(user.id) == parseInt(userId)
+              )?.phone_number,
+              userWallet: users.find(
+                (user) => parseInt(user.id) == parseInt(userId)
+              )?.wallet,
+              transactions: Object.keys(res.data[userId])?.map((category) => {
+                return {
+                  category: category,
+                  total: Math.abs(
+                    res.data[userId][category]?.debit_amount - res.data[userId][category]?.credit_amount
+                  ),
+                };
+              }),
             };
           })
+        );
+
+        setRowData(
+          Object.keys(res.data).map((userId) => {
+            return {
+              userId: userId,
+              userName: users.find(
+                (user) => parseInt(user.id) == parseInt(userId)
+              )?.name,
+              userPhone: users.find(
+                (user) => parseInt(user.id) == parseInt(userId)
+              )?.phone_number,
+              userWallet: users.find(
+                (user) => parseInt(user.id) == parseInt(userId)
+              )?.wallet,
+              transactions: Object.keys(res.data[userId])?.map((category) => {
+                return {
+                  category: category,
+                  total: Math.abs(
+                    res.data[userId][category]?.debit_amount - res.data[userId][category]?.credit_amount
+                  ),
+                };
+              }),
+            };
+          })
+          // Object.entries(res.data).map((item) => {
+          //   return {
+          //     userId: item[0],
+          //     userName:
+          //       Object.entries(item[1]).map(
+          //         (transaction) => transaction[1][0]?.trigered_by_name
+          //       )[0] || "NA",
+          //     userPhone:
+          //       Object.entries(item[1]).map(
+          //         (transaction) => transaction[1][0]?.trigered_by_phone
+          //       )[0] || "NA",
+          //     userWallet:
+          //       Object.entries(item[1]).map(
+          //         (transaction) => transaction[1][0]?.wallet_amount
+          //       )[0] || "NA",
+          //     transactions: Object.entries(item[1]).map((transaction) => ({
+          //       category: transaction[0],
+          //       total: transaction[1]
+          //         ?.map((data) =>
+          //           Number(data?.debit_amount - data?.credit_amount)
+          //         )
+          //         ?.reduce(addTransactions, 0),
+          //     })),
+          //   };
+          // })
         );
 
         // setPrintableRow(res.data)
       })
       .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
         console.log(err);
       });
 
-    fetchSum()
+    fetchSum();
   }
 
   useEffect(() => {
@@ -242,52 +336,6 @@ const Ledger = () => {
             Export PDF
           </Button>
         </HStack>
-        <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.first_page_url)}
-          >
-            <BsChevronDoubleLeft />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.prev_page_url)}
-          >
-            <BsChevronLeft />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"solid"}
-          >
-            {pagination.current_page}
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.next_page_url)}
-          >
-            <BsChevronRight />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.last_page_url)}
-          >
-            <BsChevronDoubleRight />
-          </Button>
-        </HStack>
 
         {/* <Box
                     rounded={16} overflow={'hidden'}
@@ -320,12 +368,7 @@ const Ledger = () => {
                 </Box> */}
 
         <TableContainer rounded={16}>
-          <Table
-            colorScheme="twitter"
-            variant={"striped"}
-            ref={tableRef}
-            id="printable-table"
-          >
+          <Table colorScheme="twitter" variant={"striped"} id="printable-table">
             <Thead bgColor={"twitter.500"} color={"#FFF"}>
               <Tr>
                 <Th color={"#FFF"} rowSpan={2}>
@@ -340,6 +383,9 @@ const Ledger = () => {
               </Tr>
               <Tr>
                 <Th color={"#FFF"}>Payout</Th>
+                <Th color={"#FFF"}>Charge</Th>
+              
+                <Th color={"#FFF"}>Recharge</Th>
                 <Th color={"#FFF"}>Charge</Th>
               </Tr>
             </Thead>
@@ -367,6 +413,16 @@ const Ledger = () => {
                       (trnxn) => trnxn.category == "payout-commission"
                     )?.total || 0}
                   </Td>
+                  <Td>
+                    {item?.transactions?.find(
+                      (trnxn) => trnxn.category == "recharge"
+                    )?.total || 0}
+                  </Td>
+                  <Td>
+                    {item?.transactions?.find(
+                      (trnxn) => trnxn.category == "recharge-commission"
+                    )?.total || 0}
+                  </Td>
                 </Tr>
               ))}
               <Tr>
@@ -380,13 +436,51 @@ const Ledger = () => {
                   </Text>
                 </Td>
                 <Td>
-                  <Text textAlign={"left"} fontWeight={"semibold"} fontSize={"lg"}>
-                    {Number(overviewData[0]?.payout?.debit - overviewData[0]?.payout?.credit) || 0}
+                  <Text
+                    textAlign={"left"}
+                    fontWeight={"semibold"}
+                    fontSize={"lg"}
+                  >
+                    {Number(
+                      overviewData[0]?.payout?.debit -
+                        overviewData[0]?.payout?.credit
+                    ) || 0}
                   </Text>
                 </Td>
                 <Td>
-                  <Text textAlign={"left"} fontWeight={"semibold"} fontSize={"lg"}>
-                    {Number(overviewData[4]?.["payout-commission"]?.debit - overviewData[4]?.["payout-commission"]?.credit) || 0}
+                  <Text
+                    textAlign={"left"}
+                    fontWeight={"semibold"}
+                    fontSize={"lg"}
+                  >
+                    {Number(
+                      overviewData[4]?.["payout-commission"]?.debit -
+                        overviewData[4]?.["payout-commission"]?.credit
+                    ) || 0}
+                  </Text>
+                </Td>
+                <Td>
+                  <Text
+                    textAlign={"left"}
+                    fontWeight={"semibold"}
+                    fontSize={"lg"}
+                  >
+                    {Number(
+                      overviewData[6]?.recharge?.debit -
+                        overviewData[6]?.recharge?.credit
+                    ) || 0}
+                  </Text>
+                </Td>
+                <Td>
+                  <Text
+                    textAlign={"left"}
+                    fontWeight={"semibold"}
+                    fontSize={"lg"}
+                  >
+                    {Number(
+                      overviewData[7]?.["recharge-commission"]?.debit -
+                        overviewData[7]?.["recharge-commission"]?.credit
+                    ) || 0}
                   </Text>
                 </Td>
               </Tr>
@@ -394,98 +488,90 @@ const Ledger = () => {
           </Table>
         </TableContainer>
 
-        <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.first_page_url)}
-          >
-            <BsChevronDoubleLeft />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.prev_page_url)}
-          >
-            <BsChevronLeft />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"solid"}
-          >
-            {pagination.current_page}
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger(pagination.next_page_url)}
-          >
-            <BsChevronRight />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchLedger()}
-          >
-            <BsChevronDoubleRight />
-          </Button>
-        </HStack>
-
-        {/* <VisuallyHidden>
-                    <table id='printable-table' ref={tableRef}>
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                {
-                                    columnDefs.filter((column) => {
-                                        if (
-                                            column.field != "metadata" &&
-                                            column.field != "name" &&
-                                            column.field != "receipt"
-                                        ) {
-                                            return (
-                                                column
-                                            )
-                                        }
-                                    }).map((column, key) => {
-                                        return (
-                                            <th key={key}>{column.headerName}</th>
-                                        )
-                                    })
-                                }
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {
-                                printableRow.map((data, key) => {
-                                    return (
-                                        <tr key={key}>
-                                            <td>{key + 1}</td>
-                                            <td>({data.trigered_by}) {data.trigered_by_name}</td>
-                                            <td>{data.transaction_id}</td>
-                                            <td>{data.credit_amount}</td>
-                                            <td>{data.debit_amount}</td>
-                                            <td>{data.service_type}</td>
-                                            <td>{data.opening_balance}</td>
-                                            <td>{data.closing_balance}</td>
-                                            <td>{data.created_at}</td>
-                                        </tr>
-                                    )
-                                })
-                            }
-                        </tbody>
-                    </table>
-                </VisuallyHidden> */}
+        <VisuallyHidden>
+          <Table colorScheme="twitter" variant={"striped"} ref={tableRef}>
+            <Thead bgColor={"twitter.500"} color={"#FFF"}>
+              <Tr>
+                <Th color={"#FFF"} rowSpan={2}>
+                  User
+                </Th>
+                <Th color={"#FFF"} rowSpan={2}>
+                  Phone No.
+                </Th>
+                <Th color={"#FFF"} rowSpan={2}>
+                  Wallet Balance
+                </Th>
+                <Th color={"#FFF"} colSpan={4} textAlign={"center"}>
+                  Transactions
+                </Th>
+              </Tr>
+              <Tr>
+                <Th color={"#FFF"}>Payout</Th>
+                <Th color={"#FFF"}>Charge</Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {rowData.map((item, key) => (
+                <Tr key={key}>
+                  <Td>
+                    <Text fontSize={"lg"} fontWeight={"semibold"}>
+                      {item?.userName} ({item?.userId})
+                    </Text>
+                  </Td>
+                  <Td>
+                    <Text>{item?.userPhone}</Text>
+                  </Td>
+                  <Td>{item?.userWallet || 0}</Td>
+                  <Td>
+                    {item?.transactions?.find(
+                      (trnxn) => (trnxn.category == "payout")
+                    )?.total}
+                  </Td>
+                  <Td>
+                    {item?.transactions?.find(
+                      (trnxn) => (trnxn.category == "payout-commission")
+                    )?.total}
+                  </Td>
+                </Tr>
+              ))}
+              <Tr>
+                <Td colSpan={3}>
+                  <Text
+                    textAlign={"right"}
+                    fontWeight={"semibold"}
+                    fontSize={"lg"}
+                  >
+                    TOTAL
+                  </Text>
+                </Td>
+                <Td>
+                  <Text
+                    textAlign={"left"}
+                    fontWeight={"semibold"}
+                    fontSize={"lg"}
+                  >
+                    {Number(
+                      overviewData[0]?.payout?.debit -
+                        overviewData[0]?.payout?.credit
+                    ) || 0}
+                  </Text>
+                </Td>
+                <Td>
+                  <Text
+                    textAlign={"left"}
+                    fontWeight={"semibold"}
+                    fontSize={"lg"}
+                  >
+                    {Number(
+                      overviewData[4]?.["payout-commission"]?.debit -
+                        overviewData[4]?.["payout-commission"]?.credit
+                    ) || 0}
+                  </Text>
+                </Td>
+              </Tr>
+            </Tbody>
+          </Table>
+        </VisuallyHidden>
       </Layout>
     </>
   );

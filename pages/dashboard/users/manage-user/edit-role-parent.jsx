@@ -20,6 +20,7 @@ import {
 import BackendAxios, { FormAxios } from '@/lib/utils/axios'
 import { useRouter } from 'next/router'
 import Layout from '../../layout'
+import Cookies from 'js-cookie'
 
 const Index = () => {
     const Router = useRouter()
@@ -57,6 +58,10 @@ const Index = () => {
                 console.log(res.data)
                 verifyBeneficiary(fetchedUser.user_id)
             }).catch((err) => {
+                if (err?.response?.status == 401) {
+                  Cookies.remove("verified");
+                  window.location.reload();
+                }
                 Toast({
                     status: 'error',
                     description: err.response.data.message || err.response.data || err.message
@@ -93,6 +98,10 @@ const Index = () => {
             Formik.setFieldValue("userId", res.data?.data?.id)
             searchrole(res.data?.data?.id)
         }).catch((err) => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             console.log(err.response.data)
             Toast({
                 status: 'error',
@@ -118,6 +127,10 @@ const Index = () => {
             setCurrentRole(res.data.role[0])
             setCurrentParent(res.data.parent[0])
         }).catch((err) => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: err.response?.data?.message || err.response?.data || err.message
@@ -150,6 +163,10 @@ const Index = () => {
         BackendAxios.get(`/api/admin/all-users-list/${parentRole}`).then(res => {
             setAvailableParents(res.data)
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: err.response.data.message || err.response.data || err.message
@@ -167,6 +184,10 @@ const Index = () => {
             })
             verifyBeneficiary(fetchedUser.user_id)
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: err.response.data.message || err.response.data || err.message

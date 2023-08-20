@@ -18,11 +18,22 @@ import {
     Radio,
     Switch,
     useToast,
+    useDisclosure
 } from '@chakra-ui/react'
 import Layout from '../../layout'
 import BackendAxios, { FormAxios } from '@/lib/utils/axios'
 import { states } from '@/lib/states'
 import { useRouter } from 'next/router'
+import Cookies from 'js-cookie'
+import { Modal } from '@chakra-ui/react'
+import { ModalOverlay } from '@chakra-ui/react'
+import { ModalContent } from '@chakra-ui/react'
+import { ModalHeader } from '@chakra-ui/react'
+import { ModalCloseButton } from '@chakra-ui/react'
+import { ModalBody } from '@chakra-ui/react'
+import { PinInput } from '@chakra-ui/react'
+import { PinInputField } from '@chakra-ui/react'
+import { ModalFooter } from '@chakra-ui/react'
 
 const Index = () => {
     const Router = useRouter()
@@ -30,6 +41,10 @@ const Index = () => {
     const Toast = useToast({
         position: 'top-right'
     })
+
+    const [loading, setLoading] = useState(false)
+    const {isOpen, onClose, onOpen} = useDisclosure()
+
     const Formik = useFormik({
         initialValues: {
             userId: "",
@@ -60,21 +75,29 @@ const Index = () => {
             aadhaarFront: null,
             aadhaarBack: null,
             pan: null,
+            otp: ""
         },
         onSubmit: (values) => {
+            setLoading(true)
             let userForm = document.getElementById('editUserForm')
+            userForm.append("otp", Formik.values.otp)
             FormAxios.postForm('/admin-update-user', userForm).then((res) => {
+                setLoading(false)
                 Toast({
                     status: 'success',
                     title: 'User Updated',
                 })
-                console.log(res.data)
+                onClose()
             }).catch((err) => {
+                if (err?.response?.status == 401) {
+                  Cookies.remove("verified");
+                  window.location.reload();
+                }
                 Toast({
                     status: 'error',
                     description: err.response.data.message || err.response.data || err.message
                 })
-                console.log(err)
+                onClose()
             })
         }
     })
@@ -102,6 +125,10 @@ const Index = () => {
             Formik.setFieldValue("state", res.data.data.state)
             Formik.setFieldValue("pincode", res.data.data.pincode)
         }).catch((err) => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 description: err.response.data.message || err.response.data || err.message
@@ -116,6 +143,23 @@ const Index = () => {
             Formik.setFieldValue("userId", user_id)
         }
     }, [Router.isReady])
+
+    function sendOtp(){
+        setLoading(true)
+        BackendAxios.post(`/api/send-otp/profile`).then(res=>{
+            setLoading(false)
+            onOpen()
+            Toast({
+                status: 'success',
+                title: "OTP Sent To Admin"
+            })
+        }).catch(err=>{
+            Toast({
+                status: 'error',
+                description: err.response.data.message || err.response.data || err.message
+            })
+        })
+    }
 
     return (
         <>
@@ -622,10 +666,44 @@ const Index = () => {
                         p={4} bg={'aqua'}
                         justifyContent={'flex-end'}
                     >
-                        <Button type={'submit'} colorScheme={'twitter'}>Update Details</Button>
+                        <Button colorScheme={'twitter'} onClick={sendOtp}>Update Details</Button>
                     </HStack>
                 </Layout>
             </form>
+
+
+
+            <Modal isOpen={isOpen} onClose={onClose}>
+                    <ModalOverlay />
+                    <ModalContent>
+                        <ModalHeader>Confirm Transaction</ModalHeader>
+                        <ModalCloseButton />
+                        <ModalBody>
+                            <VStack>
+                                <FormControl w={['full', 'xs']}>
+                                    <Text>This action requires admin authorisation.</Text>
+                                    <FormLabel>Enter OTP sent to admin to confirm</FormLabel>
+                                    <HStack spacing={4}>
+                                        <PinInput
+                                            name={'otp'} otp
+                                            onComplete={value => Formik.setFieldValue('otp', value)}
+                                        >
+                                            <PinInputField bg={'aqua'} />
+                                            <PinInputField bg={'aqua'} />
+                                            <PinInputField bg={'aqua'} />
+                                            <PinInputField bg={'aqua'} />
+                                        </PinInput>
+                                    </HStack>
+                                </FormControl>
+                            </VStack>
+                        </ModalBody>
+
+                        <ModalFooter>
+                            <Button variant='ghost' onClick={onClose}>Cancel</Button>
+                            <Button colorScheme='blue' mr={3} onClick={Formik.handleSubmit}>Done</Button>
+                        </ModalFooter>
+                    </ModalContent>
+                </Modal>
         </>
     )
 }

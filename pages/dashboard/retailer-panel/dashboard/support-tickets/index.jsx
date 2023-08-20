@@ -11,6 +11,7 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import DashboardWrapper from '@/hocs/DashboardLayout';
 import BackendAxios from '@/lib/utils/axios';
+import Cookies from 'js-cookie';
 
 const SupportTickets = () => {
     const Toast = useToast({
@@ -64,6 +65,10 @@ const SupportTickets = () => {
         BackendAxios.get('/api/user/tickets').then(res=>{
             setRowData(res.data)
         }).catch(err=>{
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'warning',
                 description: err.response.data.message || err.response.data || err.message

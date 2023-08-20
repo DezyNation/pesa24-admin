@@ -232,6 +232,10 @@ const FundRequest = () => {
             })
             setRowData(res.data.data)
         }).catch((err) => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             console.log(err)
             Toast({
                 status: 'error',

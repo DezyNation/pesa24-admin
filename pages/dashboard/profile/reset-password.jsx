@@ -23,6 +23,7 @@ import { PinInput } from "@chakra-ui/react";
 import { PinInputField } from "@chakra-ui/react";
 import { HStack } from "@chakra-ui/react";
 import { ModalFooter } from "@chakra-ui/react";
+import Cookies from "js-cookie";
 
 const ResetPassword = () => {
   const Toast = useToast({
@@ -44,8 +45,8 @@ const ResetPassword = () => {
     BackendAxios.post("/api/user/new-password", {
       old_password: PasswordFormik.values.old_password,
       new_password: PasswordFormik.values.new_password,
-      new_password_confirmation:
-        PasswordFormik.values.new_password_confirmation,
+      new_password_confirmation: PasswordFormik.values.new_password_confirmation,
+      otp: PasswordFormik.values.otp,
     })
       .then((res) => {
         Toast({
@@ -55,6 +56,10 @@ const ResetPassword = () => {
         });
       })
       .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
         Toast({
           status: "error",
           title: "Error Occured",

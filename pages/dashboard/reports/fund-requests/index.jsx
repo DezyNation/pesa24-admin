@@ -38,6 +38,11 @@ import { ModalBody } from "@chakra-ui/react";
 import { ModalFooter } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
 import { DownloadTableExcel } from "react-export-table-to-excel";
+import Cookies from "js-cookie";
+import { FormControl } from "@chakra-ui/react";
+import { FormLabel } from "@chakra-ui/react";
+import { Select } from "@chakra-ui/react";
+import fileDownload from "js-file-download";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -61,6 +66,12 @@ const FundRequests = () => {
       field: "status",
       headerName: "Status",
       cellRenderer: "statusCellRenderer",
+      width: 120,
+    },
+    {
+      headerName: "Transfer Date",
+      field: "transaction_date",
+      width: 140,
     },
     {
       headerName: "Request Timestamp",
@@ -76,6 +87,16 @@ const FundRequests = () => {
       headerName: "Amount",
       field: "amount",
       width: 100,
+    },
+    {
+      headerName: "Opening Balance",
+      field: "opening_balance",
+      width: 140,
+    },
+    {
+      headerName: "Closing Balance",
+      field: "closing_balance",
+      width: 140,
     },
     {
       headerName: "Requested Bank",
@@ -100,10 +121,9 @@ const FundRequests = () => {
       cellRenderer: "userCellRenderer",
     },
     // {
-    //   headerName: "User Phone",
-    //   field: "phone_number",
+    //   headerName: "Updated By",
+    //   field: "admin_name",
     //   width: 120,
-    //   hide: true,
     // },
     {
       headerName: "Updated By",
@@ -134,6 +154,7 @@ const FundRequests = () => {
     action: "",
   });
   const [remarks, setRemarks] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const [printableRow, setPrintableRow] = useState(rowData);
   const [pagination, setPagination] = useState({
@@ -144,9 +165,126 @@ const FundRequests = () => {
     next_page_url: "",
     prev_page_url: "",
   });
+  const [pages, setPages] = useState([]);
 
-  function fetchRequests(pageLink) {
-    BackendAxios.get(pageLink || "/api/admin/fetch-fund/all")
+  const Formik = useFormik({
+    initialValues: {
+      from: "",
+      to: "",
+      query: "",
+      userQuery: "",
+      userId: "",
+      status: "all",
+      search: "",
+    },
+  });
+
+  async function generateReport(userId) {
+    if (!Formik.values.from || !Formik.values.to) return;
+    setLoading(true);
+    await BackendAxios.get(
+      `/api/admin/print-report?type=fund-requests&from=${
+        Formik.values.from + (Formik.values.from && "T" + "00:00")
+      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&userId=${
+        Formik.values.userId
+      }&search=${Formik.values.search}&status=${Formik.values.status}`,
+      {
+        responseType: "blob",
+      }
+    )
+      .then((res) => {
+        setLoading(false);
+        // setPrintableRow(res.data);
+        fileDownload(res.data, `FundRequests.xlsx`);
+      })
+      .catch((err) => {
+        setLoading(false);
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
+        console.log(err);
+        Toast({
+          status: "error",
+          description:
+            err?.response?.data?.message || err?.response?.data || err?.message,
+        });
+      });
+  }
+
+  async function fetchRequests(pageLink) {
+    if (!Formik.values.userQuery) {
+      Formik.setFieldValue("userId", "");
+    }
+    if (Formik.values.userQuery) {
+      await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
+        .then((result) => {
+          Formik.setFieldValue("userId", result.data.data.id);
+          BackendAxios.get(
+            pageLink ||
+              `/api/admin/fetch-fund/all?from=${
+                Formik.values.from + (Formik.values.from && "T" + "00:00")
+              }&to=${
+                Formik.values.to + (Formik.values.to && "T" + "23:59")
+              }&userId=${result.data.data.id}&search=${
+                Formik.values.search
+              }&status=${
+                Formik.values.status != "all" ? Formik.values.status : ""
+              }&pageSize=200`
+          )
+            .then((res) => {
+              setPagination({
+                current_page: res.data.current_page,
+                total_pages: parseInt(res.data.last_page),
+                first_page_url: res.data.first_page_url,
+                last_page_url: res.data.last_page_url,
+                next_page_url: res.data.next_page_url,
+                prev_page_url: res.data.prev_page_url,
+              });
+              setPages(res.data?.links);
+              setRowData(res.data.data);
+            })
+            .catch((err) => {
+              if (err?.response?.status == 401) {
+                Cookies.remove("verified");
+                window.location.reload();
+              }
+              console.log(err);
+              Toast({
+                status: "error",
+                title: "Error Occured",
+                description:
+                  err.response.data.message || err.response.data || err.message,
+              });
+            });
+        })
+        .catch((err) => {
+          if (err?.response?.status == 401) {
+            Cookies.remove("verified");
+            window.location.reload();
+          }
+          Toast({
+            status: "error",
+            title: "Error while fetching user info",
+            description:
+              err?.response?.data?.message ||
+              err?.response?.data ||
+              err?.message ||
+              "User not found!",
+          });
+        });
+      return;
+    }
+    await BackendAxios.get(
+      pageLink ||
+        `/api/admin/fetch-fund/all?from=${
+          Formik.values.from + (Formik.values.from && "T" + "00:00")
+        }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&userId=${
+          Formik.values.userId
+        }&search=${Formik.values.search}&status=${
+          Formik.values.status != "all" ? Formik.values.status : ""
+        }&pageSize=200`
+    )
       .then((res) => {
         setPagination({
           current_page: res.data.current_page,
@@ -156,10 +294,14 @@ const FundRequests = () => {
           next_page_url: res.data.next_page_url,
           prev_page_url: res.data.prev_page_url,
         });
+        setPages(res.data?.links);
         setRowData(res.data.data);
-        setPrintableRow(res.data.data);
       })
       .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
         console.log(err);
         Toast({
           status: "error",
@@ -221,6 +363,10 @@ const FundRequests = () => {
           fetchRequests();
         })
         .catch((err) => {
+          if (err?.response?.status == 401) {
+            Cookies.remove("verified");
+            window.location.reload();
+          }
           onToggle();
           console.log(err);
           Toast({
@@ -329,7 +475,8 @@ const FundRequests = () => {
     return (
       <>
         <Text>
-          ({params.data.name}) {params.data.user_id} - {params.data.phone_number}
+          {params.data.name} ({params.data.user_id}) -{" "}
+          {params.data.phone_number}
         </Text>
       </>
     );
@@ -356,11 +503,61 @@ const FundRequests = () => {
         </Text>
 
         <Box py={6}>
-          <Text fontWeight={"medium"} pb={4}>
-            Search and manage fund requests
-          </Text>
+          <Stack p={4} spacing={8} w={"full"} direction={["column", "row"]}>
+            <FormControl w={["full", "xs"]}>
+              <FormLabel>From Date</FormLabel>
+              <Input
+                name="from"
+                onChange={Formik.handleChange}
+                type="date"
+                bg={"white"}
+              />
+            </FormControl>
+            <FormControl w={["full", "xs"]}>
+              <FormLabel>To Date</FormLabel>
+              <Input
+                name="to"
+                onChange={Formik.handleChange}
+                type="date"
+                bg={"white"}
+              />
+            </FormControl>
+            <FormControl w={["full", "xs"]}>
+              <FormLabel>User ID or Phone</FormLabel>
+              <Input
+                name="userQuery"
+                onChange={Formik.handleChange}
+                bg={"white"}
+              />
+            </FormControl>
+          </Stack>
+          <Stack p={4} spacing={8} w={"full"} direction={["column", "row"]}>
+            <FormControl w={["full", "xs"]}>
+              <FormLabel>Trnxn ID</FormLabel>
+              <Input
+                name="search"
+                onChange={Formik.handleChange}
+                bg={"white"}
+              />
+            </FormControl>
+
+            <FormControl w={["full", "xs"]}>
+              <FormLabel>Status</FormLabel>
+              <Select name="status" onChange={Formik.handleChange} bg={"white"}>
+                <option value="all">All</option>
+                <option value="approved">Approved</option>
+                <option value="declined">Declined</option>
+              </Select>
+            </FormControl>
+          </Stack>
+          <HStack mb={4} justifyContent={"flex-end"}>
+            <Button onClick={() => fetchRequests()} colorScheme={"twitter"}>
+              Search
+            </Button>
+          </HStack>
+
           <HStack spacing={4} my={4}>
-            <DownloadTableExcel
+            {/* <DownloadTableExcel
               filename="FundRequests"
               sheet="sheet1"
               currentTableRef={tableRef.current}
@@ -372,7 +569,15 @@ const FundRequests = () => {
               >
                 Excel
               </Button>
-            </DownloadTableExcel>
+            </DownloadTableExcel> */}
+            <Button
+              size={["xs", "sm"]}
+              colorScheme={"whatsapp"}
+              leftIcon={<SiMicrosoftexcel />}
+              onClick={generateReport}
+            >
+              Excel
+            </Button>
 
             <Button
               size={["xs", "sm"]}
@@ -391,7 +596,6 @@ const FundRequests = () => {
               Print
             </Button>
           </HStack>
-
           <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
             <Button
               colorScheme={"twitter"}
@@ -402,32 +606,24 @@ const FundRequests = () => {
             >
               <BsChevronDoubleLeft />
             </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchRequests(pagination.prev_page_url)}
-            >
-              <BsChevronLeft />
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"solid"}
-            >
-              {pagination.current_page}
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchRequests(pagination.next_page_url)}
-            >
-              <BsChevronRight />
-            </Button>
+            {pages.map((item, key) => (
+              <Button
+                key={key}
+                colorScheme={"twitter"}
+                fontSize={12}
+                size={"xs"}
+                variant={item?.active ? "solid" : "outline"}
+                onClick={() => fetchRequests(item?.url)}
+              >
+                {item?.label == "&laquo; Previous" ? (
+                  <BsChevronLeft />
+                ) : item?.label == "Next &raquo;" ? (
+                  <BsChevronRight />
+                ) : (
+                  item?.label
+                )}
+              </Button>
+            ))}
             <Button
               colorScheme={"twitter"}
               fontSize={12}
@@ -452,6 +648,7 @@ const FundRequests = () => {
                 filter: true,
                 floatingFilter: true,
                 resizable: true,
+                suppressMovable: true,
               }}
               onFilterChanged={(params) => {
                 setPrintableRow(
@@ -478,32 +675,24 @@ const FundRequests = () => {
             >
               <BsChevronDoubleLeft />
             </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchRequests(pagination.prev_page_url)}
-            >
-              <BsChevronLeft />
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"solid"}
-            >
-              {pagination.current_page}
-            </Button>
-            <Button
-              colorScheme={"twitter"}
-              fontSize={12}
-              size={"xs"}
-              variant={"outline"}
-              onClick={() => fetchRequests(pagination.next_page_url)}
-            >
-              <BsChevronRight />
-            </Button>
+            {pages.map((item, key) => (
+              <Button
+                key={key}
+                colorScheme={"twitter"}
+                fontSize={12}
+                size={"xs"}
+                variant={item?.active ? "solid" : "outline"}
+                onClick={() => fetchRequests(item?.url)}
+              >
+                {item?.label == "&laquo; Previous" ? (
+                  <BsChevronLeft />
+                ) : item?.label == "Next &raquo;" ? (
+                  <BsChevronRight />
+                ) : (
+                  item?.label
+                )}
+              </Button>
+            ))}
             <Button
               colorScheme={"twitter"}
               fontSize={12}
@@ -532,14 +721,22 @@ const FundRequests = () => {
                   return (
                     <tr key={key}>
                       <td>{key + 1}</td>
+                      <td>{data.id}</td>
                       <td>{data.status}</td>
+                      <td>{data.transaction_date}</td>
                       <td>{data.created_at}</td>
                       <td>{data.transaction_id}</td>
                       <td>{data.amount}</td>
+                      <td>{data.opening_balance}</td>
+                      <td>{data.closing_balance}</td>
                       <td>{data.bank_name}</td>
                       <td>{data.transaction_type}</td>
-                      <td>{data.name}</td>
-                      <td>{data.admin_name}</td>
+                      <td>
+                        {data.name} ({data.user_id}) - {data.phone_number}
+                      </td>
+                      <td>
+                        {data.admin_name} - ({data.admin_id})
+                      </td>
                       <td>{data.remarks}</td>
                       <td>{data.admin_remarks}</td>
                       <td>{data.updated_at}</td>

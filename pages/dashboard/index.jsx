@@ -26,6 +26,7 @@ import BackendAxios from "@/lib/utils/axios";
 import { Doughnut } from "react-chartjs-2";
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
 import Link from "next/link";
+import Cookies from "js-cookie";
 Chart.register(ArcElement, Tooltip, Legend);
 
 const Index = () => {
@@ -154,6 +155,10 @@ const Index = () => {
         });
       })
       .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
         console.log(err);
       });
   }

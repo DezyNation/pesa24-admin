@@ -21,6 +21,7 @@ import {
 } from '@chakra-ui/react'
 import BackendAxios, { FormAxios } from '@/lib/utils/axios'
 import { useFormik } from 'formik'
+import Cookies from 'js-cookie'
 
 const Index = () => {
     const Toast = useToast({ position: 'top-right' })
@@ -31,6 +32,10 @@ const Index = () => {
         BackendAxios.get('/api/admin/organizations').then(res => {
             setOrganisations(res.data)
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             Toast({
                 status: 'error',
                 title: 'Error while fetching organisations',

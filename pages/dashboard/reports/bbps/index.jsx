@@ -40,6 +40,7 @@ import { FormControl } from '@chakra-ui/react';
 import { FormLabel } from '@chakra-ui/react';
 import { Input } from '@chakra-ui/react';
 import { useFormik } from 'formik';
+import Cookies from 'js-cookie';
 
 const ExportPDF = () => {
     const doc = new jsPDF('landscape')
@@ -132,7 +133,7 @@ const Index = () => {
     })
 
     function fetchTransactions(pageLink) {
-        BackendAxios.get(pageLink || `/api/admin/transactions-type/${transactionKeyword}?from=${Formik.values.from}&to=${Formik.values.to}&page=1`).then((res) => {
+        BackendAxios.get(pageLink || `/api/admin/transactions-type/${transactionKeyword}?from=${Formik.values.from + (Formik.values.from && ("T" + "00:00"))}&to=${Formik.values.to+(Formik.values.to && ("T" + "23:59"))}&page=1`).then((res) => {
             setPagination({
                 current_page: res.data.current_page,
                 total_pages: parseInt(res.data.last_page),
@@ -144,6 +145,10 @@ const Index = () => {
             setRowData(res.data.data)
             setPrintableRow(res.data.data)
         }).catch((err) => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             console.log(err)
             Toast({
                 status: 'error',

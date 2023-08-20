@@ -26,6 +26,7 @@ import { useFormik } from "formik";
 import Layout from "../layout";
 import BackendAxios, { FormAxios } from "@/lib/utils/axios";
 import { states } from "@/lib/states";
+import Cookies from "js-cookie";
 const EditProfile = () => {
   const date = new Date()
   const [profile, setProfile] = useState({
@@ -93,6 +94,10 @@ const EditProfile = () => {
           title: 'Profile Updated Successfully'
         })
       }).catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
         console.log(err)
         Toast({
           status: 'error',
@@ -160,6 +165,10 @@ const EditProfile = () => {
       localStorage.setItem("deviceNumber", res.data.data.device_number || "")
       formik.setFieldValue("deviceNumber", res.data.data.device_number || "")
     }).catch((err) => {
+      if (err?.response?.status == 401) {
+        Cookies.remove("verified");
+        window.location.reload();
+      }
       Toast({
         status: "error",
         title: "Error Occured",

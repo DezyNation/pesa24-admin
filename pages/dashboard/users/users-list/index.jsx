@@ -55,6 +55,7 @@ import { BiPen, BiRupee } from 'react-icons/bi'
 import fileDownload from 'js-file-download'
 import { DownloadTableExcel } from "react-export-table-to-excel";
 import { aepsList, axisList, basicList, bbpsList, cmsList, dmtList, fastagList, licList, matmList, panList, payoutList, rechargeList, userManagementList } from '@/lib/utils/permissions/structure'
+import Cookies from 'js-cookie'
 
 const ExportPDF = (currentRowData) => {
     const doc = new jsPDF('landscape')
@@ -150,6 +151,10 @@ const Index = () => {
             setFetchedUsers(res.data.data)
             setIsLoading(false)
         }).catch((err) => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             console.log(err)
             setIsLoading(false)
             Toast({

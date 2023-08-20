@@ -41,6 +41,10 @@ import { Stack } from "@chakra-ui/react";
 import { FormControl } from "@chakra-ui/react";
 import { FormLabel } from "@chakra-ui/react";
 import { Input } from "@chakra-ui/react";
+import Cookies from "js-cookie";
+import { Select } from "@chakra-ui/react";
+import { FiRefreshCw } from "react-icons/fi";
+import fileDownload from "js-file-download";
 
 const ExportPDF = () => {
   const doc = new jsPDF("landscape");
@@ -111,31 +115,6 @@ const Index = () => {
       width: 100,
     },
     {
-      headerName: "Credit",
-      field: "credit_amount",
-      cellRenderer: "creditCellRenderer",
-      width: 100,
-      hide: true,
-    },
-    {
-      headerName: "Opening Balance",
-      field: "opening_balance",
-      width: 100,
-      hide: true,
-    },
-    {
-      headerName: "Closing Balance",
-      field: "closing_balance",
-      width: 100,
-      hide: true,
-    },
-    {
-      headerName: "Trnxn Type",
-      field: "service_type",
-      width: 120,
-      hide: true,
-    },
-    {
       headerName: "Trnxn Status",
       field: "status",
       cellRenderer: "statusCellRenderer",
@@ -159,21 +138,29 @@ const Index = () => {
       width: 80,
     },
   ]);
+  const [pages, setPages] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   const Formik = useFormik({
     initialValues: {
       from: "",
       to: "",
-      query: ""
+      query: "",
+      userQuery: "",
+      userId: "",
+      status: "all",
     },
   });
 
-  function fetchPendingTransactions(){
-    BackendAxios.get(`/api/admin/payouts/processing`)
+  async function fetchPendingTransactions() {
+    setLoading(true);
+    await BackendAxios.get(`/api/admin/payouts/processing`)
       .then((res) => {
+        setLoading(false);
         setPendingRowData(res.data);
       })
       .catch((err) => {
+        setLoading(false);
         console.log(err);
         Toast({
           status: "error",
@@ -183,12 +170,122 @@ const Index = () => {
       });
   }
 
-  function fetchTransactions(pageLink) {
-    BackendAxios.get(
-      pageLink ? pageLink :
-        `/api/admin/payouts?from=${Formik.values.from}&to=${Formik.values.to}&search=${Formik.values.query}&page=1`
+  async function generateReport(userId) {
+    if (!Formik.values.from || !Formik.values.to) return;
+    await BackendAxios.get(
+      `/api/admin/print-report?type=payouts&from=${
+        Formik.values.from + (Formik.values.from && "T" + "00:00")
+      }&to=${Formik.values.to + (Formik.values.to && "T" + "23:59")}&search=${
+        Formik.values.query
+      }&userId=${Formik.values.userId || ""}&status=${
+        Formik.values.status != "all" ? Formik.values.status : ""
+      }&report=${Formik.values.status}`,
+      {
+        responseType: "blob",
+      }
     )
       .then((res) => {
+        // setPrintableRow(res.data);
+        fileDownload(res.data, `PayoutsReport.xlsx`);
+      })
+      .catch((err) => {
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
+        console.log(err);
+        Toast({
+          status: "error",
+          description:
+            err?.response?.data?.message || err?.response?.data || err?.message,
+        });
+      });
+  }
+
+  async function fetchTransactions(pageLink) {
+    if (!Formik.values.userQuery) {
+      Formik.setFieldValue("userId", "");
+    }
+    if (Formik.values.userQuery != "") {
+      setLoading(true);
+      await BackendAxios.post(`/api/admin/user/info/${Formik.values.userQuery}`)
+        .then(async (result) => {
+          Formik.setFieldValue("userId", result.data.data.id);
+
+          await BackendAxios.get(
+            pageLink
+              ? pageLink
+              : `/api/admin/payouts/${Formik.values.status}?from=${
+                  Formik.values.from + (Formik.values.from && "T" + "00:00")
+                }&to=${
+                  Formik.values.to + (Formik.values.to && "T" + "23:59")
+                }&search=${Formik.values.query}&userId=${
+                  result.data.data.id
+                }&status=${
+                  Formik.values.status != "all" ? Formik.values.status : ""
+                }&page=1`
+          )
+            .then(async (res) => {
+              setLoading(false);
+              setPagination({
+                current_page: res.data.current_page,
+                total_pages: parseInt(res.data.last_page),
+                first_page_url: res.data.first_page_url,
+                last_page_url: res.data.last_page_url,
+                next_page_url: res.data.next_page_url,
+                prev_page_url: res.data.prev_page_url,
+              });
+              setPages(res.data?.links);
+              setRowData(res.data.data);
+            })
+            .catch((err) => {
+              setLoading(false);
+              if (err?.response?.status == 401) {
+                Cookies.remove("verified");
+                window.location.reload();
+              }
+              console.log(err);
+              Toast({
+                status: "error",
+                description:
+                  err?.response?.data?.message ||
+                  err?.response?.data ||
+                  err?.message,
+              });
+            });
+        })
+        .catch((err) => {
+          setLoading(false);
+          if (err?.response?.status == 401) {
+            Cookies.remove("verified");
+            window.location.reload();
+          }
+          Toast({
+            status: "error",
+            title: "Error while fetching user info",
+            description:
+              err?.response?.data?.message ||
+              err?.response?.data ||
+              err?.message ||
+              "User not found!",
+          });
+        });
+      return;
+    }
+    setLoading(true);
+    await BackendAxios.get(
+      pageLink
+        ? pageLink
+        : `/api/admin/payouts/${Formik.values.status}?from=${
+            Formik.values.from + (Formik.values.from && "T" + "00:00")
+          }&to=${
+            Formik.values.to + (Formik.values.to && "T" + "23:59")
+          }&search=${Formik.values.query}&userId=${
+            Formik.values.userId
+          }&status=${Formik.values.status}&page=1`
+    )
+      .then((res) => {
+        setLoading(false);
         setPagination({
           current_page: res.data.current_page,
           total_pages: parseInt(res.data.last_page),
@@ -197,11 +294,15 @@ const Index = () => {
           next_page_url: res.data.next_page_url,
           prev_page_url: res.data.prev_page_url,
         });
+        setPages(res.data?.links);
         setRowData(res.data.data);
-        setPrintableRow(res.data.data);
-        fetchPendingTransactions()
       })
       .catch((err) => {
+        setLoading(false);
+        if (err?.response?.status == 401) {
+          Cookies.remove("verified");
+          window.location.reload();
+        }
         console.log(err);
         Toast({
           status: "error",
@@ -213,6 +314,7 @@ const Index = () => {
 
   useEffect(() => {
     fetchTransactions();
+    fetchPendingTransactions();
   }, []);
 
   const pdfRef = React.createRef();
@@ -303,7 +405,11 @@ const Index = () => {
             {params.data.status}
           </Text>
         ) : params.data.status == "processing" ? (
-          <Text color={"orange"} fontWeight={"bold"} textTransform={"uppercase"}>
+          <Text
+            color={"orange"}
+            fontWeight={"bold"}
+            textTransform={"uppercase"}
+          >
             {params.data.status}
           </Text>
         ) : (
@@ -317,18 +423,21 @@ const Index = () => {
 
   const actionCellRenderer = (params) => {
     function updateData() {
+      setLoading(true);
       BackendAxios.post("api/razorpay/payment-status", {
         payoutId: params.data.payout_id,
       })
-        .then(() => {
+        .then((res) => {
+          setLoading(false);
           Toast({
-            status: 'success',
-            description: `Payout ${params.data.payout_id} updated!`
-          })
-          let pageUrl = `/api/admin/payouts?from=${Formik.values.from}&to=${Formik.values.to}&page=${pagination.current_page}`
-          fetchTransactions(pageUrl);
+            status: "success",
+            description: `Payout ${params.data.payout_id} updated!`,
+          });
+          
+          fetchPendingTransactions();
         })
         .catch((err) => {
+          setLoading(false);
           Toast({
             status: "error",
             description:
@@ -338,8 +447,14 @@ const Index = () => {
     }
     return (
       <>
-        {params.data.status == "processing" ? (
-          <Button size={"xs"} colorScheme="twitter" onClick={updateData}>
+        {params.data?.status == "processing" ||
+        params.data?.status == "queued" ? (
+          <Button
+            size={"xs"}
+            colorScheme="twitter"
+            isLoading={loading}
+            onClick={updateData}
+          >
             UPDATE
           </Button>
         ) : null}
@@ -350,14 +465,14 @@ const Index = () => {
   const tableRef = useRef(null);
   return (
     <>
-      <Layout pageTitle={"DMT Reports"}>
+      <Layout pageTitle={"Payout Reports"}>
         <Text fontSize={"lg"} fontWeight={"semibold"}>
           Payout Transactions
         </Text>
         <HStack my={4}>
-          <DownloadTableExcel
-            filename="UsersList"
-            sheet="users"
+          {/* <DownloadTableExcel
+            filename="PayoutReports"
+            sheet="payouts"
             currentTableRef={tableRef.current}
           >
             <Button
@@ -367,7 +482,15 @@ const Index = () => {
             >
               Export Excel
             </Button>
-          </DownloadTableExcel>
+          </DownloadTableExcel> */}
+          <Button
+            size={["xs", "sm"]}
+            colorScheme={"whatsapp"}
+            leftIcon={<SiMicrosoftexcel />}
+            onClick={generateReport}
+          >
+            Export Excel
+          </Button>
           <Button onClick={ExportPDF} colorScheme={"red"} size={"sm"}>
             Export PDF
           </Button>
@@ -392,63 +515,109 @@ const Index = () => {
             />
           </FormControl>
           <FormControl w={["full", "xs"]}>
+            <FormLabel>Status</FormLabel>
+            <Select name="status" onChange={Formik.handleChange} bg={"white"}>
+              <option value="all">All</option>
+              <option value="processed">Processed</option>
+              <option value="failed">Failed</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="reversed">Reversed</option>
+            </Select>
+          </FormControl>
+        </Stack>
+        <Stack p={4} spacing={8} w={"full"} direction={["column", "row"]}>
+          <FormControl w={["full", "xs"]}>
             <FormLabel>Ref ID or Acc No.</FormLabel>
+            <Input name="query" onChange={Formik.handleChange} bg={"white"} />
+          </FormControl>
+          <FormControl w={["full", "xs"]}>
+            <FormLabel>User ID or Phone</FormLabel>
             <Input
-              name="query"
+              name="userQuery"
               onChange={Formik.handleChange}
               bg={"white"}
             />
           </FormControl>
         </Stack>
         <HStack mb={4} justifyContent={"flex-end"}>
-          <Button onClick={() => fetchTransactions()} colorScheme={"twitter"}>
+          <Button
+            onClick={async () => {
+              await fetchTransactions();
+            }}
+            colorScheme={"twitter"}
+          >
             Search
           </Button>
         </HStack>
 
         {/* Pending Payouts */}
-        <Text pb={4}>Pending Payouts</Text>
-        <Box
-            rounded={16}
-            overflow={"hidden"}
-            className="ag-theme-alpine ag-theme-pesa24-blue"
-            w={"full"}
-            h={["sm", "md"]}
+        <HStack p={4} pt={10} w={"full"} justifyContent={"space-between"}>
+          <Text fontSize={"lg"} fontWeight={"semibold"}>
+            Pending Payouts
+          </Text>
+          <Button
+            colorScheme="blue"
+            variant={"ghost"}
+            leftIcon={<FiRefreshCw />}
+            onClick={() => fetchPendingTransactions()}
+            isLoading={loading}
           >
-            <AgGridReact
-              columnDefs={columnDefs}
-              rowData={pendingRowData}
-              defaultColDef={{
-                filter: true,
-                floatingFilter: true,
-                resizable: true,
-                sortable: true,
-              }}
-              components={{
-                receiptCellRenderer: receiptCellRenderer,
-                creditCellRenderer: creditCellRenderer,
-                debitCellRenderer: debitCellRenderer,
-                userCellRenderer: userCellRenderer,
-                statusCellRenderer: statusCellRenderer,
-                actionCellRenderer: actionCellRenderer,
-              }}
-              onFilterChanged={(params) => {
-                setPrintableRow(
-                  params.api.getRenderedNodes().map((item) => {
-                    return item.data;
-                  })
-                );
-              }}
-            ></AgGridReact>
-          </Box>
-
-        <HStack
-          spacing={2}
-          py={4}
-          mt={24}
-          bg={"white"}
-          justifyContent={"center"}
+            Refresh Pending Payouts
+          </Button>
+        </HStack>
+        <Box
+          rounded={16}
+          overflow={"hidden"}
+          className="ag-theme-alpine ag-theme-pesa24-blue"
+          w={"full"}
+          h={["sm", "md"]}
         >
+          <AgGridReact
+            columnDefs={columnDefs}
+            rowData={pendingRowData}
+            defaultColDef={{
+              filter: true,
+              floatingFilter: true,
+              resizable: true,
+              sortable: true,
+              suppressMovable: true
+            }}
+            suppressScrollOnNewData={true}
+            components={{
+              receiptCellRenderer: receiptCellRenderer,
+              creditCellRenderer: creditCellRenderer,
+              debitCellRenderer: debitCellRenderer,
+              userCellRenderer: userCellRenderer,
+              statusCellRenderer: statusCellRenderer,
+              actionCellRenderer: actionCellRenderer,
+            }}
+            onFilterChanged={(params) => {
+              setPrintableRow(
+                params.api.getRenderedNodes().map((item) => {
+                  return item.data;
+                })
+              );
+            }}
+          ></AgGridReact>
+        </Box>
+        <br />
+        <br />
+        <br />
+        <HStack p={4} pt={10} w={"full"} justifyContent={"space-between"}>
+          <Text fontSize={"lg"} fontWeight={"semibold"}>
+            All Payouts
+          </Text>
+          <Button
+            colorScheme="blue"
+            variant={"ghost"}
+            leftIcon={<FiRefreshCw />}
+            onClick={() => fetchTransactions()}
+            isLoading={loading}
+          >
+            Refresh Transactions
+          </Button>
+        </HStack>
+        <HStack spacing={2} py={4} bg={"white"} justifyContent={"center"}>
           <Button
             colorScheme={"twitter"}
             fontSize={12}
@@ -458,32 +627,24 @@ const Index = () => {
           >
             <BsChevronDoubleLeft />
           </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchTransactions(pagination.prev_page_url)}
-          >
-            <BsChevronLeft />
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"solid"}
-          >
-            {pagination.current_page}
-          </Button>
-          <Button
-            colorScheme={"twitter"}
-            fontSize={12}
-            size={"xs"}
-            variant={"outline"}
-            onClick={() => fetchTransactions(pagination.next_page_url)}
-          >
-            <BsChevronRight />
-          </Button>
+          {pages.map((item, key) => (
+            <Button
+              key={key}
+              colorScheme={"twitter"}
+              fontSize={12}
+              size={"xs"}
+              variant={item?.active ? "solid" : "outline"}
+              onClick={() => fetchTransactions(item?.url)}
+            >
+              {item?.label == "&laquo; Previous" ? (
+                <BsChevronLeft />
+              ) : item?.label == "Next &raquo;" ? (
+                <BsChevronRight />
+              ) : (
+                item?.label
+              )}
+            </Button>
+          ))}
           <Button
             colorScheme={"twitter"}
             fontSize={12}
@@ -494,39 +655,39 @@ const Index = () => {
             <BsChevronDoubleRight />
           </Button>
         </HStack>
-          <Box
-            rounded={16}
-            overflow={"hidden"}
-            className="ag-theme-alpine ag-theme-pesa24-blue"
-            w={"full"}
-            h={["sm", "xl"]}
-          >
-            <AgGridReact
-              columnDefs={columnDefs}
-              rowData={rowData}
-              defaultColDef={{
-                filter: true,
-                floatingFilter: true,
-                resizable: true,
-                sortable: true,
-              }}
-              components={{
-                receiptCellRenderer: receiptCellRenderer,
-                creditCellRenderer: creditCellRenderer,
-                debitCellRenderer: debitCellRenderer,
-                userCellRenderer: userCellRenderer,
-                statusCellRenderer: statusCellRenderer,
-                actionCellRenderer: actionCellRenderer,
-              }}
-              onFilterChanged={(params) => {
-                setPrintableRow(
-                  params.api.getRenderedNodes().map((item) => {
-                    return item.data;
-                  })
-                );
-              }}
-            ></AgGridReact>
-          </Box>
+        <Box
+          rounded={16}
+          overflow={"hidden"}
+          className="ag-theme-alpine ag-theme-pesa24-blue"
+          w={"full"}
+          h={["sm", "xl"]}
+        >
+          <AgGridReact
+            columnDefs={columnDefs}
+            rowData={rowData}
+            defaultColDef={{
+              filter: true,
+              floatingFilter: true,
+              resizable: true,
+              sortable: true,
+            }}
+            components={{
+              receiptCellRenderer: receiptCellRenderer,
+              creditCellRenderer: creditCellRenderer,
+              debitCellRenderer: debitCellRenderer,
+              userCellRenderer: userCellRenderer,
+              statusCellRenderer: statusCellRenderer,
+              actionCellRenderer: actionCellRenderer,
+            }}
+            onFilterChanged={(params) => {
+              setPrintableRow(
+                params.api.getRenderedNodes().map((item) => {
+                  return item.data;
+                })
+              );
+            }}
+          ></AgGridReact>
+        </Box>
       </Layout>
 
       {/* Receipt */}
@@ -604,12 +765,12 @@ const Index = () => {
                         );
                     })
                   : null}
-                <VStack pt={8} w={"full"}>
+                {/* <VStack pt={8} w={"full"}>
                   <Image src="/logo_long.png" w={"20"} />
                   <Text fontSize={"xs"}>
                     {process.env.NEXT_PUBLIC_ORGANISATION_NAME}
                   </Text>
-                </VStack>
+                </VStack> */}
               </VStack>
             </ModalBody>
           </Box>
@@ -642,7 +803,7 @@ const Index = () => {
                 .filter((column) => {
                   if (
                     column.field != "metadata" &&
-                    column.field != "name" &&
+                    column.field != "action" &&
                     column.field != "receipt"
                   ) {
                     return column;
@@ -658,17 +819,17 @@ const Index = () => {
               return (
                 <tr key={key}>
                   <td>{key + 1}</td>
-                  <td>{data.transaction_id}</td>
-                  <td>
-                    ({data.trigered_by}) {data.name}
-                  </td>
-                  <td>{data.debit_amount}</td>
-                  <td>{data.credit_amount}</td>
-                  <td>{data.opening_balance}</td>
-                  <td>{data.closing_balance}</td>
-                  <td>{data.service_type}</td>
-                  <td>{data.status ? "SUCCESS" : "FAILED"}</td>
                   <td>{data.created_at}</td>
+                  <td>
+                    ({data.user_id}) {data.name}
+                  </td>
+                  <td>{data.reference_id}</td>
+                  <td>{data.payout_id}</td>
+                  <td>{data.utr}</td>
+                  <td>{data.amount}</td>
+                  <td>{data.beneficiary_name}</td>
+                  <td>{data.account_number}</td>
+                  <td>{data.status}</td>
                   <td>{data.updated_at}</td>
                 </tr>
               );

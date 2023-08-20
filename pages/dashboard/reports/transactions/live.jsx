@@ -20,6 +20,7 @@ import 'ag-grid-community/styles/ag-grid.css';
 import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { BsChevronDoubleLeft, BsChevronDoubleRight, BsChevronLeft, BsChevronRight } from 'react-icons/bs';
 import { useFormik } from 'formik';
+import Cookies from 'js-cookie';
 
 const ExportPDF = () => {
     const doc = new jsPDF('landscape')
@@ -88,7 +89,7 @@ const Ledger = () => {
     function fetchLedger(pageLink) {
         BackendAxios.post(pageLink || `/api/admin/transactions-period?page=1`, {
             from: Formik.values.from,
-            to: Formik.values.to
+            to: Formik.values.to+'T'+'23:59'
         }).then((res) => {
             setPagination({
                 current_page: res.data.current_page,
@@ -100,6 +101,10 @@ const Ledger = () => {
             })
             setRowData(res.data.slice(0, 20))
         }).catch(err => {
+            if (err?.response?.status == 401) {
+              Cookies.remove("verified");
+              window.location.reload();
+            }
             console.log(err)
         })
     }
