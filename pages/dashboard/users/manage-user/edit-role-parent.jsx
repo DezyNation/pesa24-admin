@@ -176,7 +176,7 @@ const Index = () => {
 
     function removeParent() {
         BackendAxios.post(`/api/admin/remove-parent`, {
-            userId: Formik.values.userId
+            userId: fetchedUser.user_id
         }).then(res => {
             Toast({
                 status: 'success',
