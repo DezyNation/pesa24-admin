@@ -136,6 +136,7 @@ const SupportTickets = () => {
             href={
               process.env.NEXT_PUBLIC_BACKEND_URL + "/" + params?.data?.document
             }
+            target="_blank"
           >
             <Button colorScheme="twitter" variant={"solid"} size={"xs"}>
               View
