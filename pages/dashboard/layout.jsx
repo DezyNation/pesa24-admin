@@ -63,13 +63,13 @@ const menuOptions = [
         id: "basic-view-profile",
         title: "view profile",
         link: "/dashboard/profile?pageid=basic-view-profile&parent=profile",
-        status: true,
+        status: false,
       },
       {
         id: "basic-edit-profile",
         title: "edit profile",
         link: "/dashboard/profile/edit?pageid=basic-edit-profile&parent=profile",
-        status: true,
+        status: false,
       },
       {
         id: "basic-reset-mpin",
