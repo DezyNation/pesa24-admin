@@ -379,7 +379,7 @@ const menuOptions = [
         id: "live-sales",
         title: "live sales",
         link: "/dashboard/reports/transactions/live?pageid=live-sales&parent=reports",
-        status: true,
+        status: false,
       },
       {
         id: "user-ledger",
