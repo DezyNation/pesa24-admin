@@ -483,6 +483,7 @@ const CommissionSetup = () => {
                 status: "success",
                 description: "Details Updated Successfully"
             })
+            fetchAllPackages()
         }).catch(err => {
             if (err?.response?.status == 401) {
               Cookies.remove("verified");
