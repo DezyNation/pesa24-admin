@@ -347,13 +347,13 @@ const menuOptions = [
       {
         title: "report-lic",
         title: "lic report",
-        link: "/dashboard",
+        link: "/dashboard/reports/lic?pageid=report-lic&parent=reports",
         status: true,
       },
       {
         id: "report-fastag",
         title: "fastag",
-        link: "/dashboard",
+        link: "/dashboard/reports/fastag?pageid=report-fastag&parent=reports",
         status: true,
       },
       {
