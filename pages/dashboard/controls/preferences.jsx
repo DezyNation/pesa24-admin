@@ -219,6 +219,26 @@ const Preferences = () => {
                             >Offline</Button>
                         </HStack>
                     </Box>
+                    <Box>
+                        <Text>Recharge Provider</Text>
+                        <HStack p={2} rounded={8}>
+                            <Button
+                                w={56}
+                                colorScheme={
+                                    globalInfo.recharge_provider == "rechargetradition" ?
+                                        "twitter" : "gray"
+                                }
+                                onClick={() => updateGlobalInfo({ recharge_provider: "rechargetradition" })}
+                            >Recharge Tradition</Button>
+                            <Button
+                                w={36}
+                                colorScheme={globalInfo.recharge_provider == "paysprint" ?
+                                    "twitter" : "gray"
+                                }
+                                onClick={() => updateGlobalInfo({ recharge_provider: "paysprint" })}
+                            >Paysprint</Button>
+                        </HStack>
+                    </Box>
                 </Stack>
                 <Box mt={8} mb={6}>
                     <Text pb={12}>Portal Registration Settings</Text>
