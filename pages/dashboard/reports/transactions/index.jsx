@@ -163,7 +163,12 @@ const Ledger = () => {
   }
 
   async function generateReport(userId) {
-    if (!Formik.values.from || !Formik.values.to) return;
+    if (!Formik.values.from || !Formik.values.to){
+      Toast({
+        description: "Please select from and to dates"
+      })
+      return
+    }
     setLoading(true);
     await BackendAxios.get(
       `/api/admin/print-report?type=ledger&from=${
@@ -178,7 +183,7 @@ const Ledger = () => {
       .then((res) => {
         setLoading(false);
         // setPrintableRow(res.data);
-        fileDownload(res.data, `TransactionsLedger.xlsx`);
+        fileDownload(res.data, `TransactionsLedger${Formik.values.userId || ""}(${Formik.values.from}-${Formik.values.to}).xlsx`);
       })
       .catch((err) => {
         setLoading(false);
